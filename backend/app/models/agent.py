@@ -36,9 +36,9 @@ class Agent(SQLModel, table=True):
     icon_background: str | None = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    current_version_id: uuid.UUID | None = Field(
-        default=None, foreign_key="agent_versions.id"
-    )
+    # Note: No FK constraint to avoid circular dependency with agent_versions
+    # Application code ensures referential integrity
+    current_version_id: uuid.UUID | None = Field(default=None)
     version_count: int = 1
     my_metadata: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
 
@@ -49,7 +49,7 @@ class AgentVersion(SQLModel, table=True):
     __tablename__ = "agent_versions"
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    agent_id: uuid.UUID = Field(foreign_key="agents.id")
+    agent_id: uuid.UUID = Field(foreign_key="agents.id", ondelete="CASCADE")
     version_number: int
     version_name: str
     system_prompt: str
@@ -70,9 +70,8 @@ class AgentVersion(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     created_by: uuid.UUID | None = None
     change_description: str | None = None
-    previous_version_id: uuid.UUID | None = Field(
-        default=None, foreign_key="agent_versions.id"
-    )
+    # Self-referencing FK for version history
+    previous_version_id: uuid.UUID | None = Field(default=None)
 
 
 class AgentTemplate(SQLModel, table=True):

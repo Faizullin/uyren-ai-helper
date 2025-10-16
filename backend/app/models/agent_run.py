@@ -16,9 +16,11 @@ class AgentRun(SQLModel, table=True):
 
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     thread_id: uuid.UUID = Field(foreign_key="thread.id", ondelete="CASCADE")
-    agent_id: uuid.UUID | None = Field(default=None, foreign_key="agents.id")
+    agent_id: uuid.UUID | None = Field(
+        default=None, foreign_key="agents.id", ondelete="SET NULL"
+    )
     agent_version_id: uuid.UUID | None = Field(
-        default=None, foreign_key="agent_versions.id"
+        default=None, foreign_key="agent_versions.id", ondelete="SET NULL"
     )
     status: str = Field(default=AgentRunStatus.RUNNING)
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

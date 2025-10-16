@@ -45,6 +45,11 @@ services:
       - traefik-public
       - default
 
+  redis:
+    restart: "no"
+    ports:
+      - "6379:6379"
+
   db:
     restart: "no"
     ports:
@@ -91,6 +96,24 @@ services:
     ports:
       - "1080:1080"
       - "1025:1025"
+
+  worker:
+    restart: "no"
+    build:
+      context: ./backend
+    develop:
+      watch:
+        - path: ./backend
+          action: sync
+          target: /app
+          ignore:
+            - ./backend/.venv
+            - .venv
+        - path: ./backend/pyproject.toml
+          action: rebuild
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
   frontend:
     restart: "no"

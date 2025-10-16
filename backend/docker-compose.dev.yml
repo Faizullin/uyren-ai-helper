@@ -60,6 +60,7 @@ services:
   #   volumes:
   #     - ./app:/app/app
   #     - ./worker.py:/app/worker.py
+  #     - ./scripts:/app/scripts
   #   env_file:
   #     - .env
   #   environment:

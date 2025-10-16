@@ -1,7 +1,12 @@
 import { defineConfig } from "@hey-api/openapi-ts"
 
 export default defineConfig({
-  input: "./openapi.json",
+  // Use backend URL to fetch OpenAPI schema
+  // You can use environment variable or direct URL
+  // Example: http://localhost:8000/openapi.json or https://your-backend.com/openapi.json
+  input: process.env.NEXT_PUBLIC_BACKEND_URL 
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/openapi.json`
+    : "http://localhost:8000/api/v1/openapi.json",
   output: "./src/client",
 
   plugins: [
