@@ -1,0 +1,261 @@
+{
+  "sidebar": {
+    "overview": "Обзор",
+    "products": "Продукты",
+    "lms": "LMS",
+    "communities": "Сообщества",
+    "users": "Пользователи",
+    "settings": "Настройки",
+    "studio": "Студия",
+    "my_content": "Мой контент",
+    "my_progress": "Мой прогресс",
+    "all_users": "Все пользователи",
+    "branding": "Брендинг",
+    "payment": "Платежи",
+    "mails": "Почта",
+    "code_injection": "Внедрение кода",
+    "api_keys": "API ключи",
+    "website_settings": "Настройки сайта",
+    "schools": "Школы"
+  },
+  "overview": {
+    "title": "Добро пожаловать",
+    "sales": "Продажи",
+    "customers": "Клиенты",
+    "select_time_range": "Выберите период времени",
+    "time_ranges": {
+      "1d": "1 день",
+      "7d": "1 неделя",
+      "30d": "30 дней",
+      "90d": "90 дней",
+      "1y": "1 год",
+      "lifetime": "За все время"
+    }
+  },
+  "lms": {
+    "title": "Система управления обучением",
+    "subtitle": "Управляйте образовательным контентом, оценками и прогрессом студентов",
+    "modules": {
+      "quizzes": {
+        "title": "Викторины",
+        "description": "Создавайте и управляйте интерактивными викторинами для проверки знаний студентов"
+      },
+      "reviews": {
+        "title": "Отзывы",
+        "description": "Управляйте отзывами и рекомендациями клиентов для ваших продуктов и курсов"
+      },
+      "assignments": {
+        "title": "Задания",
+        "description": "Отслеживайте прогресс студентов с помощью структурированных заданий и отправок"
+      },
+      "themes": {
+        "title": "Темы",
+        "description": "Настройте внешний вид и ощущения вашей обучающей платформы"
+      }
+    },
+    "stats": {
+      "total_students": "Всего студентов",
+      "completion_rate": "Процент завершения",
+      "active_assessments": "Активные оценки",
+      "enrolled_across_courses": "Записаны на все курсы",
+      "average_across_assessments": "Средний по всем оценкам",
+      "currently_active": "В настоящее время активны"
+    },
+    "actions": {
+      "view_all": "Показать все",
+      "new": "Новый"
+    }
+  },
+  "my_progress": {
+    "title": "Мой прогресс",
+    "subtitle": "Отслеживайте свой учебный прогресс и достижения",
+    "overview": "Обзор",
+    "courses": "Курсы",
+    "assignments": "Задания",
+    "quizzes": "Викторины",
+    "certificates": "Сертификаты",
+    "achievements": "Достижения"
+  },
+  "my_content": {
+    "title": "Мой контент",
+    "subtitle": "Управляйте созданным контентом и курсами",
+    "courses": "Курсы",
+    "lessons": "Уроки",
+    "media": "Медиа",
+    "drafts": "Черновики",
+    "published": "Опубликовано",
+    "downloads": "Загрузки",
+    "no_courses": "Вы еще не записались ни на один продукт.",
+    "no_communities": "Вы еще не присоединились ни к одному сообществу.",
+    "browse_courses": "Просмотреть продукты",
+    "browse_communities": "Просмотреть сообщества",
+    "lessons_completed": "{{completed}} из {{total}} уроков завершено"
+  },
+  "products": {
+    "title": "Продукты",
+    "new_product": "Новый продукт",
+    "create_new_product": "Создать новый продукт",
+    "created_successfully": "Продукт успешно создан",
+    "creating": "Создание...",
+    "create_product": "Создать продукт",
+    "filter_by_status": "Фильтр по статусу",
+    "status": {
+      "course": "Курс",
+      "download": "Загрузка",
+      "draft": "Черновик",
+      "published": "Опубликовано"
+    },
+    "course_description": "Интерактивный опыт обучения",
+    "download_description": "Цифровой файл или ресурс",
+    "form": {
+      "title": "Название",
+      "type": "Тип",
+      "title_placeholder": "Введите название продукта"
+    },
+    "table": {
+      "title": "Название",
+      "type": "Тип",
+      "status": "Статус",
+      "students": "Студенты",
+      "sales": "Продажи",
+      "actions": "Действия"
+    },
+    "actions": {
+      "delete": "Удалить",
+      "edit_page": "Редактировать страницу",
+      "invite_customer": "Пригласить клиента",
+      "invite": "Пригласить"
+    }
+  },
+  "communities": {
+    "title": "Сообщества",
+    "new_community": "Новое сообщество",
+    "manage_communities": "Управление сообществами",
+    "no_communities": "Сообщества не найдены",
+    "create_first": "Создайте ваше первое сообщество",
+    "members": "Участники",
+    "posts": "Посты",
+    "recent_activity": "Недавняя активность"
+  },
+  "users": {
+    "title": "Пользователи",
+    "all_users": "Все пользователи",
+    "search_placeholder": "Поиск пользователей по имени или email...",
+    "table": {
+      "name": "Имя",
+      "details": "Детали",
+      "status": "Статус",
+      "products": "Продукты",
+      "communities": "Сообщества",
+      "joined": "Присоединился",
+      "last_active": "Последняя активность",
+      "last_login": "Последний вход",
+      "email": "Email"
+    },
+    "status": {
+      "active": "Активный",
+      "inactive": "Неактивный",
+      "pending": "Ожидает"
+    },
+    "no_users": "Пользователи не найдены",
+    "total_users": "Всего пользователей"
+  },
+  "lesson": {
+    "title": "Название урока",
+    "type": "Тип урока",
+    "content": "Содержание урока",
+    "new_lesson": "Новый урок",
+    "edit_lesson": "Редактировать урок",
+    "create_lesson": "Создать урок",
+    "update_lesson": "Обновить урок",
+    "view_lesson": "Просмотреть урок",
+    "edit_subtitle": "Редактировать детали урока",
+    "create_subtitle": "Создать новый урок для этого раздела",
+    "title_placeholder": "Введите название урока",
+    "saving": "Сохранение...",
+    "created_successfully": "Урок успешно создан",
+    "updated_successfully": "Урок успешно обновлен",
+    "product_not_found": "Продукт не найден",
+    "section_not_found": "Раздел не найден",
+    "requires_enrollment": "Требуется регистрация",
+    "requires_enrollment_description": "Студенты должны быть зарегистрированы для доступа к этому уроку",
+    "downloadable": "Доступно для скачивания",
+    "downloadable_description": "Разрешить студентам скачивать этот урок",
+    "types": {
+      "text": "Текст",
+      "video": "Видео",
+      "quiz": "Викторина",
+      "file": "Файл"
+    }
+  },
+  "header": {
+    "dashboard": "Панель управления",
+    "sign_out": "Выйти",
+    "user": "Пользователь",
+    "user_avatar": "Аватар пользователя",
+    "logo": "Логотип",
+    "signed_out_successfully": "Вы вышли из системы",
+    "sign_out_error": "Произошла ошибка при выходе. Попробуйте снова.",
+    "open_menu": "Открыть меню",
+    "close_menu": "Закрыть меню"
+  },
+  "table": {
+    "title": "Название",
+    "status": "Статус",
+    "created": "Создано",
+    "actions": "Действия",
+    "course": "Курс",
+    "owner": "Владелец",
+    "type": "Тип",
+    "questions": "Вопросы",
+    "rating": "Рейтинг",
+    "target_type": "Тип цели",
+    "linked_user": "Связанный пользователь",
+    "tags": "Теги",
+    "search": "Поиск",
+    "search_placeholder": "Поиск...",
+    "published": "Опубликовано",
+    "draft": "Черновик",
+    "archived": "Архивировано",
+    "featured": "Рекомендуемое",
+    "unknown": "Неизвестно",
+    "no_course": "Нет курса",
+    "no_tags": "Нет тегов",
+    "not_linked": "Не связан",
+    "view_details": "Подробности",
+    "edit": "Редактировать",
+    "archive": "Архивировать",
+    "delete": "Удалить"
+  },
+  "settings": {
+    "title": "Настройки",
+    "tabs": {
+      "branding": "Брендинг",
+      "payment": "Платежи",
+      "mails": "Почта",
+      "code_injection": "Внедрение кода",
+      "api_keys": "API ключи",
+      "website_settings": "Настройки сайта",
+      "schools": "Школы"
+    }
+  },
+  "profile": {
+    "loading": "Загрузка профиля...",
+    "profile": "Профиль",
+    "firebase_avatar": "Аватар Firebase",
+    "uploaded_image": "Загруженное изображение",
+    "upload_new": "Загрузить новое",
+    "remove": "Удалить",
+    "resetting": "Сброс...",
+    "reset_from_google": "Сбросить из Google Provider",
+    "enter_name_placeholder": "Введите ваше имя",
+    "bio_placeholder": "Расскажите о себе...",
+    "saving": "Сохранение...",
+    "receive_updates_desc": "Получать обновления о новых функциях и контенте",
+    "no_firebase_avatar": "Нет аватара Firebase",
+    "no_firebase_avatar_desc": "Фото профиля не найдено в вашем аккаунте Firebase",
+    "avatar_reset": "Аватар сброшен",
+    "avatar_reset_desc": "Фото профиля было восстановлено из Firebase",
+    "reset_picture_error": "Не удалось сбросить изображение из Firebase"
+  }
+}

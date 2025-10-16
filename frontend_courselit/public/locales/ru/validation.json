@@ -1,0 +1,61 @@
+{
+    "auth": {
+    "signin": {
+      "welcome_back": "С возвращением",
+      "title": "Войти в систему",
+      "subtitle": "Доступ к вашей персональной панели обучения",
+      "card_title": "Войдите в свой аккаунт",
+      "card_description": "Выберите удобный способ входа",
+      "google_signin": "Войти через Google",
+      "or_continue": "Или продолжить с",
+      "email_label": "Адрес электронной почты",
+      "email_placeholder": "Введите ваш email",
+      "password_label": "Пароль",
+      "password_placeholder": "Введите ваш пароль",
+      "signin_button": "Войти",
+      "no_account": "Нет аккаунта?",
+      "signup_link": "Зарегистрироваться",
+      "terms_text": "Входя в систему, вы соглашаетесь с нашими Условиями обслуживания и Политикой конфиденциальности",
+      "signing_in": "Вход в систему...",
+      "google_signing_in": "Вход через Google..."
+    },
+    "signup": {
+      "welcome_back": "Присоединяйтесь к нашему сообществу",
+      "title": "Начните свое обучение",
+      "subtitle": "Присоединяйтесь к тысячам учащихся, осваивающих востребованные навыки",
+      "card_title": "Создайте свой аккаунт",
+      "card_description": "Начните свое обучение",
+      "google_signup": "Зарегистрироваться через Google",
+      "or_continue": "Или продолжить с",
+      "name_label": "Полное имя",
+      "name_placeholder": "Введите ваше полное имя",
+      "email_label": "Адрес электронной почты",
+      "email_placeholder": "Введите ваш email",
+      "password_label": "Пароль",
+      "password_placeholder": "Введите ваш пароль",
+      "confirm_password_label": "Подтвердите пароль",
+      "confirm_password_placeholder": "Подтвердите ваш пароль",
+      "signup_button": "Создать аккаунт",
+      "has_account": "Уже есть аккаунт?",
+      "signin_link": "Войти",
+      "terms_text": "Продолжая, вы соглашаетесь с нашими Условиями обслуживания и Политикой конфиденциальности",
+      "signing_up": "Создание аккаунта...",
+      "google_signing_up": "Регистрация через Google..."
+    },
+        "error": {
+            "invalid_email": "Неверный адрес электронной почты",
+            "user_not_found": "Аккаунт не найден",
+            "wrong_password": "Неверный пароль",
+            "invalid_credential": "Неверные учетные данные",
+            "email_already_in_use": "Электронная почта уже используется",
+            "weak_password": "Слишком слабый пароль",
+      "too_many_requests": "Слишком много попыток",
+      "network_error": "Ошибка сети",
+      "popup_blocked": "Всплывающее окно заблокировано",
+      "unknown": "Ошибка аутентификации",
+      "passwords_dont_match": "Пароли не совпадают",
+      "name_required": "Имя обязательно",
+      "password_too_short": "Пароль должен содержать минимум 6 символов"
+        }
+    }
+}

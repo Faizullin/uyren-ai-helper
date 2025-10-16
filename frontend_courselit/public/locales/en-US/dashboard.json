@@ -1,0 +1,288 @@
+{
+  "sidebar": {
+    "overview": "Overview",
+    "products": "Products",
+    "lms": "LMS",
+    "communities": "Communities",
+    "users": "Users",
+    "settings": "Settings",
+    "studio": "Studio",
+    "my_content": "My content",
+    "my_progress": "My progress",
+    "all_users": "All users",
+    "branding": "Branding",
+    "payment": "Payment",
+    "mails": "Mails",
+    "code_injection": "Code injection",
+    "api_keys": "API Keys",
+    "website_settings": "Website Settings",
+    "schools": "Schools",
+    "instructor_dashboard": "Instructor Dashboard",
+    "student_dashboard": "Student",
+    "my_courses": "My Courses",
+    "my_assignments": "My Assignments",
+    "my_schedule": "My Schedule",
+    "my_grades": "My Grades",
+    "admin": "Admin",
+    "database": "Database",
+    "redis": "Redis",
+    "notifications": "Notifications",
+    "profile": "Profile"
+  },
+  "overview": {
+    "title": "Welcome",
+    "sales": "Sales",
+    "customers": "Customers",
+    "select_time_range": "Select time range",
+    "time_ranges": {
+      "1d": "1 day",
+      "7d": "1 week", 
+      "30d": "30 days",
+      "90d": "90 days",
+      "1y": "1 year",
+      "lifetime": "Lifetime"
+    }
+  },
+  "lms": {
+    "title": "Learning Management System",
+    "subtitle": "Manage your educational content, assessments, and student progress",
+    "modules": {
+      "courses": {
+        "title": "Courses",
+        "description": "Create and manage your courses"
+      },
+      "cohorts": {
+        "title": "Cohorts",
+        "description": "Organize students into groups and cohorts"
+      },
+      "quizzes": {
+        "title": "Quizzes",
+        "description": "Create and manage interactive quizzes to test student knowledge"
+      },
+      "reviews": {
+        "title": "Reviews", 
+        "description": "Manage customer reviews and testimonials for your products and courses"
+      },
+      "assignments": {
+        "title": "Assignments",
+        "description": "Track student progress with structured assignments and submissions"
+      },
+      "live_classes": {
+        "title": "Live Classes",
+        "description": "Schedule and manage live virtual classes"
+      },
+      "schedule": {
+        "title": "Schedule",
+        "description": "View and manage class schedules"
+      },
+      "themes": {
+        "title": "Themes",
+        "description": "Customize the look and feel of your learning platform"
+      }
+    },
+    "stats": {
+      "total_students": "Total Students",
+      "completion_rate": "Completion Rate", 
+      "active_assessments": "Active Assessments",
+      "enrolled_across_courses": "Enrolled across all courses",
+      "average_across_assessments": "Average across all assessments",
+      "currently_active": "Currently active"
+    },
+    "actions": {
+      "view_all": "View All",
+      "new": "New"
+    }
+  },
+  "my_progress": {
+    "title": "My Progress",
+    "subtitle": "Track your learning progress and achievements",
+    "overview": "Overview",
+    "courses": "Courses",
+    "assignments": "Assignments",
+    "quizzes": "Quizzes",
+    "certificates": "Certificates",
+    "achievements": "Achievements"
+  },
+  "my_content": {
+    "title": "My Content",
+    "subtitle": "Manage your created content and courses",
+    "courses": "Courses",
+    "lessons": "Lessons",
+    "media": "Media",
+    "drafts": "Drafts",
+    "published": "Published",
+    "downloads": "Downloads",
+    "no_courses": "You haven't enrolled in any products yet.",
+    "no_communities": "You haven't joined any communities yet.",
+    "browse_courses": "Browse products",
+    "browse_communities": "Browse communities",
+    "lessons_completed": "{{completed}} of {{total}} lessons completed"
+  },
+  "products": {
+    "title": "Products",
+    "new_product": "New Product",
+    "create_new_product": "Create New Product",
+    "created_successfully": "Product created successfully",
+    "creating": "Creating...",
+    "create_product": "Create Product",
+    "filter_by_status": "Filter by status",
+    "status": {
+      "course": "Course",
+      "download": "Download",
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "course_description": "Interactive learning experience",
+    "download_description": "Digital file or resource",
+    "form": {
+      "title": "Title",
+      "type": "Type",
+      "title_placeholder": "Enter product title"
+    },
+    "table": {
+      "title": "Title",
+      "type": "Type", 
+      "status": "Status",
+      "students": "Students",
+      "sales": "Sales",
+      "actions": "Actions"
+    },
+    "actions": {
+      "delete": "Delete",
+      "edit_page": "Edit page",
+      "invite_customer": "Invite a customer",
+      "invite": "Invite"
+    }
+  },
+  "communities": {
+    "title": "Communities",
+    "new_community": "New community",
+    "manage_communities": "Manage Communities",
+    "no_communities": "No communities found",
+    "create_first": "Create your first community",
+    "members": "Members",
+    "posts": "Posts",
+    "recent_activity": "Recent Activity"
+  },
+  "users": {
+    "title": "Users",
+    "all_users": "All users",
+    "search_placeholder": "Search users by name or email...",
+    "table": {
+      "name": "Name",
+      "details": "Details",
+      "status": "Status",
+      "products": "Products",
+      "communities": "Communities",
+      "joined": "Joined",
+      "last_active": "Last Active",
+      "last_login": "Last login",
+      "email": "Email"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "pending": "Pending"
+    },
+    "no_users": "No users found",
+    "total_users": "Total Users"
+  },
+  "lesson": {
+    "title": "Lesson Title",
+    "type": "Lesson Type",
+    "content": "Lesson Content",
+    "new_lesson": "New Lesson",
+    "edit_lesson": "Edit Lesson",
+    "create_lesson": "Create Lesson",
+    "update_lesson": "Update Lesson",
+    "view_lesson": "View Lesson",
+    "edit_subtitle": "Edit lesson details",
+    "create_subtitle": "Create a new lesson for this section",
+    "title_placeholder": "Enter lesson title",
+    "saving": "Saving...",
+    "created_successfully": "Lesson created successfully",
+    "updated_successfully": "Lesson updated successfully",
+    "product_not_found": "Product not found",
+    "section_not_found": "Section not found",
+    "requires_enrollment": "Requires Enrollment",
+    "requires_enrollment_description": "Students must be enrolled to access this lesson",
+    "downloadable": "Downloadable",
+    "downloadable_description": "Allow students to download this lesson",
+    "types": {
+      "text": "Text",
+      "video": "Video",
+      "quiz": "Quiz",
+      "file": "File"
+    }
+  },
+  "header": {
+    "dashboard": "Dashboard",
+    "sign_out": "Sign Out",
+    "user": "User",
+    "user_avatar": "User Avatar",
+    "logo": "Logo",
+    "signed_out_successfully": "You have been logged out",
+    "sign_out_error": "There was an issue signing out. Please try again.",
+    "open_menu": "Open menu",
+    "close_menu": "Close menu"
+  },
+  "table": {
+    "title": "Title",
+    "status": "Status",
+    "created": "Created",
+    "actions": "Actions",
+    "course": "Course",
+    "owner": "Owner",
+    "type": "Type",
+    "questions": "Questions",
+    "rating": "Rating",
+    "target_type": "Target Type",
+    "linked_user": "Linked User",
+    "tags": "Tags",
+    "search": "Search",
+    "search_placeholder": "Search...",
+    "published": "Published",
+    "draft": "Draft",
+    "archived": "Archived",
+    "featured": "Featured",
+    "unknown": "Unknown",
+    "no_course": "No Course",
+    "no_tags": "No tags",
+    "not_linked": "Not linked",
+    "view_details": "View Details",
+    "edit": "Edit",
+    "archive": "Archive",
+    "delete": "Delete"
+  },
+  "settings": {
+    "title": "Settings",
+    "tabs": {
+      "branding": "Branding",
+      "payment": "Payment", 
+      "mails": "Mails",
+      "code_injection": "Code Injection",
+      "api_keys": "API Keys",
+      "website_settings": "Website Settings",
+      "schools": "Schools"
+    }
+  },
+  "profile": {
+    "loading": "Loading profile...",
+    "profile": "Profile",
+    "firebase_avatar": "Firebase Avatar",
+    "uploaded_image": "Uploaded Image",
+    "upload_new": "Upload New",
+    "remove": "Remove",
+    "resetting": "Resetting...",
+    "reset_from_google": "Reset from Google Provider",
+    "enter_name_placeholder": "Enter your name",
+    "bio_placeholder": "Tell us about yourself...",
+    "saving": "Saving...",
+    "receive_updates_desc": "Receive updates about new features and content",
+    "no_firebase_avatar": "No Firebase Avatar",
+    "no_firebase_avatar_desc": "No profile picture found in your Firebase account",
+    "avatar_reset": "Avatar Reset",
+    "avatar_reset_desc": "Profile picture has been restored from Firebase",
+    "reset_picture_error": "Failed to reset picture from Firebase"
+  }
+}

@@ -1,0 +1,28 @@
+.description-editor-wrapper {
+
+    &.bg-card {
+        background-color: transparent;
+    }
+    
+    
+    .content-editor-content {
+        height: unset;
+    }
+
+    .tiptap.ProseMirror {
+        min-height: unset;
+
+        &.content-editor {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+
+    &.readonly {
+        border: none !important;
+        .tiptap.ProseMirror {
+            padding: 0;
+            max-width: unset;
+        }
+    }
+}

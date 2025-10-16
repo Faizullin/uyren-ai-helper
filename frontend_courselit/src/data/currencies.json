@@ -1,0 +1,16 @@
+[
+    {
+        "name": "United States dollar",
+        "isoCode": "USD",
+        "razorpay": true,
+        "stripe": true,
+        "lemonsqueezy": true
+    },
+    {
+        "name": "Kazakhstani tenge",
+        "isoCode": "KZT",
+        "razorpay": true,
+        "stripe": true,
+        "lemonsqueezy": true
+    }
+]

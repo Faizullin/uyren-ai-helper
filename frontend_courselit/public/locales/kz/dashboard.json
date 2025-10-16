@@ -1,0 +1,261 @@
+{
+  "sidebar": {
+    "overview": "Шолу",
+    "products": "Өнімдер",
+    "lms": "LMS",
+    "communities": "Қауымдастықтар",
+    "users": "Пайдаланушылар",
+    "settings": "Баптаулар",
+    "studio": "Студия",
+    "my_content": "Менің мазмұным",
+    "my_progress": "Менің прогрессім",
+    "all_users": "Барлық пайдаланушылар",
+    "branding": "Брендинг",
+    "payment": "Төлем",
+    "mails": "Хаттар",
+    "code_injection": "Код енгізу",
+    "api_keys": "API кілттері",
+    "website_settings": "Веб-сайт баптаулары",
+    "schools": "Мектептер"
+  },
+  "overview": {
+    "title": "Қош келдіңіз",
+    "sales": "Сатулар",
+    "customers": "Тұтынушылар",
+    "select_time_range": "Уақыт диапазонын таңдаңыз",
+    "time_ranges": {
+      "1d": "1 күн",
+      "7d": "1 апта",
+      "30d": "30 күн", 
+      "90d": "90 күн",
+      "1y": "1 жыл",
+      "lifetime": "Өмір бойы"
+    }
+  },
+  "lms": {
+    "title": "Оқытуды басқару жүйесі",
+    "subtitle": "Білім беру мазмұныңызды, бағалауларды және студенттердің прогрессін басқарыңыз",
+    "modules": {
+      "quizzes": {
+        "title": "Викториналар",
+        "description": "Студенттердің білімін тексеру үшін интерактивті викториналар жасаңыз және басқарыңыз"
+      },
+      "reviews": {
+        "title": "Пікірлер",
+        "description": "Өнімдеріңіз және курстарыңыз үшін тұтынушылардың пікірлері мен рекомендацияларын басқарыңыз"
+      },
+      "assignments": {
+        "title": "Тапсырмалар",
+        "description": "Студенттердің прогрессін құрылымдық тапсырмалар мен жіберулер арқылы бақылаңыз"
+      },
+      "themes": {
+        "title": "Тақырыптар",
+        "description": "Оқыту платформасыңыздың көрінісі мен сезімін теңшеңіз"
+      }
+    },
+    "stats": {
+      "total_students": "Жалпы студенттер",
+      "completion_rate": "Аяқтау коэффициенті",
+      "active_assessments": "Белсенді бағалаулар",
+      "enrolled_across_courses": "Барлық курстарға тіркелген",
+      "average_across_assessments": "Барлық бағалаулар бойынша орташа",
+      "currently_active": "Қазір белсенді"
+    },
+    "actions": {
+      "view_all": "Барлығын көру",
+      "new": "Жаңа"
+    }
+  },
+  "my_progress": {
+    "title": "Менің прогрессім",
+    "subtitle": "Оқу прогрессіңізді және жетістіктеріңізді бақылаңыз",
+    "overview": "Шолу",
+    "courses": "Курстар",
+    "assignments": "Тапсырмалар",
+    "quizzes": "Викториналар",
+    "certificates": "Сертификаттар",
+    "achievements": "Жетістіктер"
+  },
+  "my_content": {
+    "title": "Менің мазмұным",
+    "subtitle": "Жасаған мазмұныңызды және курстарыңызды басқарыңыз",
+    "courses": "Курстар",
+    "lessons": "Сабақтар",
+    "media": "Медиа",
+    "drafts": "Жобалар",
+    "published": "Жарияланған",
+    "downloads": "Жүктеп алулар",
+    "no_courses": "Сіз әлі ешқандай өнімге тіркелмегенсіз.",
+    "no_communities": "Сіз әлі ешқандай қауымдастыққа қосылмағансыз.",
+    "browse_courses": "Өнімдерді қарау",
+    "browse_communities": "Қауымдастықтарды қарау",
+    "lessons_completed": "{{total}} сабақтың {{completed}} бөлігі аяқталды"
+  },
+  "products": {
+    "title": "Өнімдер",
+    "new_product": "Жаңа өнім",
+    "create_new_product": "Жаңа өнім жасау",
+    "created_successfully": "Өнім сәтті жасалды",
+    "creating": "Жасалуда...",
+    "create_product": "Өнім жасау",
+    "filter_by_status": "Күйі бойынша сүзгілеу",
+    "status": {
+      "course": "Курс",
+      "download": "Жүктеп алу",
+      "draft": "Жоба",
+      "published": "Жарияланған"
+    },
+    "course_description": "Интерактивті оқыту тәжірибесі",
+    "download_description": "Сандық файл немесе ресурс",
+    "form": {
+      "title": "Тақырып",
+      "type": "Түрі",
+      "title_placeholder": "Өнім тақырыбын енгізіңіз"
+    },
+    "table": {
+      "title": "Тақырып",
+      "type": "Түрі",
+      "status": "Күйі",
+      "students": "Студенттер",
+      "sales": "Сатулар",
+      "actions": "Әрекеттер"
+    },
+    "actions": {
+      "delete": "Жою",
+      "edit_page": "Бетті өңдеу",
+      "invite_customer": "Тұтынушыны шақыру",
+      "invite": "Шақыру"
+    }
+  },
+  "communities": {
+    "title": "Қауымдастықтар",
+    "new_community": "Жаңа қауымдастық",
+    "manage_communities": "Қауымдастықтарды басқару",
+    "no_communities": "Қауымдастықтар табылмады",
+    "create_first": "Алғашқы қауымдастығыңызды жасаңыз",
+    "members": "Мүшелер",
+    "posts": "Жазбалар",
+    "recent_activity": "Соңғы белсенділік"
+  },
+  "users": {
+    "title": "Пайдаланушылар",
+    "all_users": "Барлық пайдаланушылар",
+    "search_placeholder": "Пайдаланушыларды аты немесе электрондық пошта бойынша іздеу...",
+    "table": {
+      "name": "Аты",
+      "details": "Толық мәліметтер",
+      "status": "Күйі",
+      "products": "Өнімдер",
+      "communities": "Қауымдастықтар",
+      "joined": "Қосылды",
+      "last_active": "Соңғы белсенділік",
+      "last_login": "Соңғы кіру",
+      "email": "Электрондық пошта"
+    },
+    "status": {
+      "active": "Белсенді",
+      "inactive": "Белсенді емес",
+      "pending": "Күтуде"
+    },
+    "no_users": "Пайдаланушылар табылмады",
+    "total_users": "Жалпы пайдаланушылар"
+  },
+  "lesson": {
+    "title": "Сабақ тақырыбы",
+    "type": "Сабақ түрі",
+    "content": "Сабақ мазмұны",
+    "new_lesson": "Жаңа сабақ",
+    "edit_lesson": "Сабақты өңдеу",
+    "create_lesson": "Сабақ жасау",
+    "update_lesson": "Сабақты жаңарту",
+    "view_lesson": "Сабақты көру",
+    "edit_subtitle": "Сабақ мәліметтерін өңдеу",
+    "create_subtitle": "Осы бөлімге жаңа сабақ жасау",
+    "title_placeholder": "Сабақ тақырыбын енгізіңіз",
+    "saving": "Сақталуда...",
+    "created_successfully": "Сабақ сәтті жасалды",
+    "updated_successfully": "Сабақ сәтті жаңартылды",
+    "product_not_found": "Өнім табылмады",
+    "section_not_found": "Бөлім табылмады",
+    "requires_enrollment": "Тіркелу қажет",
+    "requires_enrollment_description": "Студенттер осы сабаққа қол жеткізу үшін тіркелуі керек",
+    "downloadable": "Жүктеп алуға болады",
+    "downloadable_description": "Студенттерге осы сабақты жүктеп алуға рұқсат беру",
+    "types": {
+      "text": "Мәтін",
+      "video": "Бейне",
+      "quiz": "Викторина",
+      "file": "Файл"
+    }
+  },
+  "header": {
+    "dashboard": "Басқару панелі",
+    "sign_out": "Шығу",
+    "user": "Пайдаланушы",
+    "user_avatar": "Пайдаланушы аватары",
+    "logo": "Логотип",
+    "signed_out_successfully": "Сіз жүйеден шықтыңыз",
+    "sign_out_error": "Жүйеден шығу кезінде қате орын алды. Қайталап көріңіз.",
+    "open_menu": "Мәзірді ашу",
+    "close_menu": "Мәзірді жабу"
+  },
+  "table": {
+    "title": "Атауы",
+    "status": "Күйі",
+    "created": "Жасалған",
+    "actions": "Әрекеттер",
+    "course": "Курс",
+    "owner": "Иесі",
+    "type": "Түрі",
+    "questions": "Сұрақтар",
+    "rating": "Рейтинг",
+    "target_type": "Мақсат түрі",
+    "linked_user": "Байланыстырылған пайдаланушы",
+    "tags": "Тегтер",
+    "search": "Іздеу",
+    "search_placeholder": "Іздеу...",
+    "published": "Жарияланған",
+    "draft": "Жоба",
+    "archived": "Мұрағатталған",
+    "featured": "Таңдаулы",
+    "unknown": "Белгісіз",
+    "no_course": "Курс жоқ",
+    "no_tags": "Тегтер жоқ",
+    "not_linked": "Байланыстырылмаған",
+    "view_details": "Толық мәліметтер",
+    "edit": "Өңдеу",
+    "archive": "Мұрағаттау",
+    "delete": "Жою"
+  },
+  "settings": {
+    "title": "Баптаулар",
+    "tabs": {
+      "branding": "Брендинг",
+      "payment": "Төлем",
+      "mails": "Хаттар",
+      "code_injection": "Код енгізу",
+      "api_keys": "API кілттері",
+      "website_settings": "Веб-сайт баптаулары",
+      "schools": "Мектептер"
+    }
+  },
+  "profile": {
+    "loading": "Профиль жүктелуде...",
+    "profile": "Профиль",
+    "firebase_avatar": "Firebase Аватары",
+    "uploaded_image": "Жүктелген Сурет",
+    "upload_new": "Жаңа Жүктеу",
+    "remove": "Жою",
+    "resetting": "Қалпына келтіруде...",
+    "reset_from_google": "Google Провайдерден Қалпына Келтіру",
+    "enter_name_placeholder": "Атыңызды енгізіңіз",
+    "bio_placeholder": "Өзіңіз туралы айтыңыз...",
+    "saving": "Сақталуда...",
+    "receive_updates_desc": "Жаңа мүмкіндіктер мен мазмұн туралы жаңалықтарды алу",
+    "no_firebase_avatar": "Firebase Аватары Жоқ",
+    "no_firebase_avatar_desc": "Firebase тіркелгіңізде профиль суреті табылмады",
+    "avatar_reset": "Аватар Қалпына Келтірілді",
+    "avatar_reset_desc": "Профиль суреті Firebase-тен қалпына келтірілді",
+    "reset_picture_error": "Firebase-тен суретті қалпына келтіру сәтсіз"
+  }
+}

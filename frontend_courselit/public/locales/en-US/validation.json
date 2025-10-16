@@ -1,0 +1,61 @@
+{
+  "auth": {
+    "signin": {
+      "welcome_back": "Welcome Back",
+      "title": "Sign in to Continue",
+      "subtitle": "Access your personalized learning dashboard",
+      "card_title": "Sign in to your account",
+      "card_description": "Choose your preferred sign-in method",
+      "google_signin": "Sign in with Google",
+      "or_continue": "Or continue with",
+      "email_label": "Email Address",
+      "email_placeholder": "Enter your email",
+      "password_label": "Password",
+      "password_placeholder": "Enter your password",
+      "signin_button": "Sign In",
+      "no_account": "Don't have an account?",
+      "signup_link": "Sign up",
+      "terms_text": "By signing in, you agree to our Terms of Service and Privacy Policy",
+      "signing_in": "Signing In...",
+      "google_signing_in": "Signing in with Google..."
+    },
+    "signup": {
+      "welcome_back": "Join Our Community",
+      "title": "Start Your Learning Journey",
+      "subtitle": "Join thousands of learners mastering in-demand skills",
+      "card_title": "Create your account",
+      "card_description": "Get started with your learning journey",
+      "google_signup": "Sign up with Google",
+      "or_continue": "Or continue with",
+      "name_label": "Full Name",
+      "name_placeholder": "Enter your full name",
+      "email_label": "Email Address",
+      "email_placeholder": "Enter your email",
+      "password_label": "Password",
+      "password_placeholder": "Enter your password",
+      "confirm_password_label": "Confirm Password",
+      "confirm_password_placeholder": "Confirm your password",
+      "signup_button": "Create Account",
+      "has_account": "Already have an account?",
+      "signin_link": "Sign in",
+      "terms_text": "By continuing, you agree to our Terms of Service and Privacy Policy",
+      "signing_up": "Creating Account...",
+      "google_signing_up": "Signing up with Google..."
+    },
+    "error": {
+      "invalid_email": "Invalid email address",
+      "user_not_found": "Account not found",
+      "wrong_password": "Incorrect password",
+      "invalid_credential": "Invalid credentials",
+      "email_already_in_use": "Email already in use",
+      "weak_password": "Password too weak",
+      "too_many_requests": "Too many attempts",
+      "network_error": "Network error",
+      "popup_blocked": "Popup blocked",
+      "unknown": "Authentication failed",
+      "passwords_dont_match": "Passwords do not match",
+      "name_required": "Name is required",
+      "password_too_short": "Password must be at least 6 characters"
+    }
+  }
+}

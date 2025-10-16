@@ -1,0 +1,14 @@
+.comment-editor-wrapper {
+    .comment-editor-content {
+        height: unset;
+    }
+
+    .tiptap.ProseMirror {
+        min-height: unset;
+
+        &.comment-editor {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    }
+}

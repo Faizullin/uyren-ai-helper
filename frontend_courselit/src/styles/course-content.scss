@@ -1,0 +1,210 @@
+@reference './globals.css';
+
+// Course Description Wrapper Styles for TipTap Content
+.m-course-description-wrapper {
+  // Base styles
+  @apply text-foreground leading-relaxed;
+
+  // Headings
+  h1 {
+    @apply text-3xl font-bold mb-6 text-foreground;
+  }
+
+  h2 {
+    @apply text-2xl font-bold mb-5 text-foreground;
+  }
+
+  h3 {
+    @apply text-xl font-semibold mb-4 text-foreground;
+  }
+
+  h4 {
+    @apply text-lg font-semibold mb-3 text-foreground;
+  }
+
+  h5 {
+    @apply text-base font-semibold mb-2 text-foreground;
+  }
+
+  h6 {
+    @apply text-sm font-semibold mb-2 text-foreground;
+  }
+
+  // Images
+  img {
+    @apply max-w-full h-auto rounded-lg shadow-md my-4 mx-auto;
+    @apply sm:max-w-3xl lg:max-w-4xl;
+  }
+
+  // Lists
+  ul, ol {
+    @apply my-4 pl-6 space-y-2;
+  }
+
+  ul {
+    @apply list-disc;
+    
+    li {
+      @apply text-base text-foreground;
+      
+      p {
+        @apply mb-1;
+      }
+    }
+  }
+
+  ol {
+    @apply list-decimal;
+    
+    li {
+      @apply text-base text-foreground;
+      
+      p {
+        @apply mb-1;
+      }
+    }
+  }
+
+  // Paragraphs
+  p {
+    @apply text-base text-foreground mb-4 leading-relaxed;
+    
+    // Empty paragraphs (TipTap sometimes creates these)
+    &:empty {
+      @apply hidden;
+    }
+  }
+
+  // Links
+  a {
+    @apply text-primary hover:text-primary/80 underline underline-offset-2 transition-colors;
+  }
+
+  // Blockquotes
+  blockquote {
+    @apply border-l-4 border-primary/30 pl-4 py-2 my-4 bg-muted/30 italic;
+  }
+
+  // Code blocks
+  pre {
+    @apply bg-muted p-4 rounded-lg overflow-x-auto my-4;
+    
+    code {
+      @apply text-sm font-mono text-foreground;
+    }
+  }
+
+  // Inline code
+  code {
+    @apply bg-muted px-2 py-1 rounded text-sm font-mono text-foreground;
+  }
+
+  // Tables
+  table {
+    @apply w-full border-collapse border border-border my-4;
+    
+    th, td {
+      @apply border border-border px-3 py-2 text-left;
+    }
+    
+    th {
+      @apply bg-muted font-semibold;
+    }
+  }
+
+  // Horizontal rules
+  hr {
+    @apply border-t border-border my-6;
+  }
+
+  // Strong and emphasis
+  strong, b {
+    @apply font-semibold;
+  }
+
+  em, i {
+    @apply italic;
+  }
+
+  // Strikethrough
+  s, del {
+    @apply line-through text-muted-foreground;
+  }
+
+  // Subscript and superscript
+  sub {
+    @apply text-xs align-sub;
+  }
+
+  sup {
+    @apply text-xs align-super;
+  }
+
+  // Mark/highlight
+  mark {
+    @apply bg-yellow-200 dark:bg-yellow-800 px-1 rounded;
+  }
+
+  // Small text
+  small {
+    @apply text-sm text-muted-foreground;
+  }
+
+  // First and last child spacing
+  > *:first-child {
+    @apply mt-0;
+  }
+
+  > *:last-child {
+    @apply mb-0;
+  }
+
+  // Nested content spacing
+  > div {
+    @apply mb-4;
+    
+    &:last-child {
+      @apply mb-0;
+    }
+  }
+
+  // TipTap specific content
+  .ProseMirror {
+    @apply outline-none;
+  }
+
+  // Custom TipTap node styles
+  .node-selected {
+    @apply ring-2 ring-primary/50;
+  }
+
+  // Image with caption
+  figure {
+    @apply my-6;
+    
+    img {
+      @apply mb-2;
+    }
+    
+    figcaption {
+      @apply text-sm text-muted-foreground text-center italic;
+    }
+  }
+
+  // Callout boxes
+  .callout {
+    @apply bg-blue-50 dark:bg-blue-950 border-l-4 border-blue-500 p-4 my-4 rounded-r-lg;
+    
+    &.warning {
+      @apply bg-yellow-50 dark:bg-yellow-950 border-yellow-500;
+    }
+    
+    &.error {
+      @apply bg-red-50 dark:bg-red-950 border-red-500;
+    }
+    
+    &.success {
+      @apply bg-green-50 dark:bg-green-950 border-green-500;
+    }
+  }
+}
