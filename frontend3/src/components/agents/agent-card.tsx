@@ -26,17 +26,32 @@ import { EditAgentDialog } from './edit-agent-dialog';
 interface AgentCardProps {
   agent: Agent;
   onUpdate?: () => void;
+  onEdit?: (agentId: string) => void;
+  onDelete?: (agentId: string) => void;
+  onToggleDefault?: (agentId: string, currentDefault: boolean) => void;
 }
 
-export function AgentCard({ agent, onUpdate }: AgentCardProps) {
+export function AgentCard({ agent, onUpdate, onEdit, onDelete, onToggleDefault }: AgentCardProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const deleteAgent = useDeleteAgent();
 
   const handleDelete = async () => {
-    await deleteAgent.mutateAsync(agent.agent_id);
+    if (onDelete) {
+      onDelete(agent.agent_id);
+    } else {
+      await deleteAgent.mutateAsync(agent.agent_id);
+      onUpdate?.();
+    }
     setShowDeleteDialog(false);
-    onUpdate?.();
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(agent.agent_id);
+    } else {
+      setShowEditDialog(true);
+    }
   };
 
   return (
@@ -61,7 +76,7 @@ export function AgentCard({ agent, onUpdate }: AgentCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
+              <DropdownMenuItem onClick={handleEdit}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
