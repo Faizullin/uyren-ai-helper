@@ -10,7 +10,10 @@ export default defineConfig({
   output: "./src/client",
 
   plugins: [
-    "legacy/axios",
+    {
+      name: "@hey-api/client-axios",
+      runtimeConfigPath: "./src/lib/my-api.ts",
+    },
     {
       name: "@hey-api/sdk",
       // NOTE: this doesn't allow tree-shaking
@@ -19,7 +22,7 @@ export default defineConfig({
       classNameBuilder: "{{name}}Service",
       methodNameBuilder: (operation) => {
         // @ts-expect-error
-        let name: string = operation.name
+        let name: string = operation.name || operation.operationId || 'unknown'
         // @ts-expect-error
         const service: string = operation.service
 
@@ -29,6 +32,7 @@ export default defineConfig({
 
         return name.charAt(0).toLowerCase() + name.slice(1)
       },
+      
     },
     {
       name: "@hey-api/schemas",

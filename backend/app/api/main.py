@@ -10,7 +10,7 @@ from app.routers import (
 
 api_router = APIRouter()
 api_router.include_router(users_router)
-api_router.include_router(threads_router)
-api_router.include_router(agents_router)
-api_router.include_router(agent_runs_router)
-api_router.include_router(grading_router)
+# api_router.include_router(threads_router)
+# api_router.include_router(agents_router)
+# api_router.include_router(agent_runs_router)
+# api_router.include_router(grading_router)

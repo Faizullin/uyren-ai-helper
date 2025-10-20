@@ -1,21 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AgentsService } from '@/client';
-import { OpenAPI } from '@/client/core/OpenAPI';
-import { createClient } from '@/lib/supabase/client';
-import { toast } from 'sonner';
 import type { AgentCreate, AgentUpdate } from '@/client/types.gen';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-// Configure OpenAPI client
-if (typeof window !== 'undefined') {
-  OpenAPI.BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-  
-  // Add auth token interceptor
-  OpenAPI.TOKEN = async () => {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token || '';
-  };
-}
 
 export interface Agent {
   agent_id: string;
@@ -55,18 +42,18 @@ export function useAgents(params?: AgentsListParams) {
         isDefault: params?.is_default,
         isPublic: params?.is_public,
       });
-      
+
       // The response is typed as { [key: string]: unknown }
       // but we know it returns an array or an object with agents array
       if (Array.isArray(response)) {
         return response as Agent[];
       }
-      
+
       // If it's an object with agents array
       if (response && typeof response === 'object' && 'agents' in response) {
         return (response as any).agents as Agent[];
       }
-      
+
       return response as Agent[];
     },
   });
@@ -85,7 +72,7 @@ export function useAgent(agentId: string) {
 
 export function useCreateAgent() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (agent: AgentCreate) => {
       const response = await AgentsService.createAgent({
@@ -106,7 +93,7 @@ export function useCreateAgent() {
 
 export function useUpdateAgent() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async ({ agentId, ...updates }: AgentUpdate & { agentId: string }) => {
       const response = await AgentsService.updateAgent({
@@ -128,7 +115,7 @@ export function useUpdateAgent() {
 
 export function useDeleteAgent() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: async (agentId: string) => {
       await AgentsService.deleteAgent({ agentId });
