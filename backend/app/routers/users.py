@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.core.config import settings
 from app.core.db import SessionDep
 from app.core.security import get_password_hash, verify_password
-from app.crud import (
+from app.crud.user import (
     authenticate_user,
     create_user,
     delete_user,
@@ -18,10 +18,10 @@ from app.crud import (
     update_user,
 )
 from app.models import UserPublic, UsersPublic
-from app.schemas import (
+from app.schemas.common import Message
+from app.schemas.user import (
     LoginRequest,
     LoginResponse,
-    Message,
     RegisterRequest,
     RegisterResponse,
     UpdatePassword,
@@ -39,7 +39,13 @@ router = APIRouter(tags=["users"])
 # ==================== Auth Endpoints ====================
 
 
-@router.post("/users/login/access-token", response_model=LoginResponse, tags=["auth"])
+@router.post(
+    "/users/login/access-token",
+    response_model=LoginResponse,
+    tags=["auth"],
+    summary="Login with Access Token",
+    operation_id="login_access_token",
+)
 def login_access_token(
     session: SessionDep, form_data: OAuth2PasswordRequestForm = Depends()
 ) -> LoginResponse:
@@ -53,7 +59,13 @@ def login_access_token(
     return LoginResponse(access_token=access_token, token_type="bearer")
 
 
-@router.post("/users/login", response_model=LoginResponse, tags=["auth"])
+@router.post(
+    "/users/login",
+    response_model=LoginResponse,
+    tags=["auth"],
+    summary="Login User",
+    operation_id="login",
+)
 def login(session: SessionDep, data: LoginRequest) -> LoginResponse:
     """Login with email and password."""
     user = authenticate_user(session, data.email, data.password)
@@ -65,7 +77,13 @@ def login(session: SessionDep, data: LoginRequest) -> LoginResponse:
     return LoginResponse(access_token=access_token, token_type="bearer")
 
 
-@router.post("/users/register", response_model=RegisterResponse, tags=["auth"])
+@router.post(
+    "/users/register",
+    response_model=RegisterResponse,
+    tags=["auth"],
+    summary="Register User",
+    operation_id="register",
+)
 def register(session: SessionDep, data: RegisterRequest) -> RegisterResponse:
     """Register new user."""
     email = normalize_email(data.email)
@@ -95,7 +113,12 @@ def register(session: SessionDep, data: RegisterRequest) -> RegisterResponse:
 # ==================== User Management (Admin) ====================
 
 
-@router.get("/users", response_model=UsersPublic)
+@router.get(
+    "/users",
+    response_model=UsersPublic,
+    summary="List Users",
+    operation_id="list_users",
+)
 def read_users(
     session: SessionDep,
     _: CurrentSuperuser,
@@ -106,7 +129,12 @@ def read_users(
     return get_users(session, skip=skip, limit=limit)
 
 
-@router.post("/users", response_model=UserPublic)
+@router.post(
+    "/users",
+    response_model=UserPublic,
+    summary="Create User",
+    operation_id="create_user",
+)
 def create_user_endpoint(
     session: SessionDep,
     user_in: UserCreate,
@@ -138,7 +166,12 @@ def create_user_endpoint(
     return UserPublic.model_validate(user)
 
 
-@router.get("/users/{user_id}", response_model=UserPublic)
+@router.get(
+    "/users/{user_id}",
+    response_model=UserPublic,
+    summary="Get User by ID",
+    operation_id="get_user_by_id",
+)
 def read_user_by_id(
     user_id: uuid.UUID,
     session: SessionDep,
@@ -153,7 +186,12 @@ def read_user_by_id(
     return UserPublic.model_validate(user)
 
 
-@router.patch("/users/{user_id}", response_model=UserPublic)
+@router.patch(
+    "/users/{user_id}",
+    response_model=UserPublic,
+    summary="Update User",
+    operation_id="update_user",
+)
 def update_user_endpoint(
     user_id: uuid.UUID,
     user_in: UserUpdate,
@@ -177,7 +215,12 @@ def update_user_endpoint(
     return UserPublic.model_validate(user)
 
 
-@router.delete("/users/{user_id}", response_model=Message)
+@router.delete(
+    "/users/{user_id}",
+    response_model=Message,
+    summary="Delete User",
+    operation_id="delete_user",
+)
 def delete_user_endpoint(
     user_id: uuid.UUID,
     session: SessionDep,
@@ -198,13 +241,23 @@ def delete_user_endpoint(
 # ==================== Self Management ====================
 
 
-@router.get("/users/me/profile", response_model=UserPublic)
+@router.get(
+    "/users/me/profile",
+    response_model=UserPublic,
+    summary="Get Current User Profile",
+    operation_id="get_current_user_profile",
+)
 def read_user_me(current_user: CurrentUser) -> UserPublic:
     """Get current user profile."""
     return UserPublic.model_validate(current_user)
 
 
-@router.patch("/users/me/profile", response_model=UserPublic)
+@router.patch(
+    "/users/me/profile",
+    response_model=UserPublic,
+    summary="Update Current User Profile",
+    operation_id="update_current_user_profile",
+)
 def update_user_me(
     session: SessionDep,
     user_in: UserUpdateMe,
@@ -228,7 +281,12 @@ def update_user_me(
     return UserPublic.model_validate(current_user)
 
 
-@router.patch("/users/me/password", response_model=Message)
+@router.patch(
+    "/users/me/password",
+    response_model=Message,
+    summary="Update Current User Password",
+    operation_id="update_current_user_password",
+)
 def update_password_me(
     session: SessionDep,
     body: UpdatePassword,
@@ -248,7 +306,12 @@ def update_password_me(
     return Message(message="Password updated successfully")
 
 
-@router.delete("/users/me", response_model=Message)
+@router.delete(
+    "/users/me",
+    response_model=Message,
+    summary="Delete Current User Account",
+    operation_id="delete_current_user_account",
+)
 def delete_user_me(
     session: SessionDep,
     current_user: CurrentUser,

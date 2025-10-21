@@ -37,23 +37,6 @@ class Thread(ThreadBase, table=True):
     )  # type: ignore
 
 
-class ThreadPublic(ThreadBase):
-    """Public thread model."""
-
-    id: uuid.UUID
-    owner_id: uuid.UUID
-    project_id: uuid.UUID | None
-    created_at: datetime
-    updated_at: datetime
-
-
-class ThreadsPublic(SQLModel):
-    """Public threads list model."""
-
-    data: list[ThreadPublic]
-    count: int
-
-
 class ThreadMessageBase(SQLModel):
     """Base thread message model."""
 
@@ -79,29 +62,9 @@ class ThreadMessage(ThreadMessageBase, table=True):
     thread: "Thread" = Relationship(back_populates="messages")  # type: ignore
 
 
-class ThreadMessagePublic(ThreadMessageBase):
-    """Public thread message model."""
-
-    id: uuid.UUID
-    thread_id: uuid.UUID
-    created_at: datetime
-    updated_at: datetime
-
-
-class ThreadMessagesPublic(SQLModel):
-    """Public thread messages list model."""
-
-    data: list[ThreadMessagePublic]
-    count: int
-
-
 __all__ = [
     "Thread",
     "ThreadBase",
-    "ThreadPublic",
-    "ThreadsPublic",
     "ThreadMessage",
     "ThreadMessageBase",
-    "ThreadMessagePublic",
-    "ThreadMessagesPublic",
 ]

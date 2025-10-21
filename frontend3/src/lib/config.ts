@@ -10,6 +10,7 @@ interface Config {
   ENV_MODE: EnvMode;
   IS_LOCAL: boolean;
   IS_STAGING: boolean;
+  BACKEND_URL: string;
 }
 
 function getEnvironmentMode(): EnvMode {
@@ -32,6 +33,7 @@ export const config: Config = {
   ENV_MODE: currentEnvMode,
   IS_LOCAL: currentEnvMode === EnvMode.LOCAL,
   IS_STAGING: currentEnvMode === EnvMode.STAGING,
+  BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
 };
 
 export const isLocalMode = (): boolean => {

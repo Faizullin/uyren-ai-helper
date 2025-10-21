@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Home, MessageSquare, Settings, LogOut } from 'lucide-react';
+import { Bot, Menu, Home, MessageSquare, Settings, LogOut, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -80,6 +80,11 @@ export function SidebarLeft({
       title: 'Threads',
       href: '/threads',
       icon: MessageSquare,
+    },
+    {
+      title: 'Knowledge Base',
+      href: '/knowledge',
+      icon: BookOpen,
     },
     {
       title: 'Settings',

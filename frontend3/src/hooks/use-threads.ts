@@ -1,37 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { createClient } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { ThreadsService } from '@/client';
+import type { ThreadPublic, ThreadUpdate } from '@/client/types.gen';
 
-export interface Thread {
-  thread_id: string;
-  account_id: string;
-  project_id?: string;
-  created_at: string;
-  updated_at?: string;
-  metadata?: {
-    title?: string;
-    [key: string]: any;
-  };
-}
-
-export function useThreads() {
+export function useThreads(params?: { page?: number; limit?: number; search?: string }) {
   return useQuery({
-    queryKey: ['threads'],
-    queryFn: async () => {
-      const supabase = createClient();
-      
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      if (!userData.user) throw new Error('Not authenticated');
-
-      const { data, error } = await supabase
-        .from('threads')
-        .select('*')
-        .eq('account_id', userData.user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Thread[];
+    queryKey: ['threads', params],
+    queryFn: async (): Promise<ThreadPublic[]> => {
+      const response = await ThreadsService.list_user_threads({
+        query: params,
+      });
+      return response.data?.data || [];
     },
   });
 }
@@ -39,17 +18,11 @@ export function useThreads() {
 export function useThread(threadId: string) {
   return useQuery({
     queryKey: ['thread', threadId],
-    queryFn: async () => {
-      const supabase = createClient();
-      
-      const { data, error } = await supabase
-        .from('threads')
-        .select('*')
-        .eq('thread_id', threadId)
-        .single();
-
-      if (error) throw error;
-      return data as Thread;
+    queryFn: async (): Promise<ThreadPublic> => {
+      const response = await ThreadsService.get_thread({
+        path: { thread_id: threadId },
+      });
+      return response.data!;
     },
     enabled: !!threadId,
   });
@@ -60,14 +33,10 @@ export function useDeleteThread() {
   
   return useMutation({
     mutationFn: async (threadId: string) => {
-      const supabase = createClient();
-      
-      const { error } = await supabase
-        .from('threads')
-        .delete()
-        .eq('thread_id', threadId);
-
-      if (error) throw error;
+      const response = await ThreadsService.delete_thread({
+        path: { thread_id: threadId },
+      });
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['threads'] });
@@ -83,18 +52,12 @@ export function useUpdateThread() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ threadId, ...updates }: Partial<Thread> & { threadId: string }) => {
-      const supabase = createClient();
-      
-      const { data, error } = await supabase
-        .from('threads')
-        .update(updates)
-        .eq('thread_id', threadId)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as Thread;
+    mutationFn: async ({ threadId, ...updates }: ThreadUpdate & { threadId: string }) => {
+      const response = await ThreadsService.update_thread({
+        path: { thread_id: threadId },
+        body: updates as ThreadUpdate,
+      });
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['threads'] });

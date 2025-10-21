@@ -1,8 +1,12 @@
-import { client } from '@/client/client.gen';
+'use client';
+
+import { type CreateClientConfig } from '@/client/client.gen';
+import { config } from '@/lib/config';
 import { createClient } from '@/lib/supabase/client';
 
-// Configure client with custom auth and base URL
-client.setConfig({
+
+export const createClientConfig: CreateClientConfig = (clientConfig) => ({
+    ...clientConfig,
     auth: async () => {
         if (typeof window !== 'undefined') {
             const supabase = createClient();
@@ -11,5 +15,5 @@ client.setConfig({
         }
         return '';
     },
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000',
+    baseURL: config.BACKEND_URL,
 });

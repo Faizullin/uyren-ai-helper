@@ -15,7 +15,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useCreateAgent } from '@/hooks/use-agents';
 import { toast } from 'sonner';
-import { IUseDialogControl } from '@/hooks/use-dialog-control';
+import { IUseDialogControl, useDialogControl } from '@/hooks/use-dialog-control';
+import { HelpCircle } from 'lucide-react';
+import { ModelsHelperDialog } from './models-helper-dialog';
 
 interface NewAgentDialogProps {
   control: IUseDialogControl;
@@ -27,7 +29,13 @@ export function NewAgentDialog({ control }: NewAgentDialogProps) {
   const [systemPrompt, setSystemPrompt] = useState('');
   const [model, setModel] = useState('anthropic/claude-3-5-sonnet-latest');
   
+  const modelsHelperDialog = useDialogControl();
   const createAgent = useCreateAgent();
+
+  const handleModelSelect = (selectedModel: string) => {
+    setModel(selectedModel);
+    modelsHelperDialog.hide();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,12 +102,24 @@ export function NewAgentDialog({ control }: NewAgentDialogProps) {
 
             <div className="space-y-2">
               <Label htmlFor="model">Model</Label>
-              <Input
-                id="model"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder="anthropic/claude-3-5-sonnet-latest"
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="model"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  placeholder="anthropic/claude-3-5-sonnet-latest"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={modelsHelperDialog.show}
+                  title="View available models"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -128,6 +148,11 @@ export function NewAgentDialog({ control }: NewAgentDialogProps) {
           </DialogFooter>
         </form>
       </DialogContent>
+
+      <ModelsHelperDialog
+        control={modelsHelperDialog}
+        onModelSelect={handleModelSelect}
+      />
     </Dialog>
   );
 }

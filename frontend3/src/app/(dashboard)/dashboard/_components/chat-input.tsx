@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useRef, forwardRef, useImperativeHandle, useCallback, useEffect } from 'react';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Send, Loader2, Paperclip, Mic, Settings, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { useAgents } from '@/hooks/use-agents';
 import { useAgentSelection } from '@/lib/stores/agent-selection-store';
+import { cn } from '@/lib/utils';
+import { Loader2, Mic, Paperclip, Send, Settings, X } from 'lucide-react';
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
 
 export interface ChatInputHandles {
   clearPendingFiles: () => void;
@@ -59,7 +59,7 @@ export const ChatInput = forwardRef<ChatInputHandles, ChatInputProps>(
     
     const { data: agents } = useAgents();
     const { getCurrentAgent } = useAgentSelection();
-    const selectedAgent = selectedAgentId ? getCurrentAgent(agents || []) : null;
+    const selectedAgent = selectedAgentId ? getCurrentAgent(agents?.data || []) : null;
 
     useImperativeHandle(ref, () => ({
       clearPendingFiles: () => setPendingFiles([]),

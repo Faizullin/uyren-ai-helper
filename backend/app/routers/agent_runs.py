@@ -4,8 +4,8 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
-from sqlmodel import Session, SQLModel, select
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlmodel import Session, func, select
 
 from app.core import redis
 from app.core.config import settings
@@ -25,6 +25,22 @@ from app.modules.agents.loader import get_agent_loader
 from app.modules.agents.run_manager import stop_agent_run_with_helpers
 from app.modules.ai_models.manager import model_manager
 from app.modules.limits_checker import check_agent_run_limit
+from app.schemas.agent_run import (
+    AgentRetryResponse,
+    AgentRunPublic,
+    AgentRunStatusResponse,
+    AgentStartRequest,
+    AgentStartResponse,
+    AgentStopResponse,
+    InitiateAgentResponse,
+)
+from app.schemas.common import (
+    PaginatedResponse,
+    PaginationQueryParams,
+    create_paginated_response,
+    get_pagination_params,
+    paginate_query,
+)
 from app.utils.authentication import CurrentUser
 
 router = APIRouter(tags=["agent-runs"])
@@ -53,31 +69,13 @@ async def _get_agent_run_with_access_check(
     return agent_run
 
 
-class AgentStartRequest(SQLModel):
-    """Agent start request schema."""
-
-    agent_id: uuid.UUID | None = None
-    model_name: str | None = None
-
-
-class AgentStartResponse(SQLModel):
-    """Agent start response schema."""
-
-    agent_run_id: uuid.UUID
-    status: str = "running"
-
-
-class InitiateAgentResponse(SQLModel):
-    """Agent initiation response schema."""
-
-    thread_id: uuid.UUID
-    agent_run_id: uuid.UUID
-    message: str = "Agent session initiated successfully"
+# ==================== Agent Run Endpoints ====================
 
 
 @router.post(
     "/threads/{thread_id}/agent/start",
     response_model=AgentStartResponse,
+    tags=["agent-runs"],
     summary="Start Agent Run",
     operation_id="start_agent_run",
 )
@@ -220,6 +218,7 @@ async def start_agent(
 @router.post(
     "/agent/initiate",
     response_model=InitiateAgentResponse,
+    tags=["agent-runs"],
     summary="Initiate Agent Session",
     operation_id="initiate_agent_session",
 )
@@ -476,23 +475,21 @@ async def initiate_agent_with_files(
 
 @router.get(
     "/agent-runs/active",
-    response_model=dict[str, list],
+    response_model=PaginatedResponse[AgentRunPublic],
+    tags=["agent-runs"],
     summary="List Active Agent Runs",
     operation_id="list_active_agent_runs",
 )
 async def get_active_agent_runs(
     session: SessionDep,
     current_user: CurrentUser,
-) -> dict[str, list]:
-    """
-    Get all active (running) agent runs for the current user.
-
-    Returns agent runs across all threads owned by the user.
-    """
+    pagination: PaginationQueryParams = Depends(get_pagination_params),
+) -> PaginatedResponse[AgentRunPublic]:
+    """Get all active (running) agent runs for the current user."""
     logger.debug(f"Fetching active agent runs for user: {current_user.id}")
 
-    # Query running agent runs for user's agents
-    statement = (
+    # Build query
+    query = (
         select(AgentRun)
         .join(Agent, AgentRun.agent_id == Agent.user, isouter=True)
         .join(Thread, AgentRun.thread_id == Thread.id)
@@ -503,29 +500,30 @@ async def get_active_agent_runs(
         .order_by(AgentRun.started_at.desc())
     )
 
-    active_runs = session.exec(statement).all()
-
-    logger.debug(
-        f"Found {len(active_runs)} active agent runs for user: {current_user.id}"
+    count_query = (
+        select(func.count())
+        .select_from(AgentRun)
+        .join(Agent, AgentRun.agent_id == Agent.user, isouter=True)
+        .join(Thread, AgentRun.thread_id == Thread.id)
+        .where(
+            Thread.owner_id == current_user.id,
+            AgentRun.status == AgentRunStatus.RUNNING,
+        )
     )
 
-    return {
-        "active_runs": [
-            {
-                "id": str(run.id),
-                "thread_id": str(run.thread_id),
-                "agent_id": str(run.agent_id) if run.agent_id else None,
-                "status": run.status,
-                "started_at": run.started_at.isoformat(),
-            }
-            for run in active_runs
-        ]
-    }
+    # Execute pagination
+    results, total = paginate_query(session, query, count_query, pagination)
+    agent_runs = [AgentRunPublic.model_validate(run) for run in results]
+
+    logger.debug(f"Found {len(agent_runs)} active agent runs (total: {total})")
+
+    return create_paginated_response(agent_runs, pagination, total)
 
 
 @router.get(
     "/threads/{thread_id}/agent-runs",
-    response_model=dict[str, list],
+    response_model=PaginatedResponse[AgentRunPublic],
+    tags=["agent-runs"],
     summary="List Thread Agent Runs",
     operation_id="list_thread_agent_runs",
 )
@@ -533,47 +531,40 @@ async def get_thread_agent_runs(
     thread_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
-) -> dict[str, list]:
+    pagination: PaginationQueryParams = Depends(get_pagination_params),
+) -> PaginatedResponse[AgentRunPublic]:
     """Get all agent runs for a specific thread."""
     logger.debug(f"Fetching agent runs for thread: {thread_id}")
 
     # Verify thread access
     await verify_thread_access(session, thread_id, current_user)
 
-    # Get agent runs for this thread
-    statement = (
+    # Build query
+    query = (
         select(AgentRun)
         .where(AgentRun.thread_id == thread_id)
         .order_by(AgentRun.created_at.desc())
     )
 
-    agent_runs = session.exec(statement).all()
+    count_query = (
+        select(func.count())
+        .select_from(AgentRun)
+        .where(AgentRun.thread_id == thread_id)
+    )
 
-    logger.debug(f"Found {len(agent_runs)} agent runs for thread: {thread_id}")
+    # Execute pagination
+    results, total = paginate_query(session, query, count_query, pagination)
+    agent_runs = [AgentRunPublic.model_validate(run) for run in results]
 
-    return {
-        "agent_runs": [
-            {
-                "id": str(run.id),
-                "thread_id": str(run.thread_id),
-                "agent_id": str(run.agent_id) if run.agent_id else None,
-                "status": run.status,
-                "started_at": run.started_at.isoformat(),
-                "completed_at": run.completed_at.isoformat()
-                if run.completed_at
-                else None,
-                "error_message": run.error_message,
-                "created_at": run.created_at.isoformat(),
-                "updated_at": run.updated_at.isoformat(),
-            }
-            for run in agent_runs
-        ]
-    }
+    logger.debug(f"Found {len(agent_runs)} agent runs for thread: {thread_id} (total: {total})")
+
+    return create_paginated_response(agent_runs, pagination, total)
 
 
 @router.get(
     "/agent-runs/{agent_run_id}",
-    response_model=dict[str, Any],
+    response_model=AgentRunStatusResponse,
+    tags=["agent-runs"],
     summary="Get Agent Run Status",
     operation_id="get_agent_run_status",
 )
@@ -581,7 +572,7 @@ async def get_agent_run_status(
     agent_run_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
-) -> dict[str, Any]:
+) -> AgentRunStatusResponse:
     """Get the status and details of an agent run."""
     logger.debug(f"Fetching agent run details: {agent_run_id}")
 
@@ -590,23 +581,13 @@ async def get_agent_run_status(
         session, agent_run_id, current_user
     )
 
-    return {
-        "id": str(agent_run.id),
-        "thread_id": str(agent_run.thread_id),
-        "agent_id": str(agent_run.agent_id) if agent_run.agent_id else None,
-        "status": agent_run.status,
-        "started_at": agent_run.started_at.isoformat(),
-        "completed_at": agent_run.completed_at.isoformat()
-        if agent_run.completed_at
-        else None,
-        "error_message": agent_run.error_message,
-        "my_metadata": agent_run.my_metadata,
-    }
+    return AgentRunStatusResponse.model_validate(agent_run)
 
 
 @router.post(
     "/agent-runs/{agent_run_id}/stop",
-    response_model=dict[str, str],
+    response_model=AgentStopResponse,
+    tags=["agent-runs"],
     summary="Stop Agent Run",
     operation_id="stop_agent_run",
 )
@@ -614,7 +595,7 @@ async def stop_agent(
     agent_run_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
-) -> dict[str, str]:
+) -> AgentStopResponse:
     """
     Stop a running agent run.
 
@@ -640,16 +621,13 @@ async def stop_agent(
 
     await stop_agent_run_with_helpers(session, agent_run_id)
 
-    return {
-        "status": "stopped",
-        "agent_run_id": str(agent_run_id),
-        "message": "Agent run stopped successfully",
-    }
+    return AgentStopResponse(message="Agent run stopped successfully")
 
 
 @router.post(
     "/agent-runs/{agent_run_id}/retry",
-    response_model=dict[str, Any],
+    response_model=AgentRetryResponse,
+    tags=["agent-runs"],
     summary="Retry Failed Agent Run",
     operation_id="retry_agent_run",
 )
@@ -657,7 +635,7 @@ async def retry_agent(
     agent_run_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
-) -> dict[str, Any]:
+) -> AgentRetryResponse:
     """
     Retry a failed agent run.
 
@@ -716,9 +694,4 @@ async def retry_agent(
     )
     logger.info(f"Dispatched retry background task for agent run {new_agent_run.id}")
 
-    return {
-        "original_run_id": str(agent_run_id),
-        "new_run_id": str(new_agent_run.id),
-        "status": "running",
-        "message": "Agent run retried successfully",
-    }
+    return AgentRetryResponse(message="Agent run retry initiated successfully")

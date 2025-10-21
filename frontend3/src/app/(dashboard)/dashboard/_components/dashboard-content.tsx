@@ -10,6 +10,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useAgentSelection } from '@/lib/stores/agent-selection-store';
 import { useAgents } from '@/hooks/use-agents';
 import { useDashboardTour } from '@/hooks/use-dashboard-tour';
+import { useInitiateAgentMutation } from '@/hooks/use-initiate-agent';
+import { useThread } from '@/hooks/use-threads';
+import { toast } from 'sonner';
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -51,6 +54,7 @@ export function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
+  const [initiatedThreadId, setInitiatedThreadId] = useState<string | null>(null);
   
   const {
     selectedAgentId,
@@ -60,6 +64,8 @@ export function DashboardContent() {
   } = useAgentSelection();
   
   const { data: agents } = useAgents();
+  const initiateAgentMutation = useInitiateAgentMutation();
+  const threadQuery = useThread(initiatedThreadId || '');
 
   // Tour integration
   const {
@@ -72,12 +78,12 @@ export function DashboardContent() {
     handleWelcomeDecline,
   } = useDashboardTour();
 
-  const agentsList = agents || [];
+  const agentsList = agents?.data || [];
   const selectedAgent = selectedAgentId
-    ? agentsList.find((agent: any) => agent.agent_id === selectedAgentId)
+    ? agentsList.find((agent: any) => agent.id === selectedAgentId)
     : null;
   const displayName = selectedAgent?.name || 'AI Helper';
-  const isSunaAgent = (selectedAgent as any)?.metadata?.is_suna_default || false;
+  const isSunaAgent = selectedAgent?.is_default || false;
 
   // Initialize agents when they're loaded
   useEffect(() => {
@@ -145,21 +151,26 @@ export function DashboardContent() {
       const files = chatInputRef.current?.getPendingFiles() || [];
       localStorage.removeItem(PENDING_PROMPT_KEY);
 
-      // Here you would typically call your API to create a new thread
-      console.log('Submitting message:', message, 'with options:', options, 'and files:', files);
+      const result = await initiateAgentMutation.mutateAsync({
+        data: {
+          prompt: message,
+          agent_id: selectedAgentId,
+          files: files,
+          model_name: options?.model_name,
+        },
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // In a real implementation, you would:
-      // 1. Create a new thread with the message
-      // 2. Navigate to the thread page
-      // For now, we'll just navigate to threads page
-      router.push('/threads');
+      if (result.thread_id) {
+        setInitiatedThreadId(result.thread_id);
+        // Don't reset isSubmitting here - keep loading until redirect happens
+      } else {
+        throw new Error('Agent initiation did not return a thread_id.');
+      }
 
       chatInputRef.current?.clearPendingFiles();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting message:', error);
+      toast.error(error?.message || 'Failed to start conversation');
       setIsSubmitting(false);
     }
   };
@@ -189,6 +200,17 @@ export function DashboardContent() {
       return () => clearTimeout(timer);
     }
   }, [autoSubmit, inputValue, isSubmitting, isRedirecting]);
+
+  // Redirect to thread when initiated and loaded
+  useEffect(() => {
+    if (threadQuery.data && initiatedThreadId) {
+      const thread = threadQuery.data;
+      setIsRedirecting(true);
+      // Navigate to the appropriate thread route
+      router.push(`/agents/threads/${initiatedThreadId}`);
+      setInitiatedThreadId(null);
+    }
+  }, [threadQuery.data, initiatedThreadId, router]);
 
   const handleModeSelect = (mode: string | null) => {
     setSelectedMode(mode);
@@ -264,7 +286,7 @@ export function DashboardContent() {
                         value={inputValue}
                         onChange={setInputValue}
                         selectedAgentId={selectedAgentId || undefined}
-                        onAgentSelect={setSelectedAgent}
+                        onAgentSelect={(agentId) => setSelectedAgent(agentId || undefined)}
                         enableAdvancedConfig={false}
                         selectedMode={selectedMode}
                         onModeDeselect={() => setSelectedMode(null)}

@@ -46,9 +46,10 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[prop-decorator]
     @property
     def all_cors_origins(self) -> list[str]:
-        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
+        r = [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
             self.FRONTEND_HOST
         ]
+        return list(set(r))
 
     PROJECT_NAME: str
     SENTRY_DSN: HttpUrl | None = None
@@ -96,6 +97,7 @@ class Settings(BaseSettings):
     SUPABASE_URL: str | None = None
     SUPABASE_KEY: str | None = None
     SUPABASE_SERVICE_KEY: str | None = None
+    SUPABASE_STORAGE_BUCKET: str = "file-uploads"
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -115,6 +117,13 @@ class Settings(BaseSettings):
         protocol = "rediss" if self.REDIS_SSL else "redis"
         auth = f":{self.REDIS_PASSWORD}@" if self.REDIS_PASSWORD else ""
         return f"{protocol}://{auth}{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+
+    # OpenAI Configuration (for knowledge base summarization)
+    DEFAULT_OPENAI_API_KEY: str | None = None
+
+    # Storage Configuration
+    STORAGE_BACKEND: Literal["supabase", "local"] = "local"  # Default: Local
+    STORAGE_PATH: str = "storage"  # Used by LocalStorageAdapter
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":

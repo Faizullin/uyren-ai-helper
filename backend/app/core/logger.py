@@ -61,4 +61,3 @@ def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
 
 # Create application logger
 logger: structlog.stdlib.BoundLogger = structlog.get_logger(__name__)
-

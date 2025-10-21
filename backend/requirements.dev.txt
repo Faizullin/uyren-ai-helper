@@ -1,0 +1,81 @@
+# Backend Development Dependencies
+# This file lists all dependencies without version pinning for development
+# For production, use pyproject.toml with uv or pip install -e .
+
+# Core Framework
+fastapi[standard]
+uvicorn[standard]
+python-multipart
+
+# Database
+sqlmodel
+psycopg[binary]
+psycopg2-binary
+alembic
+
+# Authentication & Security
+pyjwt
+passlib[bcrypt]
+bcrypt
+python-jose[cryptography]
+
+# Data Validation
+pydantic
+pydantic-settings
+email-validator
+
+# HTTP Client
+httpx
+aiohttp
+
+# Cloud Services
+supabase
+
+# Caching & Session
+redis
+hiredis
+
+# Background Tasks
+dramatiq[redis]
+apscheduler
+
+# AI & ML
+langchain
+langchain-core
+langchain-openai
+langchain-text-splitters
+langgraph
+langgraph-checkpoint
+openai
+
+# File Processing
+python-docx
+PyPDF2
+chardet
+
+# Email
+emails
+jinja2
+
+# Logging & Monitoring
+structlog
+sentry-sdk[fastapi]
+
+# Utilities
+tenacity
+python-dateutil
+
+# Development Tools
+pytest
+pytest-asyncio
+pytest-cov
+coverage
+mypy
+ruff
+pre-commit
+types-passlib
+
+# Optional: Code Formatting
+black
+isort
+

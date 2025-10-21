@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { useAgents } from '@/hooks/use-agents';
+import { useAgents, useDeleteAgent, useUpdateAgent } from '@/hooks/use-agents';
 import { useDialogControl } from '@/hooks/use-dialog-control';
 
 // Components
@@ -13,6 +13,7 @@ import { MyAgentsTab } from './_components/my-agents-tab';
 import { MarketplaceTab } from './_components/marketplace-tab';
 import { LoadingSkeleton } from './_components/loading-skeleton';
 import { NewAgentDialog } from './_components/new-agent-dialog';
+import { EditAgentDialog } from './_components/edit-agent-dialog';
 import { MarketplaceAgentPreviewDialog } from './_components/marketplace-agent-preview-dialog';
 import { AgentCountLimitDialog } from './_components/agent-count-limit-dialog';
 import { PublishDialog } from './_components/publish-dialog';
@@ -61,6 +62,8 @@ export default function AgentsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  
+  const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
   // Dialog controls using the new hook
   const createAgentDialog = useDialogControl();
@@ -135,7 +138,12 @@ export default function AgentsPage() {
     },
   ];
 
-  const { data: agents, isLoading: agentsLoading, error: agentsError, refetch: loadAgents } = useAgents();
+  const loadAgentsQuery = useAgents({
+    page: agentsPage,
+    limit: agentsPageSize,
+    search: agentsSearchQuery || undefined,
+    // sort_by and sort_order not yet in backend API
+  });
 
   const clearAgentsFilters = () => {
     setAgentsSearchQuery('');
@@ -162,24 +170,18 @@ export default function AgentsPage() {
     editAgentDialog.show(agentId);
   };
 
-  const handleDeleteAgent = async (agentId: string) => {
-    try {
-      // In real app, this would call the delete API
-      toast.success('Agent deleted successfully');
-      loadAgents();
-    } catch (error) {
-      toast.error('Failed to delete agent');
-    }
+  const deleteAgentMut = useDeleteAgent();
+  const updateAgentMut = useUpdateAgent();
+
+  const handleDeleteAgent = (agentId: string) => {
+    deleteAgentMut.mutate(agentId);
   };
 
-  const handleToggleDefault = async (agentId: string, currentDefault: boolean) => {
-    try {
-      // In real app, this would call the update API
-      toast.success(`Agent ${currentDefault ? 'removed from' : 'set as'} default`);
-      loadAgents();
-    } catch (error) {
-      toast.error('Failed to update agent');
-    }
+  const handleToggleDefault = (agentId: string, currentDefault: boolean) => {
+    updateAgentMut.mutate({ 
+      agentId, 
+      is_default: !currentDefault 
+    });
   };
 
   const handleInstallClick = (item: MarketplaceTemplate, e?: React.MouseEvent) => {
@@ -292,6 +294,13 @@ export default function AgentsPage() {
     });
   };
 
+  const handleStartChat = (agentId: string) => {
+    // Store the agent ID in localStorage so dashboard can pick it up
+    const newUrl = new URL(window.location.origin + '/dashboard');
+    newUrl.searchParams.set('agent_id', agentId);
+    router.push(newUrl.toString());
+  };
+
   const handlePublish = async (usageExamples: any[]) => {
     if (!publishDialog.data) return;
 
@@ -355,16 +364,16 @@ export default function AgentsPage() {
             <MyAgentsTab
               agentsSearchQuery={agentsSearchQuery}
               setAgentsSearchQuery={setAgentsSearchQuery}
-              agentsLoading={agentsLoading}
-              agents={agents || []}
-              agentsPagination={undefined}
+              agentsLoading={loadAgentsQuery.isLoading}
+              agents={loadAgentsQuery.data?.data || []}
+              agentsPagination={loadAgentsQuery.data?.pagination || null}
               viewMode={viewMode}
               onCreateAgent={handleCreateNewAgent}
               onEditAgent={handleEditAgent}
               onDeleteAgent={handleDeleteAgent}
               onToggleDefault={handleToggleDefault}
               onClearFilters={clearAgentsFilters}
-              isDeletingAgent={false}
+              isDeletingAgent={deleteAgentMut.isPending}
               setAgentsPage={setAgentsPage}
               agentsPageSize={agentsPageSize}
               onAgentsPageSizeChange={handleAgentsPageSizeChange}
@@ -384,6 +393,7 @@ export default function AgentsPage() {
               getTemplateStyling={getTemplateStyling}
               onPublishAgent={handleAgentPublish}
               publishingAgentId={publishingAgentId}
+              onStartChat={handleStartChat}
             />
           )}
 
@@ -426,6 +436,10 @@ export default function AgentsPage() {
 
         <NewAgentDialog 
           control={createAgentDialog}
+        />
+
+        <EditAgentDialog
+          control={editAgentDialog}
         />
 
         <MarketplaceAgentPreviewDialog

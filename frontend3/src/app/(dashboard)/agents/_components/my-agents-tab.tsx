@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { AgentCard } from '@/components/agents/agent-card';
 import { cn } from '@/lib/utils';
+import type { AgentPublic, PaginationMeta } from '@/client/types.gen';
 
 type ViewMode = 'grid' | 'list';
 
@@ -14,8 +15,8 @@ interface MyAgentsTabProps {
   agentsSearchQuery: string;
   setAgentsSearchQuery: (query: string) => void;
   agentsLoading: boolean;
-  agents: any[];
-  agentsPagination?: any;
+  agents: AgentPublic[];
+  agentsPagination?: PaginationMeta | null;
   viewMode: ViewMode;
   onCreateAgent: () => void;
   onEditAgent: (agentId: string) => void;
@@ -26,22 +27,23 @@ interface MyAgentsTabProps {
   setAgentsPage: (page: number) => void;
   agentsPageSize: number;
   onAgentsPageSizeChange: (size: number) => void;
-  myTemplates: any[];
+  myTemplates: AgentPublic[];
   templatesLoading: boolean;
-  templatesError: any;
+  templatesError: Error | null;
   templatesActioningId: string | null;
-  templatesPagination?: any;
+  templatesPagination?: PaginationMeta | null;
   templatesPage: number;
   setTemplatesPage: (page: number) => void;
   templatesPageSize: number;
   onTemplatesPageSizeChange: (size: number) => void;
   templatesSearchQuery: string;
   setTemplatesSearchQuery: (query: string) => void;
-  onPublish: (template: any) => void;
+  onPublish: (template: AgentPublic) => void;
   onUnpublish: (templateId: string, templateName: string) => void;
-  getTemplateStyling: (template: any) => any;
-  onPublishAgent: (agent: any) => void;
+  getTemplateStyling: (template: AgentPublic) => { color: string };
+  onPublishAgent: (agent: AgentPublic) => void;
   publishingAgentId: string | null;
+  onStartChat?: (agentId: string) => void;
 }
 
 export function MyAgentsTab({
@@ -56,13 +58,16 @@ export function MyAgentsTab({
   onToggleDefault,
   onClearFilters,
   isDeletingAgent,
+  onPublishAgent,
+  publishingAgentId,
+  onStartChat,
 }: MyAgentsTabProps) {
   const [currentViewMode, setCurrentViewMode] = useState<ViewMode>(viewMode);
 
   const filteredAgents = useMemo(() => {
     if (!agents) return [];
     
-    return agents.filter((agent: any) =>
+    return agents.filter((agent) =>
       agent.name.toLowerCase().includes(agentsSearchQuery.toLowerCase()) ||
       agent.description?.toLowerCase().includes(agentsSearchQuery.toLowerCase())
     );
@@ -147,14 +152,18 @@ export function MyAgentsTab({
             ? "sm:grid-cols-2 lg:grid-cols-3" 
             : "grid-cols-1"
         )}>
-          {filteredAgents.map((agent: any) => (
+          {filteredAgents.map((agent) => (
             <AgentCard 
-              key={agent.agent_id} 
+              key={agent.id} 
               agent={agent} 
               onUpdate={() => {}} 
               onEdit={onEditAgent}
               onDelete={onDeleteAgent}
               onToggleDefault={onToggleDefault}
+              onPublish={onPublishAgent}
+              onStartChat={onStartChat}
+              isPublishing={publishingAgentId === agent.id}
+              isDeleting={isDeletingAgent}
             />
           ))}
         </div>

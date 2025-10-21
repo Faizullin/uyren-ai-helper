@@ -26,32 +26,13 @@ class AgentRun(SQLModel, table=True):
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     completed_at: datetime | None = None
     error_message: str | None = None
+    input_tokens: int | None = None
+    output_tokens: int | None = None
+    total_cost: float | None = None
+    model_used: str | None = None
     my_metadata: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
-class AgentRunPublic(SQLModel):
-    """Public agent run model."""
-
-    id: uuid.UUID
-    thread_id: uuid.UUID
-    agent_id: uuid.UUID
-    agent_version_id: uuid.UUID | None
-    status: str
-    started_at: datetime
-    completed_at: datetime | None
-    error_message: str | None
-    my_metadata: dict[str, Any] | None
-    created_at: datetime
-    updated_at: datetime
-
-
-class AgentRunsPublic(SQLModel):
-    """Public agent runs list model."""
-
-    data: list[AgentRunPublic]
-    count: int
-
-
-__all__ = ["AgentRun", "AgentRunPublic", "AgentRunsPublic"]
+__all__ = ["AgentRun"]

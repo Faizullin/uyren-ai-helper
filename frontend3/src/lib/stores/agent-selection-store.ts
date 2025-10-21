@@ -1,62 +1,145 @@
-'use client';
-
 import { create } from 'zustand';
-
-interface Agent {
-  agent_id: string;
-  name: string;
-  metadata?: {
-    is_suna_default?: boolean;
-    [key: string]: any;
-  };
-}
+import { persist } from 'zustand/middleware';
+import type { AgentPublic } from '@/client/types.gen';
 
 interface AgentSelectionState {
-  selectedAgentId: string | null;
-  setSelectedAgent: (agentId: string | null) => void;
-  initializeFromAgents: (agents: Agent[], defaultAgentId?: string, setSelectedAgent?: (id: string) => void) => void;
-  getCurrentAgent: (agents: Agent[]) => Agent | null;
+  selectedAgentId: string | undefined;
+  hasInitialized: boolean;
+  
+  setSelectedAgent: (agentId: string | undefined) => void;
+  initializeFromAgents: (
+    agents: AgentPublic[], 
+    threadAgentId?: string, 
+    onAgentSelect?: (agentId: string | undefined) => void
+  ) => void;
+  autoSelectAgent: (
+    agents: AgentPublic[], 
+    onAgentSelect?: (agentId: string | undefined) => void, 
+    currentSelectedAgentId?: string
+  ) => void;
+  clearSelection: () => void;
+  getCurrentAgent: (agents: AgentPublic[]) => AgentPublic | null;
+  isSunaAgent: (agents: AgentPublic[]) => boolean;
 }
 
-export const useAgentSelection = create<AgentSelectionState>((set, get) => ({
-  selectedAgentId: null,
+export const useAgentSelectionStore = create<AgentSelectionState>()(
+  persist(
+    (set, get) => ({
+      selectedAgentId: undefined,
+      hasInitialized: false,
 
-  setSelectedAgent: (agentId: string | null) => {
-    set({ selectedAgentId: agentId });
-  },
+      setSelectedAgent: (agentId: string | undefined) => {
+        set({ selectedAgentId: agentId });
+      },
 
-  initializeFromAgents: (agents: Agent[], defaultAgentId?: string, setSelectedAgent?: (id: string) => void) => {
-    const { selectedAgentId } = get();
-
-    // If no agent is selected, try to find a default one
-    if (!selectedAgentId) {
-      let defaultAgent: Agent | null = null;
-
-      if (defaultAgentId) {
-        defaultAgent = agents.find(agent => agent.agent_id === defaultAgentId) || null;
-      }
-
-      // If no specific default, try to find Suna default agent
-      if (!defaultAgent) {
-        defaultAgent = agents.find(agent => agent.metadata?.is_suna_default) || null;
-      }
-
-      // If still no default, use the first agent
-      if (!defaultAgent && agents.length > 0) {
-        defaultAgent = agents[0];
-      }
-
-      if (defaultAgent) {
-        set({ selectedAgentId: defaultAgent.agent_id });
-        if (setSelectedAgent) {
-          setSelectedAgent(defaultAgent.agent_id);
+      initializeFromAgents: (
+        agents: AgentPublic[], 
+        threadAgentId?: string, 
+        onAgentSelect?: (agentId: string | undefined) => void
+      ) => {
+        if (get().hasInitialized) {
+          return;
         }
-      }
-    }
-  },
 
-  getCurrentAgent: (agents: Agent[]) => {
-    const { selectedAgentId } = get();
-    return selectedAgentId ? agents.find(agent => agent.agent_id === selectedAgentId) || null : null;
-  },
-}));
+        let selectedId: string | undefined;
+
+        // Priority 1: Thread agent ID
+        if (threadAgentId) {
+          selectedId = threadAgentId;
+        } 
+        // Priority 2: URL parameter
+        else if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          const agentIdFromUrl = urlParams.get('agent_id');
+          if (agentIdFromUrl) {
+            selectedId = agentIdFromUrl;
+          }
+        }
+
+        // Priority 3: Previously selected agent (from storage)
+        if (!selectedId) {
+          const current = get().selectedAgentId;
+          if (current && agents.some(a => a.id === current)) {
+            selectedId = current;
+          } 
+          // Priority 4: Default agent
+          else if (agents.length > 0) {
+            const defaultAgent = agents.find(agent => agent.is_default);
+            selectedId = defaultAgent ? defaultAgent.id : agents[0].id;
+          }
+        }
+
+        if (selectedId) {
+          set({ selectedAgentId: selectedId });
+        }
+
+        if (selectedId && onAgentSelect) {
+          onAgentSelect(selectedId);
+        }
+
+        set({ hasInitialized: true });
+      },
+
+      autoSelectAgent: (
+        agents: AgentPublic[], 
+        onAgentSelect?: (agentId: string | undefined) => void, 
+        currentSelectedAgentId?: string
+      ) => {
+        if (agents.length === 0 || currentSelectedAgentId) {
+          return;
+        }
+        
+        const defaultAgent = agents.find(agent => agent.is_default);
+        const agentToSelect = defaultAgent || agents[0];
+        
+        if (agentToSelect) {
+          if (onAgentSelect) {
+            onAgentSelect(agentToSelect.id);
+          } else {
+            set({ selectedAgentId: agentToSelect.id });
+          }
+        }
+      },
+
+      clearSelection: () => {
+        set({ selectedAgentId: undefined, hasInitialized: false });
+      },
+
+      getCurrentAgent: (agents: AgentPublic[]) => {
+        const { selectedAgentId } = get();
+        return selectedAgentId 
+          ? agents.find(agent => agent.id === selectedAgentId) || null
+          : null;
+      },
+
+      isSunaAgent: (agents: AgentPublic[]) => {
+        const { selectedAgentId } = get();
+        const currentAgent = selectedAgentId 
+          ? agents.find(agent => agent.id === selectedAgentId)
+          : null;
+        return currentAgent?.is_default || selectedAgentId === undefined;
+      },
+    }),
+    {
+      name: 'agent-selection-storage',
+      partialize: (state) => ({ 
+        selectedAgentId: state.selectedAgentId 
+      }),
+    }
+  )
+);
+
+export const useAgentSelection = () => {
+  const store = useAgentSelectionStore();
+  
+  return {
+    selectedAgentId: store.selectedAgentId,
+    hasInitialized: store.hasInitialized,
+    setSelectedAgent: store.setSelectedAgent,
+    initializeFromAgents: store.initializeFromAgents,
+    autoSelectAgent: store.autoSelectAgent,
+    clearSelection: store.clearSelection,
+    getCurrentAgent: store.getCurrentAgent,
+    isSunaAgent: store.isSunaAgent,
+  };
+};

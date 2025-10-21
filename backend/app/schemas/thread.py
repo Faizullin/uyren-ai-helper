@@ -1,5 +1,8 @@
 """Thread Pydantic schemas."""
 
+import uuid
+from datetime import datetime
+
 from sqlmodel import SQLModel
 
 
@@ -16,3 +19,48 @@ class ThreadUpdate(SQLModel):
     title: str | None = None
     description: str | None = None
 
+
+class ThreadPublic(SQLModel):
+    """Public thread schema for API responses."""
+
+    id: uuid.UUID
+    title: str
+    description: str | None
+    owner_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class ThreadDetail(SQLModel):
+    """Detailed thread schema with full information."""
+
+    id: uuid.UUID
+    title: str
+    description: str | None
+    owner_id: uuid.UUID
+    created_at: datetime
+    updated_at: datetime
+
+
+class ThreadMessageCreate(SQLModel):
+    """Thread message creation schema."""
+
+    content: str
+    role: str = "user"
+
+
+class ThreadMessageUpdate(SQLModel):
+    """Thread message update schema."""
+
+    content: str | None = None
+
+
+class ThreadMessagePublic(SQLModel):
+    """Public thread message schema for API responses."""
+
+    id: uuid.UUID
+    thread_id: uuid.UUID
+    content: str
+    role: str
+    created_at: datetime
+    updated_at: datetime

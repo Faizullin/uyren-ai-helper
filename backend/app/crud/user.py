@@ -47,14 +47,12 @@ def create_user(session: Session, user_create: UserCreate) -> User:
     return user
 
 
-def update_user(
-    session: Session, user: User, user_update: UserUpdate
-) -> User:
+def update_user(session: Session, user: User, user_update: UserUpdate) -> User:
     """Update user."""
     update_data = user_update.model_dump(exclude_unset=True)
     if "password" in update_data and update_data["password"]:
         update_data["hashed_password"] = get_password_hash(update_data.pop("password"))
-    
+
     user.sqlmodel_update(update_data)
     session.add(user)
     session.commit()
@@ -76,4 +74,3 @@ def authenticate_user(session: Session, email: str, password: str) -> User | Non
     if not verify_password(password, user.hashed_password):
         return None
     return user
-
