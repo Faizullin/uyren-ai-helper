@@ -36,7 +36,6 @@ import {
 } from '@/lib/api';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/components/AuthProvider';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -47,10 +46,11 @@ import {
   useDirectoryQuery,
   useFileContentQuery,
   FileCache
-} from '@/hooks/react-query/files';
+} from '@/hooks/use-files';
 import JSZip from 'jszip';
 import { normalizeFilenameToNFC } from '@/lib/utils/unicode';
 import { TipTapDocumentModal } from './tiptap-document-modal';
+import { useAuth } from '../layout/auth-provider';
 
 // Define API_URL
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
@@ -77,6 +77,9 @@ export function FileViewerModal({
 
   // Auth for session token
   const { session } = useAuth();
+  
+  // Create FileCache instance
+  const fileCache = new FileCache();
 
   // File navigation state
   const [currentPath, setCurrentPath] = useState('/workspace');
@@ -142,7 +145,7 @@ export function FileViewerModal({
 
   // Add state for PDF export
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const markdownRef = useRef<HTMLDivElement>(null);
+  const markdownRef = useRef<HTMLDivElement | null>(null);
 
   // Add a ref to track active download URLs
   const activeDownloadUrls = useRef<Set<string>>(new Set());
@@ -253,7 +256,7 @@ export function FileViewerModal({
 
           // Check cache first
           const cacheKey = `${sandboxId}:${file.path}:${contentType}`;
-          let content = FileCache.get(cacheKey);
+          let content = fileCache.get(cacheKey);
 
           if (!content) {
             // Load from server if not cached
@@ -277,7 +280,7 @@ export function FileViewerModal({
             }
 
             // Cache the content
-            FileCache.set(cacheKey, content);
+            fileCache.set(cacheKey, content);
           }
 
           // Add to zip with proper structure
@@ -515,8 +518,8 @@ export function FileViewerModal({
       // Create cache key with detected content type
       const cacheKey = `${sandboxId}:${normalizedPath}:${detectedContentType}`;
 
-      if (FileCache.has(cacheKey)) {
-        const cachedContent = FileCache.get(cacheKey);
+      if (fileCache.has(cacheKey)) {
+        const cachedContent = fileCache.get(cacheKey);
         return { found: true, content: cachedContent, contentType: detectedContentType };
       }
 
@@ -812,7 +815,7 @@ export function FileViewerModal({
       const normalizedPath = normalizePath(selectedFilePath);
       const contentType = FileCache.getContentTypeFromPath(normalizedPath);
       const cacheKey = `${sandboxId}:${normalizedPath}:${contentType}`;
-      FileCache.delete(cacheKey);
+      fileCache.delete(cacheKey);
       
       // Re-open the file to reload content
       const fileName = selectedFilePath.split('/').pop() || '';
@@ -1449,7 +1452,7 @@ export function FileViewerModal({
                           const detectedContentType = FileCache.getContentTypeFromPath(normalizedPath);
 
                           // Check for cache with the correct content type
-                          const isCached = FileCache.has(`${sandboxId}:${normalizedPath}:${detectedContentType}`);
+                          const isCached = fileCache.has(`${sandboxId}:${normalizedPath}:${detectedContentType}`);
 
                           return isCached
                             ? "Using cached version"
@@ -1524,7 +1527,7 @@ export function FileViewerModal({
                         className="h-full w-full"
                         project={projectWithSandbox}
                         markdownRef={
-                          isMarkdownFile(selectedFilePath) ? markdownRef : undefined
+                          isMarkdownFile(selectedFilePath) ? (markdownRef as React.RefObject<HTMLDivElement>) : undefined
                         }
                         onDownload={handleDownload}
                         isDownloading={isDownloading}

@@ -65,7 +65,6 @@ class Model:
     capabilities: List[ModelCapability] = field(default_factory=list)
     pricing: Optional[ModelPricing] = None
     enabled: bool = True
-    beta: bool = False
     tier_availability: List[str] = field(default_factory=lambda: ["paid"])
     metadata: Dict[str, Any] = field(default_factory=dict)
     priority: int = 0
@@ -162,7 +161,6 @@ class Model:
                 "output_cost_per_million_tokens": self.pricing.output_cost_per_million_tokens,
             } if self.pricing else None,
             "enabled": self.enabled,
-            "beta": self.beta,
             "tier_availability": self.tier_availability,
             "metadata": self.metadata,
             "priority": self.priority,

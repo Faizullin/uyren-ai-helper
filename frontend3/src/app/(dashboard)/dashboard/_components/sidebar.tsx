@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Bot, MessageSquare, Home, Settings, LogOut } from 'lucide-react';
+import { Bot, MessageSquare, Home, Settings, LogOut, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
@@ -23,6 +23,11 @@ export function Sidebar() {
       title: 'Dashboard',
       href: '/dashboard',
       icon: Home,
+    },
+    {
+      title: 'Projects',
+      href: '/projects',
+      icon: FolderOpen,
     },
     {
       title: 'Agents',

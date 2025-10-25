@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { Bot, Menu, Home, MessageSquare, Settings, LogOut, BookOpen } from 'lucide-react';
+import { Bot, Menu, Home, MessageSquare, Settings, LogOut, BookOpen, FolderOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -90,6 +90,11 @@ export function SidebarLeft({
       title: 'Settings',
       href: '/settings',
       icon: Settings,
+    },
+    {
+      title: 'Projects',
+      href: '/projects',
+      icon: FolderOpen,
     },
   ];
 

@@ -50,7 +50,7 @@ class CreditTransaction(SQLModel, table=True):
     reference_id: str | None = Field(
         default=None, max_length=255
     )  # agent_run_id, thread_id, etc.
-    metadata: dict | None = Field(default=None, sa_column=Column(Text))
+    my_metadata: dict | None = Field(default=None, sa_column=Column(Text))
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc)
     )

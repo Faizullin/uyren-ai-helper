@@ -1,72 +1,34 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { createClient } from '@/lib/supabase/client';
+import { ApiKeysService } from '@/client';
+import type { 
+  ApiKeyCreate, 
+  ApiKeyGenerateResponse,
+  ListApiKeysResponse,
+  CreateApiKeyResponse,
+  DeleteApiKeyResponse,
+  GetApiKeyResponse,
+  UpdateApiKeyResponse
+} from '@/client/types.gen';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+// Re-export types for compatibility
+export type APIKeyCreateRequest = ApiKeyCreate;
+export type APIKeyCreateResponse = ApiKeyGenerateResponse;
+export type APIKeyResponse = ApiKeyGenerateResponse;
 
-// TODO: Replace with OpenAPI client when backend adds API keys endpoints
-// For now using direct fetch like frontend2
-
-export interface APIKeyResponse {
-  key_id: string;
-  public_key: string;
-  title: string;
-  description?: string;
-  status: 'active' | 'revoked' | 'expired';
-  expires_at?: string;
-  last_used_at?: string;
-  created_at: string;
-}
-
-export interface APIKeyCreateResponse {
-  key_id: string;
-  public_key: string;
-  secret_key: string;
-  title: string;
-  description?: string;
-  status: 'active' | 'revoked' | 'expired';
-  expires_at?: string;
-  created_at: string;
-}
-
-export interface APIKeyCreateRequest {
-  title: string;
-  description?: string;
-  expires_in_days?: number;
-}
-
-const getAuthHeaders = async () => {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  
-  if (!session?.access_token) {
-    throw new Error('No access token available');
-  }
-  
-  return {
-    'Authorization': `Bearer ${session.access_token}`,
-    'Content-Type': 'application/json',
-  };
-};
-
-export const apiKeysQueryKeys = {
+export const apiKeysQuery = {
   all: ['api-keys'] as const,
-  list: () => [...apiKeysQueryKeys.all, 'list'] as const,
-  key: (keyId: string) => [...apiKeysQueryKeys.all, 'key', keyId] as const,
+  list: () => [...apiKeysQuery.all, 'list'] as const,
+  key: (keyId: string) => [...apiKeysQuery.all, 'key', keyId] as const,
+  project: (projectId: string) => [...apiKeysQuery.all, 'project', projectId] as const,
 };
 
 export function useAPIKeys() {
   return useQuery({
-    queryKey: apiKeysQueryKeys.list(),
-    queryFn: async (): Promise<APIKeyResponse[]> => {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/v1/api-keys`, { headers });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch API keys');
-      }
-      
-      return await response.json();
+    queryKey: apiKeysQuery.list(),
+    queryFn: async (): Promise<ListApiKeysResponse> => {
+      const response = await ApiKeysService.list_api_keys();
+      return response.data!;
     },
   });
 }
@@ -75,23 +37,14 @@ export function useCreateAPIKey() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (data: APIKeyCreateRequest): Promise<APIKeyCreateResponse> => {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/v1/api-keys`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(data),
+    mutationFn: async (data: ApiKeyCreate): Promise<CreateApiKeyResponse> => {
+      const response = await ApiKeysService.create_api_key({
+        body: data,
       });
-      
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Failed to create API key');
-      }
-      
-      return await response.json();
+      return response.data!;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: apiKeysQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: apiKeysQuery.all });
       toast.success('API key created successfully');
     },
     onError: (error: any) => {
@@ -104,21 +57,15 @@ export function useRevokeAPIKey() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (keyId: string) => {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/v1/api-keys/${keyId}/revoke`, {
-        method: 'PATCH',
-        headers,
+    mutationFn: async (keyId: string): Promise<UpdateApiKeyResponse> => {
+      const response = await ApiKeysService.update_api_key({
+        path: { api_key_id: keyId },
+        body: { status: 'revoked' },
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to revoke API key');
-      }
-      
-      return await response.json();
+      return response.data!;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: apiKeysQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: apiKeysQuery.all });
       toast.success('API key revoked successfully');
     },
     onError: (error: any) => {
@@ -131,21 +78,14 @@ export function useDeleteAPIKey() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (keyId: string) => {
-      const headers = await getAuthHeaders();
-      const response = await fetch(`${API_URL}/api/v1/api-keys/${keyId}`, {
-        method: 'DELETE',
-        headers,
+    mutationFn: async (keyId: string): Promise<DeleteApiKeyResponse> => {
+      const response = await ApiKeysService.delete_api_key({
+        path: { api_key_id: keyId },
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete API key');
-      }
-      
-      return await response.json();
+      return response.data!;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: apiKeysQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: apiKeysQuery.all });
       toast.success('API key deleted successfully');
     },
     onError: (error: any) => {
@@ -154,3 +94,28 @@ export function useDeleteAPIKey() {
   });
 }
 
+export function useAPIKey(keyId: string) {
+  return useQuery({
+    queryKey: apiKeysQuery.key(keyId),
+    queryFn: async (): Promise<GetApiKeyResponse> => {
+      const response = await ApiKeysService.get_api_key({
+        path: { api_key_id: keyId },
+      });
+      return response.data!;
+    },
+    enabled: !!keyId,
+  });
+}
+
+export function useProjectAPIKeys(projectId: string) {
+  return useQuery({
+    queryKey: apiKeysQuery.project(projectId),
+    queryFn: async () => {
+      const response = await ApiKeysService.get_project_api_keys({
+        path: { project_id: projectId },
+      });
+      return response.data!;
+    },
+    enabled: !!projectId,
+  });
+}

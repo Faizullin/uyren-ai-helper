@@ -1,15 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { MessageSquare, Trash2, MoreVertical, ExternalLink } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ThreadPublic } from '@/client/types.gen';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,11 +11,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Thread, useDeleteThread } from '@/hooks/use-threads';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useDeleteThread } from '@/hooks/use-threads';
+import { ExternalLink, MessageSquare, MoreVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 interface ThreadCardProps {
-  thread: Thread;
+  thread: ThreadPublic;
   onUpdate?: () => void;
 }
 
@@ -33,12 +34,12 @@ export function ThreadCard({ thread, onUpdate }: ThreadCardProps) {
   const deleteThread = useDeleteThread();
 
   const handleDelete = async () => {
-    await deleteThread.mutateAsync(thread.thread_id);
+    await deleteThread.mutateAsync(thread.id);
     setShowDeleteDialog(false);
     onUpdate?.();
   };
 
-  const threadTitle = thread.metadata?.title || `Thread ${thread.thread_id.slice(0, 8)}`;
+  const threadTitle = thread.title || `Thread ${thread.id.slice(0, 8)}`;
 
   return (
     <>
@@ -57,13 +58,13 @@ export function ThreadCard({ thread, onUpdate }: ThreadCardProps) {
                 )}
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                ID: {thread.thread_id}
+                ID: {thread.id}
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Link href={`/dashboard/threads/${thread.thread_id}`}>
+            <Link href={`/dashboard/threads/${thread.id}`}>
               <Button variant="ghost" size="icon">
                 <ExternalLink className="h-4 w-4" />
               </Button>

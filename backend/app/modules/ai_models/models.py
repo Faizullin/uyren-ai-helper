@@ -62,8 +62,7 @@ class Model(BaseModel):
     name: str = Field(..., description="Human-readable model name")
     provider: ModelProvider = Field(..., description="Model provider")
     aliases: list[str] = Field(
-        default=[],
-        description="Alternative names/IDs for the model"
+        default=[], description="Alternative names/IDs for the model"
     )
     context_window: int = Field(
         default=128_000,
@@ -93,3 +92,7 @@ class Model(BaseModel):
         """Pydantic config."""
 
         use_enum_values = True
+
+    @property
+    def is_free_tier(self) -> bool:
+        return "free" in self.tier_availability

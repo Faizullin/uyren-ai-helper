@@ -64,7 +64,7 @@ class CreditService:
         description: str,
         transaction_type: str = "admin_grant",
         reference_id: str | None = None,
-        metadata: dict | None = None,
+        my_metadata: dict | None = None,
     ) -> tuple[Decimal, CreditTransaction]:
         """Add credits to a user's account."""
         if amount <= 0:
@@ -85,7 +85,7 @@ class CreditService:
             transaction_type=transaction_type,
             description=description,
             reference_id=reference_id,
-            metadata=json.dumps(metadata) if metadata else None,
+            metadata=json.dumps(my_metadata) if my_metadata else None,
         )
 
         session.add(transaction)
@@ -105,7 +105,7 @@ class CreditService:
         amount: Decimal,
         description: str,
         reference_id: str | None = None,
-        metadata: dict | None = None,
+        my_metadata: dict | None = None,
     ) -> dict:
         """Deduct credits from a user's account."""
         if amount <= 0:
@@ -135,7 +135,7 @@ class CreditService:
             transaction_type="usage",
             description=description,
             reference_id=reference_id,
-            metadata=json.dumps(metadata) if metadata else None,
+            metadata=json.dumps(my_metadata) if my_metadata else None,
         )
 
         session.add(transaction)

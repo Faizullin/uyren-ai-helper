@@ -1,35 +1,23 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState, useCallback, memo } from 'react';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger,
     DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuPortal,
+    DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Cpu, Search, Check, ChevronDown, Plus, ExternalLink, Loader2 } from 'lucide-react';
-import { useAgents } from '@/hooks/react-query/agents/use-agents';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
 import type { ModelOption } from '@/hooks/use-model-selection';
+import { Check, ChevronDown, Cpu, Loader2, Plus, Search } from 'lucide-react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-export type SubscriptionStatus = 'no_subscription' | 'active';
-
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { IntegrationsRegistry } from '@/components/agents/integrations-registry';
-import { useComposioToolkitIcon } from '@/hooks/react-query/composio/use-composio';
-import { Skeleton } from '@/components/ui/skeleton';
+import { AgentConfigurationDialog } from '@/components/agents/agent-configuration-dialog';
+import { AgentModelSelector } from '@/components/agents/config/model-selector';
 import { NewAgentDialog } from '@/components/agents/new-agent-dialog';
 import { AgentAvatar } from '@/components/thread/content/agent-avatar';
-import { AgentModelSelector } from '@/components/agents/config/model-selector';
-import { AgentConfigurationDialog } from '@/components/agents/agent-configuration-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAgents } from '@/hooks/use-agents';
 
 type UnifiedConfigMenuProps = {
     isLoggedIn?: boolean;
@@ -42,10 +30,7 @@ type UnifiedConfigMenuProps = {
     selectedModel: string;
     onModelChange: (modelId: string) => void;
     modelOptions: ModelOption[];
-    subscriptionStatus: SubscriptionStatus;
     canAccessModel: (modelId: string) => boolean;
-    refreshCustomModels?: () => void;
-    onUpgradeRequest?: () => void;
 };
 
 const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMenu({
@@ -56,8 +41,6 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMen
     onModelChange,
     modelOptions,
     canAccessModel,
-    subscriptionStatus,
-    onUpgradeRequest,
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -65,10 +48,9 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMen
     const [currentPage, setCurrentPage] = useState(1);
     const [allAgents, setAllAgents] = useState<any[]>([]);
     const searchContainerRef = useRef<HTMLDivElement>(null);
-    const [integrationsOpen, setIntegrationsOpen] = useState(false);
     const [showNewAgentDialog, setShowNewAgentDialog] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
-    const [agentConfigDialog, setAgentConfigDialog] = useState<{ open: boolean; tab: 'instructions' | 'knowledge' | 'triggers' | 'tools' | 'integrations' }>({ open: false, tab: 'instructions' });
+    const [agentConfigDialog, setAgentConfigDialog] = useState<{ open: boolean; tab: 'instructions' | 'knowledge' | 'triggers' | 'tools' }>({ open: false, tab: 'instructions' });
 
     // Debounce search query
     useEffect(() => {
@@ -90,13 +72,13 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMen
 
     // Update agents list when data changes
     useEffect(() => {
-        if (agentsResponse?.agents) {
+        if (agentsResponse?.data) {
             if (currentPage === 1 || debouncedSearchQuery) {
                 // First page or new search - replace all agents
-                setAllAgents(agentsResponse.agents);
+                setAllAgents(agentsResponse.data);
             } else {
                 // Subsequent pages - append to existing agents
-                setAllAgents(prev => [...prev, ...agentsResponse.agents]);
+                setAllAgents(prev => [...prev, ...agentsResponse.data]);
             }
         }
     }, [agentsResponse, currentPage, debouncedSearchQuery]);
@@ -105,11 +87,6 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMen
 
 
 
-    // Only fetch integration icons when authenticated AND the menu is open
-    const iconsEnabled = isLoggedIn && isOpen;
-    const { data: googleDriveIcon } = useComposioToolkitIcon('googledrive', { enabled: iconsEnabled });
-    const { data: slackIcon } = useComposioToolkitIcon('slack', { enabled: iconsEnabled });
-    const { data: notionIcon } = useComposioToolkitIcon('notion', { enabled: iconsEnabled });
 
     useEffect(() => {
         if (isOpen) {
@@ -147,7 +124,7 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMen
     // Check if we can load more
     const canLoadMore = useMemo(() => {
         if (!agentsResponse?.pagination) return false;
-        return agentsResponse.pagination.current_page < agentsResponse.pagination.total_pages;
+        return agentsResponse.pagination.page < agentsResponse.pagination.pages;
     }, [agentsResponse?.pagination]);
 
     const handleLoadMore = useCallback(() => {
@@ -330,61 +307,14 @@ const LoggedInMenu: React.FC<UnifiedConfigMenuProps> = memo(function LoggedInMen
                             >
                                 <span className="font-medium">Triggers</span>
                             </DropdownMenuItem>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <DropdownMenuItem
-                                            className="text-sm px-3 py-2 mx-0 my-0.5 flex items-center justify-between cursor-pointer rounded-lg"
-                                            onClick={() => setIntegrationsOpen(true)}
-                                        >
-                                            <span className="font-medium">Integrations</span>
-                                            <div className="flex items-center gap-1.5">
-                                                {googleDriveIcon?.icon_url && slackIcon?.icon_url && notionIcon?.icon_url ? (
-                                                    <>
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img src={googleDriveIcon.icon_url} className="w-4 h-4" alt="Google Drive" />
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img src={slackIcon.icon_url} className="w-3.5 h-3.5" alt="Slack" />
-                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                        <img src={notionIcon.icon_url} className="w-3.5 h-3.5" alt="Notion" />
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Skeleton className="w-4 h-4 rounded" />
-                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
-                                                        <Skeleton className="w-3.5 h-3.5 rounded" />
-                                                    </>
-                                                )}
-                                                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                                            </div>
-                                        </DropdownMenuItem>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="left" className="text-xs max-w-xs">
-                                        <p>Open integrations</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
                         </div>
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
-            <Dialog open={integrationsOpen} onOpenChange={setIntegrationsOpen}>
-                <DialogContent className="p-0 max-w-6xl h-[90vh] overflow-hidden">
-                    <DialogHeader className="sr-only">
-                        <DialogTitle>Integrations</DialogTitle>
-                    </DialogHeader>
-                    <IntegrationsRegistry
-                        showAgentSelector={true}
-                        selectedAgentId={selectedAgentId}
-                        onAgentChange={onAgentSelect}
-                        onClose={() => setIntegrationsOpen(false)}
-                    />
-                </DialogContent>
-            </Dialog>
-            <NewAgentDialog 
-                open={showNewAgentDialog} 
+            <NewAgentDialog
+                open={showNewAgentDialog}
                 onOpenChange={setShowNewAgentDialog}
-                onSuccess={(agentId) => {
+                onAgentCreated={(agentId: string) => {
                     setShowNewAgentDialog(false);
                     onAgentSelect?.(agentId);
                 }}
@@ -417,7 +347,9 @@ const GuestMenu: React.FC<UnifiedConfigMenuProps> = memo(function GuestMenu() {
                         >
                             <div className="flex items-center gap-2 min-w-0 max-w-[180px]">
                                 <div className="flex-shrink-0">
-                                    <KortixLogo size={20} />
+                                    <div className="w-5 h-5 bg-primary rounded flex items-center justify-center text-primary-foreground text-xs font-bold">
+                                        S
+                                    </div>
                                 </div>
                                 <span className="truncate text-sm font-medium">Suna</span>
                                 <ChevronDown size={12} className="opacity-60 flex-shrink-0" />

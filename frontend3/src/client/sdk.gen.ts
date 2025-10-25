@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { CreateAgentData, CreateAgentErrors, CreateAgentResponses, CreateKbFolderData, CreateKbFolderErrors, CreateKbFolderResponses, CreateThreadData, CreateThreadErrors, CreateThreadMessageData, CreateThreadMessageErrors, CreateThreadMessageResponses, CreateThreadResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteCurrentUserAccountData, DeleteCurrentUserAccountResponses, DeleteKbEntryData, DeleteKbEntryErrors, DeleteKbEntryResponses, DeleteKbFolderData, DeleteKbFolderErrors, DeleteKbFolderResponses, DeleteThreadData, DeleteThreadErrors, DeleteThreadMessageData, DeleteThreadMessageErrors, DeleteThreadMessageResponses, DeleteThreadResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DownloadKbEntryData, DownloadKbEntryErrors, DownloadKbEntryResponses, GenerateAgentIconData, GenerateAgentIconErrors, GenerateAgentIconResponses, GetAgentData, GetAgentErrors, GetAgentKbAssignmentsData, GetAgentKbAssignmentsErrors, GetAgentKbAssignmentsResponses, GetAgentResponses, GetAgentRunStatusData, GetAgentRunStatusErrors, GetAgentRunStatusResponses, GetCurrentUserProfileData, GetCurrentUserProfileResponses, GetKbEntryData, GetKbEntryErrors, GetKbEntryResponses, GetKbFolderData, GetKbFolderErrors, GetKbFolderResponses, GetKbStatsData, GetKbStatsResponses, GetThreadData, GetThreadErrors, GetThreadMessageData, GetThreadMessageErrors, GetThreadMessageResponses, GetThreadMessagesData, GetThreadMessagesErrors, GetThreadMessagesResponses, GetThreadResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, InitiateAgentSessionData, InitiateAgentSessionErrors, InitiateAgentSessionResponses, ListActiveAgentRunsData, ListActiveAgentRunsErrors, ListActiveAgentRunsResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListFolderEntriesData, ListFolderEntriesErrors, ListFolderEntriesResponses, ListKbFoldersData, ListKbFoldersErrors, ListKbFoldersResponses, ListThreadAgentRunsData, ListThreadAgentRunsErrors, ListThreadAgentRunsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListUserThreadsData, ListUserThreadsErrors, ListUserThreadsResponses, LoginAccessTokenData, LoginAccessTokenErrors, LoginAccessTokenResponses, LoginData, LoginErrors, LoginResponses, MoveKbEntryData, MoveKbEntryErrors, MoveKbEntryResponses, RegisterData, RegisterErrors, RegisterResponses, RetryAgentRunData, RetryAgentRunErrors, RetryAgentRunResponses, StartAgentRunData, StartAgentRunErrors, StartAgentRunResponses, StopAgentRunData, StopAgentRunErrors, StopAgentRunResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentKbAssignmentsData, UpdateAgentKbAssignmentsErrors, UpdateAgentKbAssignmentsResponses, UpdateAgentResponses, UpdateCurrentUserPasswordData, UpdateCurrentUserPasswordErrors, UpdateCurrentUserPasswordResponses, UpdateCurrentUserProfileData, UpdateCurrentUserProfileErrors, UpdateCurrentUserProfileResponses, UpdateKbEntryData, UpdateKbEntryErrors, UpdateKbEntryResponses, UpdateKbFolderData, UpdateKbFolderErrors, UpdateKbFolderResponses, UpdateThreadData, UpdateThreadErrors, UpdateThreadMessageData, UpdateThreadMessageErrors, UpdateThreadMessageResponses, UpdateThreadResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses, UploadFileToFolderData, UploadFileToFolderErrors, UploadFileToFolderResponses } from './types.gen';
+import type { AddCreditsData, AddCreditsErrors, AddCreditsResponses, CreateAgentData, CreateAgentErrors, CreateAgentResponses, CreateApiKeyData, CreateApiKeyErrors, CreateApiKeyResponses, CreateKbFolderData, CreateKbFolderErrors, CreateKbFolderResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateThreadData, CreateThreadErrors, CreateThreadMessageData, CreateThreadMessageErrors, CreateThreadMessageResponses, CreateThreadResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteApiKeyData, DeleteApiKeyErrors, DeleteApiKeyResponses, DeleteCurrentUserAccountData, DeleteCurrentUserAccountResponses, DeleteKbEntryData, DeleteKbEntryErrors, DeleteKbEntryResponses, DeleteKbFolderData, DeleteKbFolderErrors, DeleteKbFolderResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteThreadData, DeleteThreadErrors, DeleteThreadMessageData, DeleteThreadMessageErrors, DeleteThreadMessageResponses, DeleteThreadResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DownloadKbEntryData, DownloadKbEntryErrors, DownloadKbEntryResponses, GenerateAgentIconData, GenerateAgentIconErrors, GenerateAgentIconResponses, GetAccountSummaryData, GetAccountSummaryResponses, GetAgentData, GetAgentErrors, GetAgentKbAssignmentsData, GetAgentKbAssignmentsErrors, GetAgentKbAssignmentsResponses, GetAgentResponses, GetAgentRunStatusData, GetAgentRunStatusErrors, GetAgentRunStatusResponses, GetApiKeyData, GetApiKeyErrors, GetApiKeyResponses, GetAvailableModelsData, GetAvailableModelsResponses, GetCreditBalanceData, GetCreditBalanceResponses, GetCurrentUserProfileData, GetCurrentUserProfileResponses, GetKbEntryContentData, GetKbEntryContentErrors, GetKbEntryContentResponses, GetKbEntryData, GetKbEntryErrors, GetKbEntryResponses, GetKbFolderData, GetKbFolderErrors, GetKbFolderResponses, GetKbStatsData, GetKbStatsResponses, GetProjectApiKeysData, GetProjectApiKeysErrors, GetProjectApiKeysResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectStatsData, GetProjectStatsErrors, GetProjectStatsResponses, GetProjectThreadsData, GetProjectThreadsErrors, GetProjectThreadsResponses, GetThreadData, GetThreadErrors, GetThreadMessageData, GetThreadMessageErrors, GetThreadMessageResponses, GetThreadMessagesData, GetThreadMessagesErrors, GetThreadMessagesResponses, GetThreadResponses, GetTransactionsData, GetTransactionsErrors, GetTransactionsResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, InitiateAgentSessionData, InitiateAgentSessionErrors, InitiateAgentSessionResponses, ListActiveAgentRunsData, ListActiveAgentRunsErrors, ListActiveAgentRunsResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListApiKeysData, ListApiKeysErrors, ListApiKeysResponses, ListEduAiThreadsData, ListEduAiThreadsErrors, ListEduAiThreadsResponses, ListFolderEntriesData, ListFolderEntriesErrors, ListFolderEntriesResponses, ListKbFoldersData, ListKbFoldersErrors, ListKbFoldersResponses, ListThreadAgentRunsData, ListThreadAgentRunsErrors, ListThreadAgentRunsResponses, ListUserProjectsData, ListUserProjectsErrors, ListUserProjectsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginAccessTokenData, LoginAccessTokenErrors, LoginAccessTokenResponses, LoginData, LoginErrors, LoginResponses, MoveKbEntryData, MoveKbEntryErrors, MoveKbEntryResponses, RegisterData, RegisterErrors, RegisterResponses, RetryAgentRunData, RetryAgentRunErrors, RetryAgentRunResponses, StartAgentRunData, StartAgentRunErrors, StartAgentRunResponses, StartDemoEducationalTaskData, StartDemoEducationalTaskErrors, StartDemoEducationalTaskResponses, StopAgentRunData, StopAgentRunErrors, StopAgentRunResponses, StreamAgentRunData, StreamAgentRunErrors, StreamAgentRunResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentKbAssignmentsData, UpdateAgentKbAssignmentsErrors, UpdateAgentKbAssignmentsResponses, UpdateAgentResponses, UpdateApiKeyData, UpdateApiKeyErrors, UpdateApiKeyResponses, UpdateCurrentUserPasswordData, UpdateCurrentUserPasswordErrors, UpdateCurrentUserPasswordResponses, UpdateCurrentUserProfileData, UpdateCurrentUserProfileErrors, UpdateCurrentUserProfileResponses, UpdateKbEntryData, UpdateKbEntryErrors, UpdateKbEntryResponses, UpdateKbFolderData, UpdateKbFolderErrors, UpdateKbFolderResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateThreadData, UpdateThreadErrors, UpdateThreadMessageData, UpdateThreadMessageErrors, UpdateThreadMessageResponses, UpdateThreadResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses, UploadFileToFolderData, UploadFileToFolderErrors, UploadFileToFolderResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -313,14 +313,166 @@ export class AuthService {
     }
 }
 
-export class ThreadsService {
+export class ProjectsService {
     /**
-     * List User Threads
+     * List User Projects
      *
-     * Get all threads for current user with pagination.
+     * List projects owned by the user, optionally including public projects.
      */
-    public static list_user_threads<ThrowOnError extends boolean = false>(options?: Options<ListUserThreadsData, ThrowOnError>) {
-        return (options?.client ?? client).get<ListUserThreadsResponses, ListUserThreadsErrors, ThrowOnError>({
+    public static list_user_projects<ThrowOnError extends boolean = false>(options?: Options<ListUserProjectsData, ThrowOnError>) {
+        return (options?.client ?? client).get<ListUserProjectsResponses, ListUserProjectsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Project
+     *
+     * Create a new project.
+     */
+    public static create_project<ThrowOnError extends boolean = false>(options: Options<CreateProjectData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateProjectResponses, CreateProjectErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Project
+     *
+     * Delete a project and all associated threads.
+     */
+    public static delete_project<ThrowOnError extends boolean = false>(options: Options<DeleteProjectData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteProjectResponses, DeleteProjectErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Project
+     *
+     * Get a specific project by ID.
+     */
+    public static get_project<ThrowOnError extends boolean = false>(options: Options<GetProjectData, ThrowOnError>) {
+        return (options.client ?? client).get<GetProjectResponses, GetProjectErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Project
+     *
+     * Update an existing project.
+     */
+    public static update_project<ThrowOnError extends boolean = false>(options: Options<UpdateProjectData, ThrowOnError>) {
+        return (options.client ?? client).put<UpdateProjectResponses, UpdateProjectErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Get Project Threads
+     *
+     * Get all threads belonging to a specific project.
+     */
+    public static get_project_threads<ThrowOnError extends boolean = false>(options: Options<GetProjectThreadsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetProjectThreadsResponses, GetProjectThreadsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}/threads',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Project Statistics
+     *
+     * Get statistics for a project.
+     */
+    public static get_project_stats<ThrowOnError extends boolean = false>(options: Options<GetProjectStatsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetProjectStatsResponses, GetProjectStatsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}/stats',
+            ...options
+        });
+    }
+}
+
+export class EduAiService {
+    /**
+     * List Educational AI Threads
+     *
+     * Get threads for educational AI module filtered by project.
+     *
+     * This endpoint returns threads for a specific project with target_type "edu_ai_task".
+     *
+     * Args:
+     * project_id: Required project ID to filter threads
+     * pagination: Standard pagination parameters
+     *
+     * Returns:
+     * Paginated list of edu_ai_task threads for the project
+     */
+    public static list_edu_ai_threads<ThrowOnError extends boolean = false>(options: Options<ListEduAiThreadsData, ThrowOnError>) {
+        return (options.client ?? client).get<ListEduAiThreadsResponses, ListEduAiThreadsErrors, ThrowOnError>({
             responseType: 'json',
             security: [
                 {
@@ -333,6 +485,71 @@ export class ThreadsService {
         });
     }
     
+    /**
+     * Start Demo Educational Task
+     *
+     * Start a demo educational AI processing task in the background.
+     *
+     * This endpoint follows the agent_runs pattern:
+     * 1. User and project validation
+     * 2. Creates Thread and AgentRun records for tracking
+     * 3. Registers in Redis for distributed tracking
+     * 4. Triggers background task with dramatiq
+     * 5. Returns run information for monitoring
+     *
+     * Args:
+     * project_id: The project ID for context
+     * task_name: Optional name for the demo task
+     *
+     * Returns:
+     * Task information and status
+     */
+    public static start_demo_educational_task<ThrowOnError extends boolean = false>(options: Options<StartDemoEducationalTaskData, ThrowOnError>) {
+        return (options.client ?? client).post<StartDemoEducationalTaskResponses, StartDemoEducationalTaskErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/demo/start',
+            ...options
+        });
+    }
+}
+
+export class EduAiThreadsService {
+    /**
+     * List Educational AI Threads
+     *
+     * Get threads for educational AI module filtered by project.
+     *
+     * This endpoint returns threads for a specific project with target_type "edu_ai_task".
+     *
+     * Args:
+     * project_id: Required project ID to filter threads
+     * pagination: Standard pagination parameters
+     *
+     * Returns:
+     * Paginated list of edu_ai_task threads for the project
+     */
+    public static list_edu_ai_threads<ThrowOnError extends boolean = false>(options: Options<ListEduAiThreadsData, ThrowOnError>) {
+        return (options.client ?? client).get<ListEduAiThreadsResponses, ListEduAiThreadsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/threads',
+            ...options
+        });
+    }
+}
+
+export class ThreadsService {
     /**
      * Create Thread
      *
@@ -803,6 +1020,152 @@ export class AgentRunsService {
             ...options
         });
     }
+    
+    /**
+     * Stream Agent Run
+     *
+     * Stream the responses of an agent run using Redis Lists and Pub/Sub.
+     *
+     * This endpoint provides real-time streaming of agent run updates using Server-Sent Events (SSE).
+     * It follows the same pattern as the backend_suna streaming implementation.
+     */
+    public static stream_agent_run<ThrowOnError extends boolean = false>(options: Options<StreamAgentRunData, ThrowOnError>) {
+        return (options.client ?? client).get<StreamAgentRunResponses, StreamAgentRunErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/agent-run/{agent_run_id}/stream',
+            ...options
+        });
+    }
+}
+
+export class ApiKeysService {
+    /**
+     * List API Keys
+     *
+     * List user's API keys, optionally filtered by project.
+     */
+    public static list_api_keys<ThrowOnError extends boolean = false>(options?: Options<ListApiKeysData, ThrowOnError>) {
+        return (options?.client ?? client).get<ListApiKeysResponses, ListApiKeysErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/api-keys',
+            ...options
+        });
+    }
+    
+    /**
+     * Create API Key
+     *
+     * Create a new API key.
+     */
+    public static create_api_key<ThrowOnError extends boolean = false>(options: Options<CreateApiKeyData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateApiKeyResponses, CreateApiKeyErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/api-keys',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete API Key
+     *
+     * Delete an API key.
+     */
+    public static delete_api_key<ThrowOnError extends boolean = false>(options: Options<DeleteApiKeyData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteApiKeyResponses, DeleteApiKeyErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/api-keys/{api_key_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Get API Key
+     *
+     * Get a specific API key by ID.
+     */
+    public static get_api_key<ThrowOnError extends boolean = false>(options: Options<GetApiKeyData, ThrowOnError>) {
+        return (options.client ?? client).get<GetApiKeyResponses, GetApiKeyErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/api-keys/{api_key_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update API Key
+     *
+     * Update an existing API key.
+     */
+    public static update_api_key<ThrowOnError extends boolean = false>(options: Options<UpdateApiKeyData, ThrowOnError>) {
+        return (options.client ?? client).put<UpdateApiKeyResponses, UpdateApiKeyErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/api-keys/{api_key_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Get Project API Keys
+     *
+     * Get all API keys for a specific project.
+     */
+    public static get_project_api_keys<ThrowOnError extends boolean = false>(options: Options<GetProjectApiKeysData, ThrowOnError>) {
+        return (options.client ?? client).get<GetProjectApiKeysResponses, GetProjectApiKeysErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}/api-keys',
+            ...options
+        });
+    }
 }
 
 export class KnowledgeBaseService {
@@ -1033,6 +1396,25 @@ export class KnowledgeBaseService {
     }
     
     /**
+     * Get Knowledge Base Entry Content
+     *
+     * Get knowledge base entry file content.
+     */
+    public static get_kb_entry_content<ThrowOnError extends boolean = false>(options: Options<GetKbEntryContentData, ThrowOnError>) {
+        return (options.client ?? client).get<GetKbEntryContentResponses, GetKbEntryContentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/knowledge-base/entries/{entry_id}/content',
+            ...options
+        });
+    }
+    
+    /**
      * Move Entry to Another Folder
      *
      * Move a file to a different folder.
@@ -1112,6 +1494,145 @@ export class KnowledgeBaseService {
                 }
             ],
             url: '/api/v1/knowledge-base/stats',
+            ...options
+        });
+    }
+}
+
+export class BillingService {
+    /**
+     * Get Credit Balance
+     *
+     * Get the current credit balance for the authenticated user.
+     */
+    public static get_credit_balance<ThrowOnError extends boolean = false>(options?: Options<GetCreditBalanceData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetCreditBalanceResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/billing/balance',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Account Summary
+     *
+     * Get a detailed summary of the user's credit account.
+     */
+    public static get_account_summary<ThrowOnError extends boolean = false>(options?: Options<GetAccountSummaryData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetAccountSummaryResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/billing/summary',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Transaction History
+     *
+     * Get transaction history for the authenticated user.
+     */
+    public static get_transactions<ThrowOnError extends boolean = false>(options?: Options<GetTransactionsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetTransactionsResponses, GetTransactionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/billing/transactions',
+            ...options
+        });
+    }
+    
+    /**
+     * Add Credits (Admin)
+     *
+     * Add credits to the current user's account.
+     *
+     * Note: In a production system, this would be restricted to admin users only.
+     * For now, users can add credits to their own account for testing.
+     */
+    public static add_credits<ThrowOnError extends boolean = false>(options: Options<AddCreditsData, ThrowOnError>) {
+        return (options.client ?? client).post<AddCreditsResponses, AddCreditsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/billing/credits/add',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Get Available AI Models
+     *
+     * Get list of available AI models with pricing information.
+     */
+    public static get_available_models<ThrowOnError extends boolean = false>(options?: Options<GetAvailableModelsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetAvailableModelsResponses, unknown, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/billing/available-models',
+            ...options
+        });
+    }
+}
+
+export class DemoTasksService {
+    /**
+     * Start Demo Educational Task
+     *
+     * Start a demo educational AI processing task in the background.
+     *
+     * This endpoint follows the agent_runs pattern:
+     * 1. User and project validation
+     * 2. Creates Thread and AgentRun records for tracking
+     * 3. Registers in Redis for distributed tracking
+     * 4. Triggers background task with dramatiq
+     * 5. Returns run information for monitoring
+     *
+     * Args:
+     * project_id: The project ID for context
+     * task_name: Optional name for the demo task
+     *
+     * Returns:
+     * Task information and status
+     */
+    public static start_demo_educational_task<ThrowOnError extends boolean = false>(options: Options<StartDemoEducationalTaskData, ThrowOnError>) {
+        return (options.client ?? client).post<StartDemoEducationalTaskResponses, StartDemoEducationalTaskErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/demo/start',
             ...options
         });
     }

@@ -1,18 +1,18 @@
 'use client';
 
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { ChatInput, ChatInputHandles } from './chat-input';
-import { SunaModesPanel } from './modes-panel';
-import { StatsOverview } from './stats-overview';
-import { cn } from '@/lib/utils';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useAgentSelection } from '@/lib/stores/agent-selection-store';
+import { ChatInput, ChatInputHandles } from '@/components/thread/chat-input/chat-input';
 import { useAgents } from '@/hooks/use-agents';
 import { useDashboardTour } from '@/hooks/use-dashboard-tour';
 import { useInitiateAgentMutation } from '@/hooks/use-initiate-agent';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useThread } from '@/hooks/use-threads';
+import { useAgentSelectionStore } from '@/lib/stores/agent-selection-store';
+import { cn } from '@/lib/utils';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { SunaModesPanel } from './modes-panel';
+
 
 const PENDING_PROMPT_KEY = 'pendingAgentPrompt';
 
@@ -49,20 +49,21 @@ export function DashboardContent() {
   const [viewMode, setViewMode] = useState<'super-worker' | 'worker-templates'>('super-worker');
   const [selectedCharts, setSelectedCharts] = useState<string[]>([]);
   const [selectedOutputFormat, setSelectedOutputFormat] = useState<string | null>(null);
-  
+
   const chatInputRef = useRef<ChatInputHandles>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
   const [initiatedThreadId, setInitiatedThreadId] = useState<string | null>(null);
-  
+
   const {
     selectedAgentId,
     setSelectedAgent,
     initializeFromAgents,
-    getCurrentAgent
-  } = useAgentSelection();
-  
+    getCurrentAgent,
+    isSunaAgent
+  } = useAgentSelectionStore();
+
   const { data: agents } = useAgents();
   const initiateAgentMutation = useInitiateAgentMutation();
   const threadQuery = useThread(initiatedThreadId || '');
@@ -79,11 +80,9 @@ export function DashboardContent() {
   } = useDashboardTour();
 
   const agentsList = agents?.data || [];
-  const selectedAgent = selectedAgentId
-    ? agentsList.find((agent: any) => agent.id === selectedAgentId)
-    : null;
+  const selectedAgent = getCurrentAgent(agentsList);
   const displayName = selectedAgent?.name || 'AI Helper';
-  const isSunaAgent = selectedAgent?.is_default || false;
+  const isSunaAgentSelected = isSunaAgent(agentsList);
 
   // Initialize agents when they're loaded
   useEffect(() => {
@@ -206,8 +205,13 @@ export function DashboardContent() {
     if (threadQuery.data && initiatedThreadId) {
       const thread = threadQuery.data;
       setIsRedirecting(true);
-      // Navigate to the appropriate thread route
-      router.push(`/agents/threads/${initiatedThreadId}`);
+
+      if (thread.project_id) {
+        router.push(`/projects/${thread.project_id}/threads/${initiatedThreadId}`);
+      } else {
+        router.push(`/agents/threads/${initiatedThreadId}`);
+      }
+
       setInitiatedThreadId(null);
     }
   }, [threadQuery.data, initiatedThreadId, router]);
@@ -219,6 +223,14 @@ export function DashboardContent() {
   const handleSelectPrompt = (prompt: string) => {
     setInputValue(prompt);
   };
+
+  // Reset data selections when mode changes
+  useEffect(() => {
+    if (selectedMode !== 'data') {
+      setSelectedCharts([]);
+      setSelectedOutputFormat(null);
+    }
+  }, [selectedMode]);
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden">
@@ -285,19 +297,22 @@ export function DashboardContent() {
                         placeholder="Describe what you need help with..."
                         value={inputValue}
                         onChange={setInputValue}
+                        hideAttachments={false}
                         selectedAgentId={selectedAgentId || undefined}
                         onAgentSelect={(agentId) => setSelectedAgent(agentId || undefined)}
                         enableAdvancedConfig={false}
                         selectedMode={selectedMode}
                         onModeDeselect={() => setSelectedMode(null)}
                         animatePlaceholder={true}
+                        selectedCharts={selectedCharts}
+                        selectedOutputFormat={selectedOutputFormat}
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Modes Panel - Below chat input */}
-                {isSunaAgent && (
+                {isSunaAgentSelected && (
                   <div className="px-4 pb-8" data-tour="examples">
                     <div className="max-w-3xl mx-auto">
                       <SunaModesPanel
@@ -316,7 +331,7 @@ export function DashboardContent() {
               </div>
             )}
 
-            {/* Worker Templates View */}
+            {/* Worker Templates View - Simplified without templates */}
             {viewMode === 'worker-templates' && (
               <div className="w-full animate-in fade-in-0 duration-300">
                 <div className="w-full px-4 pb-8" data-tour="custom-agents">
@@ -324,21 +339,15 @@ export function DashboardContent() {
                     <div className="text-center py-8">
                       <h2 className="text-2xl font-semibold mb-4">Worker Templates</h2>
                       <p className="text-muted-foreground">
-                        Configure and install AI workers from templates
+                        Worker templates feature coming soon
                       </p>
                     </div>
-                    {/* Custom agents section would go here */}
                   </div>
                 </div>
               </div>
             )}
           </div>
         </div>
-      </div>
-
-      {/* Stats Overview - Compact display */}
-      <div className="px-4 pb-8">
-        <StatsOverview />
       </div>
     </div>
   );

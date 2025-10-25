@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
+// import { AnimatedShinyText } from '@/components/ui/animated-shiny-text';
 
 const items = [
     { id: 1, content: "Initializing neural pathways..." },
@@ -50,7 +50,7 @@ export const AgentLoader = () => {
               transition={{ ease: "easeInOut", duration: 0.3 }}
               className="absolute left-0 top-0"
           >
-              <AnimatedShinyText className='text-xs whitespace-nowrap'>{items[index].content}</AnimatedShinyText>
+              {/* <AnimatedShinyText className='text-xs whitespace-nowrap'>{items[index].content}</AnimatedShinyText> */}
           </motion.div>
         </AnimatePresence>
       </div>

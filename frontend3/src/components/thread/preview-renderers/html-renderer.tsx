@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Code, Monitor, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { constructHtmlPreviewUrl } from '@/lib/utils/url';
 import type { Project } from '@/lib/api';
+import { constructHtmlPreviewUrl } from '@/lib/utils/url';
 
 interface HtmlRendererProps {
     content: string;

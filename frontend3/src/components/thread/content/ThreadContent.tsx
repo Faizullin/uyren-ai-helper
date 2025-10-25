@@ -1,25 +1,31 @@
-import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
-import { CircleDashed, CheckCircle, AlertTriangle } from 'lucide-react';
-import { UnifiedMessage, ParsedContent, ParsedMetadata } from '@/components/thread/types';
+import { useAuth } from '@/components/layout/auth-provider';
 import { FileAttachmentGrid } from '@/components/thread/file-attachment';
-import { useFilePreloader } from '@/hooks/react-query/files';
-import { useAuth } from '@/components/AuthProvider';
-import { Project } from '@/lib/api';
+import { isNewXmlFormat, parseXmlToolCalls } from '@/components/thread/tool-views/xml-parser';
+import { ParsedContent, ParsedMetadata, UnifiedMessage } from '@/components/thread/types';
 import {
     extractPrimaryParam,
     getToolIcon,
     getUserFriendlyToolName,
+    HIDE_STREAMING_XML_TAGS,
     safeJsonParse,
 } from '@/components/thread/utils';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
-import { AgentLoader } from './loader';
+import { Project } from '@/lib/api';
+import { CircleDashed } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgentAvatar, AgentName } from './agent-avatar';
-import { parseXmlToolCalls, isNewXmlFormat } from '@/components/thread/tool-views/xml-parser';
-import { ShowToolStream } from './ShowToolStream';
 import { ComposioUrlDetector } from './composio-url-detector';
+import { AgentLoader } from './loader';
+import { ShowToolStream } from './ShowToolStream';
 import { StreamingText } from './StreamingText';
-import { HIDE_STREAMING_XML_TAGS } from '@/components/thread/utils';
-import { useAgentsFromCache } from '@/hooks/react-query/agents/use-agents';
+
+
+
+// Simple placeholder for KortixLogo
+const KortixLogo = ({ size }: { size: number }) => (
+    <div className="w-4 h-4 bg-primary rounded flex items-center justify-center text-white text-xs font-bold">
+        K
+    </div>
+);
 
 
 // Helper function to render all attachments as standalone messages
@@ -131,11 +137,13 @@ export function renderMarkdownContent(
 
         // Find all function_calls blocks
         const functionCallsRegex = /<function_calls>([\s\S]*?)<\/function_calls>/gi;
-        let match: RegExpExecArray | null = null;
+        let match: RegExpExecArray | null = null
 
         while ((match = functionCallsRegex.exec(content)) !== null) {
+            if (!match) continue;
+            
             // Add text before the function_calls block
-            if (match.index > lastIndex) {
+            if (match.index && match.index > lastIndex) {
                 const textBeforeBlock = content.substring(lastIndex, match.index);
                 if (textBeforeBlock.trim()) {
                     contentParts.push(
@@ -161,7 +169,7 @@ export function renderMarkdownContent(
 
                     // Render ask tool content with attachment UI
                     contentParts.push(
-                        <div key={`ask-${match.index}-${index}`} className="space-y-3">
+                        <div key={`ask-${match!.index || 0}-${index}`} className="space-y-3">
                             <ComposioUrlDetector content={askText} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3" />
                             {renderAttachments(attachmentArray, fileViewerHandler, sandboxId, project)}
                         </div>
@@ -171,7 +179,7 @@ export function renderMarkdownContent(
                     const standaloneAttachments = renderStandaloneAttachments(attachmentArray, fileViewerHandler, sandboxId, project);
                     if (standaloneAttachments) {
                         contentParts.push(
-                            <div key={`ask-func-attachments-${match.index}-${index}`}>
+                            <div key={`ask-func-attachments-${match!.index || 0}-${index}`}>
                                 {standaloneAttachments}
                             </div>
                         );
@@ -187,7 +195,7 @@ export function renderMarkdownContent(
 
                     // Render complete tool content with attachment UI
                     contentParts.push(
-                        <div key={`complete-${match.index}-${index}`} className="space-y-3">
+                        <div key={`complete-${match!.index || 0}-${index}`} className="space-y-3">
                             <ComposioUrlDetector content={completeText} className="text-sm prose prose-sm dark:prose-invert chat-markdown max-w-none break-words [&>:first-child]:mt-0 prose-headings:mt-3" />
                             {renderAttachments(attachmentArray, fileViewerHandler, sandboxId, project)}
                         </div>
@@ -197,7 +205,7 @@ export function renderMarkdownContent(
                     const standaloneAttachments = renderStandaloneAttachments(attachmentArray, fileViewerHandler, sandboxId, project);
                     if (standaloneAttachments) {
                         contentParts.push(
-                            <div key={`complete-func-attachments-${match.index}-${index}`}>
+                            <div key={`complete-func-attachments-${match!.index || 0}-${index}`}>
                                 {standaloneAttachments}
                             </div>
                         );
@@ -219,7 +227,7 @@ export function renderMarkdownContent(
 
                     contentParts.push(
                         <div
-                            key={`tool-${match.index}-${index}`}
+                            key={`tool-${match!.index || 0}-${index}`}
                             className="my-1"
                         >
                             <button
@@ -237,7 +245,7 @@ export function renderMarkdownContent(
                 }
             });
 
-            lastIndex = match.index + match[0].length;
+            lastIndex = (match.index || 0) + match[0].length;
         }
 
         // Add any remaining text after the last function_calls block
@@ -437,11 +445,14 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
         return Array.from(ids);
     }, [messages]);
 
-    // Get agents from cache (doesn't fetch, just reads from existing cache)
-    const agentsMap = useAgentsFromCache(agentIds);
+    // Simple agents map - empty for now
+    const agentsMap = new Map<string, any>();
 
-    // React Query file preloader
-    const { preloadFiles } = useFilePreloader();
+    // Simple file preloader - no-op for now
+    const preloadFiles = useCallback(async (sandboxId: string, attachments: string[]) => {
+        // No-op implementation
+        console.log('Preloading files:', sandboxId, attachments);
+    }, []);
 
     const containerClassName = isPreviewMode
         ? "flex-1 overflow-y-auto scrollbar-thin scrollbar-track-secondary/0 scrollbar-thumb-primary/10 scrollbar-thumb-rounded-full hover:scrollbar-thumb-primary/10 py-4 pb-0"
@@ -780,7 +791,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                             try {
                                                 const parsed = safeJsonParse<ParsedContent>(message.content, { content: message.content });
                                                 const content = parsed.content || message.content;
-                                                
+
                                                 // Handle array content (multi-modal messages with images)
                                                 if (Array.isArray(content)) {
                                                     // Extract text parts from array content
@@ -789,7 +800,7 @@ export const ThreadContent: React.FC<ThreadContentProps> = ({
                                                         .map((item: any) => typeof item === 'string' ? item : item.text || '')
                                                         .join('\n');
                                                 }
-                                                
+
                                                 // Ensure we always return a string
                                                 return typeof content === 'string' ? content : JSON.stringify(content || '');
                                             } catch {

@@ -68,6 +68,10 @@ class AgentStartResponse(SQLModel):
     """Response schema for starting an agent."""
 
     agent_run_id: uuid.UUID
+    thread_id: uuid.UUID | None = None
+    project_id: uuid.UUID | None = None
+    model_name: str | None = None
+    agent_name: str | None = None
     status: str = "running"
 
 
@@ -76,6 +80,9 @@ class InitiateAgentResponse(SQLModel):
 
     thread_id: uuid.UUID
     agent_run_id: uuid.UUID
+    project_id: uuid.UUID | None = None
+    model_name: str | None = None
+    agent_name: str | None = None
     message: str = "Agent session initiated successfully"
 
 

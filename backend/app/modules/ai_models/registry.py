@@ -10,13 +10,13 @@ from .models import (
     ModelProvider,
 )
 
-FREE_MODEL_ID = "moonshotai/kimi-k2"
+FREE_MODEL_ID = "gemini/gemini-2.5-flash"
 
-# Set premium model ID based on environment
+# Set premium model ID to OpenAI GPT-5
 if settings.ENVIRONMENT == "local":
-    PREMIUM_MODEL_ID = "anthropic/claude-sonnet-4-20250514"
+    PREMIUM_MODEL_ID = "openai/gpt-5"
 else:  # STAGING or PRODUCTION
-    PREMIUM_MODEL_ID = "bedrock/anthropic.claude-sonnet-4-20250514-v1:0"
+    PREMIUM_MODEL_ID = "openai/gpt-5"
 
 is_local = settings.ENVIRONMENT == "local"
 
@@ -162,6 +162,7 @@ class ModelRegistry:
             )
         )
 
+        # GPT-5 - Premium Tier Model
         self.register(
             Model(
                 id="openai/gpt-5",
@@ -180,7 +181,8 @@ class ModelRegistry:
                     output_cost_per_million_tokens=10.00,
                 ),
                 tier_availability=["paid"],
-                priority=97,
+                priority=99,
+                recommended=True,
                 enabled=True,
             )
         )
@@ -207,6 +209,32 @@ class ModelRegistry:
             )
         )
 
+        # Gemini 2.5 Flash - Free Tier Model
+        self.register(
+            Model(
+                id="gemini/gemini-2.5-flash",
+                name="Gemini 2.5 Flash",
+                provider=ModelProvider.GOOGLE,
+                aliases=["gemini-2.5-flash", "Gemini 2.5 Flash", "gemini-flash"],
+                context_window=1_000_000,
+                capabilities=[
+                    ModelCapability.CHAT,
+                    ModelCapability.FUNCTION_CALLING,
+                    ModelCapability.VISION,
+                    ModelCapability.STRUCTURED_OUTPUT,
+                ],
+                pricing=ModelPricing(
+                    input_cost_per_million_tokens=0.075,
+                    output_cost_per_million_tokens=0.30,
+                ),
+                tier_availability=["free", "paid"],
+                priority=98,
+                recommended=True,
+                enabled=True,
+            )
+        )
+
+        # Gemini 2.5 Pro - Premium Tier Model
         self.register(
             Model(
                 id="gemini/gemini-2.5-pro",

@@ -1,28 +1,15 @@
-version: '3.8'
-
 services:
   redis:
-    image: redis
+    image: redis:latest
     container_name: uyren-ai-helper-redis-dev
     restart: unless-stopped
-    volumes:
-      - redis_data:/data
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=
-      - REDIS_DB=0
+    # volumes:
+    #   - redis_data:/data
     ports:
       - "6379:6379"
     networks:
       - uyren-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    command: redis-server --appendonly yes
-
+      
   backend:
     build:
       context: .
@@ -30,49 +17,37 @@ services:
     container_name: uyren-ai-helper-backend-dev
     restart: unless-stopped
     depends_on:
-      redis:
-        condition: service_healthy
+      - redis
     volumes:
       - ./app:/app/app
       - ./scripts:/app/scripts
       - storage_data:/app/storage
     env_file:
       - .env
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-      - REDIS_PASSWORD=
-      - REDIS_DB=0
     ports:
       - "8000:8000"
     networks:
       - uyren-network
     command: fastapi dev --host 0.0.0.0 --port 8000 app/main.py
 
-  # worker:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile
-  #   container_name: uyren-ai-helper-worker-dev
-  #   restart: unless-stopped
-  #   depends_on:
-  #     redis:
-  #       condition: service_healthy
-  #   volumes:
-  #     - ./app:/app/app
-  #     - ./worker.py:/app/worker.py
-  #     - ./scripts:/app/scripts
-  #     - storage_data:/app/storage
-  #   env_file:
-  #     - .env
-  #   environment:
-  #     - REDIS_HOST=redis
-  #     - REDIS_PORT=6379
-  #     - REDIS_PASSWORD=
-  #     - REDIS_DB=0
-  #   networks:
-  #     - uyren-network
-  #   command: dramatiq worker --processes 2 --threads 4
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uyren-ai-helper-worker-dev
+    restart: unless-stopped
+    depends_on:
+      - redis
+    volumes:
+      - ./app:/app/app
+      - ./worker.py:/app/worker.py
+      - ./scripts:/app/scripts
+      - storage_data:/app/storage
+    env_file:
+      - .env
+    networks:
+      - uyren-network
+    command: dramatiq worker
 
 networks:
   uyren-network:

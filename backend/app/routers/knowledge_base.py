@@ -1,9 +1,10 @@
 """Knowledge Base routes."""
 
+import urllib.parse
 import uuid
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from app.core.db import SessionDep
 from app.core.logger import logger
@@ -484,6 +485,49 @@ async def download_entry(
     except Exception as e:
         logger.error(f"Error downloading entry: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to download entry")
+
+
+@router.get(
+    "/knowledge-base/entries/{entry_id}/content",
+    summary="Get Knowledge Base Entry Content",
+    operation_id="get_kb_entry_content",
+)
+async def get_entry_content(
+    entry_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Response:
+    """Get knowledge base entry file content."""
+    try:
+        entry = kb_crud.get_entry_by_id(session, entry_id, current_user.id)
+        if not entry:
+            raise HTTPException(status_code=404, detail="Entry not found")
+
+        # Read file from storage
+        try:
+            content = await storage_service.read_file(entry.file_path)
+        except Exception as e:
+            raise HTTPException(
+                status_code=404, detail=f"Failed to read file: {str(e)}"
+            )
+
+        # Return content directly with proper encoding
+        filename = entry.filename
+        encoded_filename = urllib.parse.quote(filename, safe="")
+        content_disposition = f"attachment; filename*=UTF-8''{encoded_filename}"
+
+        return Response(
+            content=content,
+            media_type="application/octet-stream",
+            headers={
+                "Content-Disposition": content_disposition,
+                "Content-Length": str(entry.file_size),
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete(

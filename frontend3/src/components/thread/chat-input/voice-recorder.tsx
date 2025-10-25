@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useTranscription } from '@/hooks/react-query/transcription/use-transcription';
+// import { useTranscription } from '@/hooks/react-query/transcription/use-transcription';
 
 interface VoiceRecorderProps {
     onTranscription: (text: string) => void;
@@ -27,7 +27,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     const recordingStartTimeRef = useRef<number | null>(null);
     const maxTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const transcriptionMutation = useTranscription();
+    // const transcriptionMutation = useTranscription();
 
     // Auto-stop recording after 15 minutes
     useEffect(() => {
@@ -79,16 +79,16 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
                 const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
                 const audioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
 
-                transcriptionMutation.mutate(audioFile, {
-                    onSuccess: (data) => {
-                        onTranscription(data.text);
-                        setState('idle');
-                    },
-                    onError: (error) => {
-                        console.error('Transcription failed:', error);
-                        setState('idle');
-                    },
-                });
+                // transcriptionMutation.mutate(audioFile, {
+                //     onSuccess: (data) => {
+                //         onTranscription(data.text);
+                //         setState('idle');
+                //     },
+                //     onError: (error) => {
+                //         console.error('Transcription failed:', error);
+                //         setState('idle');
+                //     },
+                // });
 
                 cleanupStream();
             };

@@ -20,6 +20,9 @@ class APIKey(SQLModel, table=True):
     owner_id: uuid.UUID = Field(
         foreign_key="user.id", nullable=False, ondelete="CASCADE", index=True
     )
+    project_id: uuid.UUID | None = Field(
+        default=None, foreign_key="projects.id", ondelete="CASCADE", index=True
+    )
 
     title: str = Field(max_length=255)  # Friendly name
     description: str | None = None

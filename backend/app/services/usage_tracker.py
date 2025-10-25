@@ -70,7 +70,7 @@ class UsageTracker:
             amount=Decimal(str(cost)),
             description=description,
             reference_id=str(agent_run.id),
-            metadata={
+            my_metadata={
                 "agent_run_id": str(agent_run.id),
                 "thread_id": str(agent_run.thread_id),
                 "model_id": model_id,

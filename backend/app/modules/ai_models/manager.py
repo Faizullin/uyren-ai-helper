@@ -66,10 +66,9 @@ class ModelManager:
         return {
             "id": model.id,
             "name": model.name,
-            "provider": model.provider.value,
+            "provider": model.provider,
             "context_window": model.context_window,
-            "max_output_tokens": model.max_output_tokens,
-            "capabilities": [cap.value for cap in model.capabilities],
+            "capabilities": model.capabilities,
             "pricing": {
                 "input_per_million": model.pricing.input_cost_per_million_tokens,
                 "output_per_million": model.pricing.output_cost_per_million_tokens,
@@ -77,7 +76,6 @@ class ModelManager:
             if model.pricing
             else None,
             "enabled": model.enabled,
-            "beta": model.beta,
             "tier_availability": model.tier_availability,
             "priority": model.priority,
             "recommended": model.recommended,
@@ -104,7 +102,7 @@ class ModelManager:
 
         return [self.format_model_info(m.id) for m in models]
 
-    async def get_default_model_for_user(self, client, user_id: str) -> str:
+    async def get_default_model_for_user(self, client = None, user_id: str = None) -> str:
         try:
             if settings.ENVIRONMENT == "local":
                 return PREMIUM_MODEL_ID
@@ -331,10 +329,10 @@ class ModelManager:
         return {
             "id": model.id,
             "name": model.name,
-            "provider": model.provider.value,
+            "provider": model.provider,
             "aliases": model.aliases,
             "context_window": model.context_window,
-            "capabilities": [cap.value for cap in model.capabilities],
+            "capabilities": model.capabilities,
             "pricing": (
                 {
                     "input_cost_per_million_tokens": model.pricing.input_cost_per_million_tokens,
@@ -449,7 +447,7 @@ class ModelManager:
                 "valid": False,
                 "reason": "Model missing required capabilities",
                 "model_id": model_id,
-                "missing_capabilities": [cap.value for cap in missing_capabilities],
+                "missing_capabilities": missing_capabilities,
             }
 
         return {

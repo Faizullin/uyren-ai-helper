@@ -1,15 +1,14 @@
 'use client';
 
-import React from 'react';
-import { useAgentFromCache } from '@/hooks/react-query/agents/use-agents';
-import { KortixLogo } from '@/components/sidebar/kortix-logo';
-import { DynamicIcon } from 'lucide-react/dynamic';
+import { AgentPublic } from '@/client';
+import { useAgentFromCache } from '@/hooks/use-agents';
 import { cn } from '@/lib/utils';
-import type { Agent } from '@/hooks/react-query/agents/utils';
+import { DynamicIcon } from 'lucide-react/dynamic';
+import React from 'react';
 
 interface AgentAvatarProps {
   // For passing agent data directly (preferred - no fetch)
-  agent?: Agent;
+  agent?: AgentPublic;
   
   // For fetching agent by ID (will use cache if available)
   agentId?: string;
@@ -53,7 +52,6 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
   const iconColor = propIconColor ?? agent?.icon_color ?? '#000000';
   const backgroundColor = propBackgroundColor ?? agent?.icon_background ?? '#F3F4F6';
   const agentName = propAgentName ?? agent?.name ?? fallbackName;
-  const isSuna = propIsSunaDefault ?? agent?.metadata?.is_suna_default;
 
   // Calculate responsive border radius - proportional to size
   // Use a ratio that prevents full rounding while maintaining nice corners
@@ -68,20 +66,6 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
         className={cn("bg-muted animate-pulse border", className)}
         style={{ width: size, height: size, ...borderRadiusStyle }}
       />
-    );
-  }
-
-  if (isSuna) {
-    return (
-      <div 
-        className={cn(
-          "flex items-center justify-center bg-muted border",
-          className
-        )}
-        style={{ width: size, height: size, ...borderRadiusStyle }}
-      >
-        <KortixLogo size={size * 0.6} />
-      </div>
     );
   }
 
@@ -127,7 +111,7 @@ export const AgentAvatar: React.FC<AgentAvatarProps> = ({
 };
 
 interface AgentNameProps {
-  agent?: Agent;
+  agent?: AgentPublic;
   agentId?: string;
   fallback?: string;
 }

@@ -44,11 +44,20 @@ import {
   type APIKeyCreateRequest,
   type APIKeyCreateResponse,
 } from '@/hooks/use-api-keys';
+import { useProjects } from '@/hooks/use-projects';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface NewAPIKeyData {
   title: string;
   description: string;
   expiresInDays: string;
+  projectId: string;
 }
 
 export default function APIKeysPage() {
@@ -57,11 +66,13 @@ export default function APIKeysPage() {
     title: '',
     description: '',
     expiresInDays: 'never',
+    projectId: 'global',
   });
   const [createdApiKey, setCreatedApiKey] = useState<APIKeyCreateResponse | null>(null);
   const [showCreatedKey, setShowCreatedKey] = useState(false);
 
-  const { data: apiKeys = [], isLoading, error } = useAPIKeys();
+  const apiKeysQuery = useAPIKeys();
+  const { data: projectsData } = useProjects();
   const createMutation = useCreateAPIKey();
   const revokeMutation = useRevokeAPIKey();
   const deleteMutation = useDeleteAPIKey();
@@ -70,10 +81,11 @@ export default function APIKeysPage() {
     const request: APIKeyCreateRequest = {
       title: newKeyData.title.trim(),
       description: newKeyData.description.trim() || undefined,
-      expires_in_days:
-        newKeyData.expiresInDays && newKeyData.expiresInDays !== 'never'
-          ? parseInt(newKeyData.expiresInDays)
-          : undefined,
+      // expires_in_days:
+      //   newKeyData.expiresInDays && newKeyData.expiresInDays !== 'never'
+      //     ? parseInt(newKeyData.expiresInDays)
+      //     : undefined,
+      project_id: newKeyData.projectId === 'global' ? undefined : newKeyData.projectId || undefined,
     };
 
     try {
@@ -81,7 +93,7 @@ export default function APIKeysPage() {
       setCreatedApiKey(result);
       setShowCreatedKey(true);
       setIsCreateDialogOpen(false);
-      setNewKeyData({ title: '', description: '', expiresInDays: 'never' });
+      setNewKeyData({ title: '', description: '', expiresInDays: 'never', projectId: 'global' });
     } catch (error) {
       // Error already handled by mutation
     }
@@ -248,6 +260,33 @@ export default function APIKeysPage() {
                 </div>
 
                 <div>
+                  <Label htmlFor="project" className="m-1">
+                    Project (Optional)
+                  </Label>
+                  <Select
+                    value={newKeyData.projectId}
+                    onValueChange={(value) =>
+                      setNewKeyData((prev) => ({
+                        ...prev,
+                        projectId: value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a project (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="global">No project (Global API key)</SelectItem>
+                      {projectsData?.data?.map((project) => (
+                        <SelectItem key={project.id} value={`${project.id}`}>
+                          {project.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
                   <Label htmlFor="expires" className="m-1">
                     Expires In
                   </Label>
@@ -289,7 +328,7 @@ export default function APIKeysPage() {
         </div>
 
         {/* API Keys List */}
-        {isLoading ? (
+        {apiKeysQuery.isLoading ? (
           <div className="grid gap-4">
             {[1, 2, 3].map((i) => (
               <Card key={i} className="animate-pulse">
@@ -303,7 +342,7 @@ export default function APIKeysPage() {
               </Card>
             ))}
           </div>
-        ) : error ? (
+        ) : apiKeysQuery.error ? (
           <Card>
             <CardContent className="p-6 text-center">
               <p className="text-muted-foreground">
@@ -311,7 +350,7 @@ export default function APIKeysPage() {
               </p>
             </CardContent>
           </Card>
-        ) : apiKeys.length === 0 ? (
+        ) : apiKeysQuery.data?.data.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center">
               <Key className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -328,10 +367,10 @@ export default function APIKeysPage() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {apiKeys.map((apiKey) => (
+            {apiKeysQuery.data?.data.map((apiKey) => (
               <Card
-                key={apiKey.key_id}
-                className={isKeyExpired(apiKey.expires_at) ? 'border-yellow-200' : ''}
+                key={apiKey.id}
+                className={isKeyExpired(apiKey.expires_at?.toString()) ? 'border-yellow-200' : ''}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -412,7 +451,7 @@ export default function APIKeysPage() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => revokeMutation.mutate(apiKey.key_id)}
+                              onClick={() => revokeMutation.mutate(apiKey.id)}
                               className="bg-destructive hover:bg-destructive/90 text-white"
                             >
                               Revoke Key
@@ -443,7 +482,7 @@ export default function APIKeysPage() {
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
                             <AlertDialogAction
-                              onClick={() => deleteMutation.mutate(apiKey.key_id)}
+                              onClick={() => deleteMutation.mutate(apiKey.id)}
                               className="bg-destructive hover:bg-destructive/90 text-white"
                             >
                               Delete Key

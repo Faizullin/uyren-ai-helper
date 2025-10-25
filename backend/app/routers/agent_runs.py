@@ -1,10 +1,13 @@
 """Agent run routes."""
 
+import asyncio
+import json
 import uuid
 from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlmodel import Session, func, select
 
 from app.core import redis
@@ -200,17 +203,19 @@ async def start_agent(
             logger.warning(f"Failed to register in Redis: {e}")
 
         # 7. Dispatch background task for agent execution
-        from app.tasks.agent_tasks import execute_agent_run
-
-        execute_agent_run.send(
-            agent_run_id=str(agent_run.id),
-            thread_id=str(thread.id),
-            model_name=effective_model,
-        )
+        # agent_tasks.execute_agent_run.send(
+        #     agent_run_id=str(agent_run.id),
+        #     thread_id=str(thread.id),
+        #     model_name=effective_model,
+        # )
         logger.info(f"Dispatched background task for agent run {agent_run.id}")
 
         return AgentStartResponse(
             agent_run_id=agent_run.id,
+            thread_id=thread.id,
+            project_id=thread.project_id,
+            model_name=effective_model,
+            agent_name=agent_data.name if agent_data else None,
             status="running",
         )
 
@@ -244,12 +249,11 @@ async def initiate_agent_with_files(
         f"Initiating new agent with prompt and {len(files)} files, model: {model_name}"
     )
 
-    # 1. Resolve model name
-    logger.debug(f"Original model_name from request: {model_name}")
-
     if model_name is None:
         # Use tier-based default model from registry
-        model_name = await model_manager.get_default_model_for_user(current_user.id)
+        model_name = await model_manager.get_default_model_for_user(
+            user_id=current_user.id
+        )
         logger.debug(f"Using tier-based default model: {model_name}")
 
     # Log the model name after alias resolution
@@ -437,18 +441,19 @@ async def initiate_agent_with_files(
             )
 
         # 11. Dispatch background task for agent execution
-        from app.tasks.agent_tasks import execute_agent_run
-
-        execute_agent_run.send(
-            agent_run_id=str(agent_run.id),
-            thread_id=str(thread.id),
-            model_name=effective_model,
-        )
+        # execute_agent_run.send(
+        #     agent_run_id=str(agent_run.id),
+        #     thread_id=str(thread.id),
+        #     model_name=effective_model,
+        # )
         logger.info(f"Dispatched background task for agent run {agent_run.id}")
 
         return InitiateAgentResponse(
             thread_id=thread.id,
             agent_run_id=agent_run.id,
+            project_id=project.id if project else None,
+            model_name=effective_model,
+            agent_name=agent_data.name if agent_data else None,
             message=f"Agent session initiated successfully. Thread: {thread.id}",
         )
 
@@ -556,7 +561,9 @@ async def get_thread_agent_runs(
     results, total = paginate_query(session, query, count_query, pagination)
     agent_runs = [AgentRunPublic.model_validate(run) for run in results]
 
-    logger.debug(f"Found {len(agent_runs)} agent runs for thread: {thread_id} (total: {total})")
+    logger.debug(
+        f"Found {len(agent_runs)} agent runs for thread: {thread_id} (total: {total})"
+    )
 
     return create_paginated_response(agent_runs, pagination, total)
 
@@ -684,14 +691,199 @@ async def retry_agent(
         logger.warning(f"Failed to register in Redis: {e}")
 
     # Dispatch background task
-    from app.tasks.agent_tasks import execute_agent_run
-
-    model_name = (agent_run.my_metadata or {}).get("model_name", "gpt-4")
-    execute_agent_run.send(
-        agent_run_id=str(new_agent_run.id),
-        thread_id=str(agent_run.thread_id),
-        model_name=model_name,
-    )
+    # model_name = (agent_run.my_metadata or {}).get("model_name", "gpt-4")
+    # execute_agent_run.send(
+    #     agent_run_id=str(new_agent_run.id),
+    #     thread_id=str(agent_run.thread_id),
+    #     model_name=model_name,
+    # )
     logger.info(f"Dispatched retry background task for agent run {new_agent_run.id}")
 
     return AgentRetryResponse(message="Agent run retry initiated successfully")
+
+
+@router.get(
+    "/agent-run/{agent_run_id}/stream",
+    summary="Stream Agent Run",
+    operation_id="stream_agent_run",
+)
+async def stream_agent_run(
+    agent_run_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> StreamingResponse:
+    """
+    Stream the responses of an agent run using Redis Lists and Pub/Sub.
+
+    This endpoint provides real-time streaming of agent run updates using Server-Sent Events (SSE).
+    It follows the same pattern as the backend_suna streaming implementation.
+    """
+    logger.debug(f"Starting stream for agent run: {agent_run_id}")
+
+    # Get agent run with access check
+    agent_run = await _get_agent_run_with_access_check(session, agent_run_id, current_user)
+
+    # Redis keys for this agent run
+    response_list_key = f"agent_run:{agent_run_id}:responses"
+    response_channel = f"agent_run:{agent_run_id}:new_response"
+    control_channel = f"agent_run:{agent_run_id}:control"
+
+    async def stream_generator():
+        logger.debug(
+            f"Streaming responses for {agent_run_id} using Redis list {response_list_key} and channel {response_channel}"
+        )
+        last_processed_index = -1
+        terminate_stream = False
+        initial_yield_complete = False
+        listener_task = None
+
+        try:
+            # 1. Fetch and yield initial responses from Redis list
+            redis_client = await redis.get_client()
+            initial_responses_json = await redis_client.lrange(response_list_key, 0, -1)
+            initial_responses = []
+            if initial_responses_json:
+                initial_responses = [json.loads(r) for r in initial_responses_json]
+                logger.debug(f"Sending {len(initial_responses)} initial responses for {agent_run_id}")
+                for response in initial_responses:
+                    yield f"data: {json.dumps(response)}\n\n"
+                last_processed_index = len(initial_responses) - 1
+            initial_yield_complete = True
+
+            # 2. Check run status
+            current_status = agent_run.status
+
+            if current_status != AgentRunStatus.RUNNING:
+                logger.debug(f"Agent run {agent_run_id} is not running (status: {current_status}). Ending stream.")
+                yield f"data: {json.dumps({'type': 'status', 'status': 'completed'})}\n\n"
+                return
+
+            # 3. Use Pub/Sub for live updates
+            pubsub = redis_client.pubsub()
+            await pubsub.subscribe(response_channel, control_channel)
+            logger.debug(f"Subscribed to channels: {response_channel}, {control_channel}")
+
+            # Queue to communicate between listeners and the main generator loop
+            message_queue = asyncio.Queue()
+
+            async def listen_messages():
+                listener = pubsub.listen()
+                task = asyncio.create_task(listener.__anext__())
+
+                while not terminate_stream:
+                    done, _ = await asyncio.wait([task], return_when=asyncio.FIRST_COMPLETED)
+                    for finished in done:
+                        try:
+                            message = finished.result()
+                            if message and isinstance(message, dict) and message.get("type") == "message":
+                                channel = message.get("channel")
+                                data = message.get("data")
+                                if isinstance(data, bytes):
+                                    data = data.decode('utf-8')
+
+                                if channel == response_channel and data == "new":
+                                    await message_queue.put({"type": "new_response"})
+                                elif channel == control_channel and data in ["STOP", "END_STREAM", "ERROR"]:
+                                    logger.debug(f"Received control signal '{data}' for {agent_run_id}")
+                                    await message_queue.put({"type": "control", "data": data})
+                                    return  # Stop listening on control signal
+
+                        except StopAsyncIteration:
+                            logger.warning(f"Listener stopped for {agent_run_id}.")
+                            await message_queue.put({"type": "error", "data": "Listener stopped unexpectedly"})
+                            return
+                        except Exception as e:
+                            logger.error(f"Error in listener for {agent_run_id}: {e}")
+                            await message_queue.put({"type": "error", "data": "Listener failed"})
+                            return
+                        finally:
+                            # Resubscribe to the next message if continuing
+                            if not terminate_stream:
+                                task = asyncio.create_task(listener.__anext__())
+
+            listener_task = asyncio.create_task(listen_messages())
+
+            # 4. Main loop to process messages from the queue
+            while not terminate_stream:
+                try:
+                    queue_item = await message_queue.get()
+
+                    if queue_item["type"] == "new_response":
+                        # Fetch new responses from Redis list starting after the last processed index
+                        new_start_index = last_processed_index + 1
+                        new_responses_json = await redis_client.lrange(response_list_key, new_start_index, -1)
+
+                        if new_responses_json:
+                            new_responses = [json.loads(r) for r in new_responses_json]
+                            num_new = len(new_responses)
+                            for response in new_responses:
+                                yield f"data: {json.dumps(response)}\n\n"
+                                # Check if this response signals completion
+                                if response.get('type') == 'status' and response.get('status') in ['completed', 'failed', 'stopped']:
+                                    logger.debug(f"Detected run completion via status message in stream: {response.get('status')}")
+                                    terminate_stream = True
+                                    break  # Stop processing further new responses
+                            last_processed_index += num_new
+                        if terminate_stream:
+                            break
+
+                    elif queue_item["type"] == "control":
+                        control_signal = queue_item["data"]
+                        terminate_stream = True  # Stop the stream on any control signal
+                        yield f"data: {json.dumps({'type': 'status', 'status': control_signal})}\n\n"
+                        break
+
+                    elif queue_item["type"] == "error":
+                        logger.error(f"Listener error for {agent_run_id}: {queue_item['data']}")
+                        terminate_stream = True
+                        yield f"data: {json.dumps({'type': 'status', 'status': 'error'})}\n\n"
+                        break
+
+                except asyncio.CancelledError:
+                    logger.debug(f"Stream generator main loop cancelled for {agent_run_id}")
+                    terminate_stream = True
+                    break
+                except Exception as loop_err:
+                    logger.error(f"Error in stream generator main loop for {agent_run_id}: {loop_err}", exc_info=True)
+                    terminate_stream = True
+                    yield f"data: {json.dumps({'type': 'status', 'status': 'error', 'message': f'Stream failed: {loop_err}'})}\n\n"
+                    break
+
+        except Exception as e:
+            logger.error(f"Error setting up stream for agent run {agent_run_id}: {e}", exc_info=True)
+            # Only yield error if initial yield didn't happen
+            if not initial_yield_complete:
+                yield f"data: {json.dumps({'type': 'status', 'status': 'error', 'message': f'Failed to start stream: {e}'})}\n\n"
+        finally:
+            terminate_stream = True
+            # Graceful shutdown order: unsubscribe → close → cancel
+            try:
+                if 'pubsub' in locals() and pubsub:
+                    await pubsub.unsubscribe(response_channel, control_channel)
+                    await pubsub.close()
+            except Exception as e:
+                logger.debug(f"Error during pubsub cleanup for {agent_run_id}: {e}")
+
+            if listener_task:
+                listener_task.cancel()
+                try:
+                    await listener_task  # Reap inner tasks & swallow their errors
+                except asyncio.CancelledError:
+                    pass
+                except Exception as e:
+                    logger.debug(f"listener_task ended with: {e}")
+            # Wait briefly for tasks to cancel
+            await asyncio.sleep(0.1)
+            logger.debug(f"Streaming cleanup complete for agent run: {agent_run_id}")
+
+    return StreamingResponse(
+        stream_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+            "Content-Type": "text/event-stream",
+            "Access-Control-Allow-Origin": "*"
+        }
+    )

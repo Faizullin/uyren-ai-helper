@@ -11,6 +11,7 @@ class ThreadCreate(SQLModel):
 
     title: str
     description: str | None = None
+    target_type: str | None = None
 
 
 class ThreadUpdate(SQLModel):
@@ -18,6 +19,7 @@ class ThreadUpdate(SQLModel):
 
     title: str | None = None
     description: str | None = None
+    target_type: str | None = None
 
 
 class ThreadPublic(SQLModel):
@@ -26,7 +28,9 @@ class ThreadPublic(SQLModel):
     id: uuid.UUID
     title: str
     description: str | None
+    target_type: str | None
     owner_id: uuid.UUID
+    project_id: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
 
@@ -37,7 +41,9 @@ class ThreadDetail(SQLModel):
     id: uuid.UUID
     title: str
     description: str | None
+    target_type: str | None
     owner_id: uuid.UUID
+    project_id: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
 

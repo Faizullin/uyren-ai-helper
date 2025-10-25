@@ -5,6 +5,218 @@ export type ClientOptions = {
 };
 
 /**
+ * APIKeyCreate
+ *
+ * API key creation schema.
+ */
+export type ApiKeyCreate = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Project Id
+     */
+    project_id?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+};
+
+/**
+ * APIKeyDetail
+ *
+ * Detailed API key schema with full information.
+ */
+export type ApiKeyDetail = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Public Key
+     */
+    public_key: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Project Id
+     */
+    project_id: string | null;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * APIKeyGenerateResponse
+ *
+ * Response schema for API key generation.
+ */
+export type ApiKeyGenerateResponse = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Public Key
+     */
+    public_key: string;
+    /**
+     * Secret Key
+     */
+    secret_key: string;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Project Id
+     */
+    project_id: string | null;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * APIKeyPublic
+ *
+ * Public API key schema for API responses.
+ */
+export type ApiKeyPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Public Key
+     */
+    public_key: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Project Id
+     */
+    project_id: string | null;
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Expires At
+     */
+    expires_at: string | null;
+    /**
+     * Last Used At
+     */
+    last_used_at: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * APIKeyUpdate
+ *
+ * API key update schema.
+ */
+export type ApiKeyUpdate = {
+    /**
+     * Title
+     */
+    title?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Project Id
+     */
+    project_id?: string | null;
+    /**
+     * Status
+     */
+    status?: string | null;
+    /**
+     * Expires At
+     */
+    expires_at?: string | null;
+};
+
+/**
+ * AddCreditsRequest
+ *
+ * Request to add credits to an account.
+ */
+export type AddCreditsRequest = {
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Description
+     */
+    description: string;
+};
+
+/**
  * AgentCreate
  *
  * Agent creation schema.
@@ -389,6 +601,22 @@ export type AgentStartResponse = {
      */
     agent_run_id: string;
     /**
+     * Thread Id
+     */
+    thread_id?: string | null;
+    /**
+     * Project Id
+     */
+    project_id?: string | null;
+    /**
+     * Model Name
+     */
+    model_name?: string | null;
+    /**
+     * Agent Name
+     */
+    agent_name?: string | null;
+    /**
      * Status
      */
     status?: string;
@@ -455,6 +683,22 @@ export type AgentUpdate = {
 };
 
 /**
+ * AvailableModelsResponse
+ *
+ * Available models response schema.
+ */
+export type AvailableModelsResponse = {
+    /**
+     * Models
+     */
+    models: Array<ModelInfo>;
+    /**
+     * Total
+     */
+    total: number;
+};
+
+/**
  * Body_initiate_agent_session
  */
 export type BodyInitiateAgentSession = {
@@ -514,6 +758,118 @@ export type BodyUploadFileToFolder = {
      * File
      */
     file: Blob | File;
+};
+
+/**
+ * CreditAccountSummary
+ *
+ * Credit account summary schema.
+ */
+export type CreditAccountSummary = {
+    /**
+     * Balance
+     */
+    balance: number;
+    /**
+     * Lifetime Granted
+     */
+    lifetime_granted: number;
+    /**
+     * Lifetime Used
+     */
+    lifetime_used: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * CreditBalanceResponse
+ *
+ * Credit balance response schema.
+ */
+export type CreditBalanceResponse = {
+    /**
+     * Balance
+     */
+    balance: number;
+    /**
+     * Lifetime Granted
+     */
+    lifetime_granted: number;
+    /**
+     * Lifetime Used
+     */
+    lifetime_used: number;
+};
+
+/**
+ * CreditTransactionPublic
+ *
+ * Public credit transaction schema.
+ */
+export type CreditTransactionPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * User Id
+     */
+    user_id: string;
+    /**
+     * Amount
+     */
+    amount: number;
+    /**
+     * Balance After
+     */
+    balance_after: number;
+    /**
+     * Transaction Type
+     */
+    transaction_type: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Reference Id
+     */
+    reference_id: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * CreditTransactionsResponse
+ *
+ * Credit transactions list response.
+ */
+export type CreditTransactionsResponse = {
+    /**
+     * Transactions
+     */
+    transactions: Array<CreditTransactionPublic>;
+    /**
+     * Total
+     */
+    total: number;
+    /**
+     * Limit
+     */
+    limit: number;
+    /**
+     * Offset
+     */
+    offset: number;
 };
 
 /**
@@ -588,6 +944,18 @@ export type InitiateAgentResponse = {
      * Agent Run Id
      */
     agent_run_id: string;
+    /**
+     * Project Id
+     */
+    project_id?: string | null;
+    /**
+     * Model Name
+     */
+    model_name?: string | null;
+    /**
+     * Agent Name
+     */
+    agent_name?: string | null;
     /**
      * Message
      */
@@ -795,6 +1163,57 @@ export type Message = {
 };
 
 /**
+ * ModelInfo
+ *
+ * AI model information schema.
+ */
+export type ModelInfo = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Input Cost Per Million
+     */
+    input_cost_per_million: number;
+    /**
+     * Output Cost Per Million
+     */
+    output_cost_per_million: number;
+    /**
+     * Context Window
+     */
+    context_window: number;
+    /**
+     * Supports Vision
+     */
+    supports_vision?: boolean;
+    /**
+     * Supports Function Calling
+     */
+    supports_function_calling?: boolean;
+};
+
+/**
+ * PaginatedResponse[APIKeyPublic]
+ */
+export type PaginatedResponseApiKeyPublic = {
+    /**
+     * Data
+     */
+    data: Array<ApiKeyPublic>;
+    pagination?: PaginationMeta | null;
+};
+
+/**
  * PaginatedResponse[AgentPublic]
  */
 export type PaginatedResponseAgentPublic = {
@@ -817,6 +1236,17 @@ export type PaginatedResponseAgentRunPublic = {
 };
 
 /**
+ * PaginatedResponse[ProjectPublic]
+ */
+export type PaginatedResponseProjectPublic = {
+    /**
+     * Data
+     */
+    data: Array<ProjectPublic>;
+    pagination?: PaginationMeta | null;
+};
+
+/**
  * PaginatedResponse[ThreadMessagePublic]
  */
 export type PaginatedResponseThreadMessagePublic = {
@@ -835,6 +1265,17 @@ export type PaginatedResponseThreadPublic = {
      * Data
      */
     data: Array<ThreadPublic>;
+    pagination?: PaginationMeta | null;
+};
+
+/**
+ * PaginatedResponse[Thread]
+ */
+export type PaginatedResponseThread = {
+    /**
+     * Data
+     */
+    data: Array<Thread>;
     pagination?: PaginationMeta | null;
 };
 
@@ -868,6 +1309,82 @@ export type PaginationMeta = {
      * Has Prev
      */
     has_prev: boolean;
+};
+
+/**
+ * ProjectCreate
+ *
+ * Project creation schema.
+ */
+export type ProjectCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Is Public
+     */
+    is_public?: boolean;
+};
+
+/**
+ * ProjectPublic
+ *
+ * Public project response schema.
+ */
+export type ProjectPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Is Public
+     */
+    is_public: boolean;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * ProjectUpdate
+ *
+ * Project update schema.
+ */
+export type ProjectUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Is Public
+     */
+    is_public?: boolean | null;
 };
 
 /**
@@ -911,6 +1428,46 @@ export type RegisterResponse = {
 };
 
 /**
+ * Thread
+ *
+ * Thread database model.
+ */
+export type Thread = {
+    /**
+     * Title
+     */
+    title: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Target Type
+     */
+    target_type?: string | null;
+    /**
+     * Id
+     */
+    id?: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Project Id
+     */
+    project_id?: string | null;
+    /**
+     * Created At
+     */
+    created_at?: string;
+    /**
+     * Updated At
+     */
+    updated_at?: string;
+};
+
+/**
  * ThreadCreate
  *
  * Thread creation schema.
@@ -924,6 +1481,10 @@ export type ThreadCreate = {
      * Description
      */
     description?: string | null;
+    /**
+     * Target Type
+     */
+    target_type?: string | null;
 };
 
 /**
@@ -945,9 +1506,17 @@ export type ThreadDetail = {
      */
     description: string | null;
     /**
+     * Target Type
+     */
+    target_type: string | null;
+    /**
      * Owner Id
      */
     owner_id: string;
+    /**
+     * Project Id
+     */
+    project_id: string | null;
     /**
      * Created At
      */
@@ -1037,9 +1606,17 @@ export type ThreadPublic = {
      */
     description: string | null;
     /**
+     * Target Type
+     */
+    target_type: string | null;
+    /**
      * Owner Id
      */
     owner_id: string;
+    /**
+     * Project Id
+     */
+    project_id: string | null;
     /**
      * Created At
      */
@@ -1064,6 +1641,10 @@ export type ThreadUpdate = {
      * Description
      */
     description?: string | null;
+    /**
+     * Target Type
+     */
+    target_type?: string | null;
 };
 
 /**
@@ -1530,10 +2111,256 @@ export type DeleteCurrentUserAccountResponses = {
 
 export type DeleteCurrentUserAccountResponse = DeleteCurrentUserAccountResponses[keyof DeleteCurrentUserAccountResponses];
 
-export type ListUserThreadsData = {
+export type ListUserProjectsData = {
     body?: never;
     path?: never;
     query?: {
+        /**
+         * Include Public
+         *
+         * Include public projects from other users
+         */
+        include_public?: boolean;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Disable
+         *
+         * Disable pagination and return all results
+         */
+        disable?: boolean;
+    };
+    url: '/api/v1/projects';
+};
+
+export type ListUserProjectsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListUserProjectsError = ListUserProjectsErrors[keyof ListUserProjectsErrors];
+
+export type ListUserProjectsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseProjectPublic;
+};
+
+export type ListUserProjectsResponse = ListUserProjectsResponses[keyof ListUserProjectsResponses];
+
+export type CreateProjectData = {
+    body: ProjectCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/projects';
+};
+
+export type CreateProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateProjectError = CreateProjectErrors[keyof CreateProjectErrors];
+
+export type CreateProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectPublic;
+};
+
+export type CreateProjectResponse = CreateProjectResponses[keyof CreateProjectResponses];
+
+export type DeleteProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type DeleteProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteProjectError = DeleteProjectErrors[keyof DeleteProjectErrors];
+
+export type DeleteProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type DeleteProjectResponse = DeleteProjectResponses[keyof DeleteProjectResponses];
+
+export type GetProjectData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type GetProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectError = GetProjectErrors[keyof GetProjectErrors];
+
+export type GetProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectPublic;
+};
+
+export type GetProjectResponse = GetProjectResponses[keyof GetProjectResponses];
+
+export type UpdateProjectData = {
+    body: ProjectUpdate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}';
+};
+
+export type UpdateProjectErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateProjectError = UpdateProjectErrors[keyof UpdateProjectErrors];
+
+export type UpdateProjectResponses = {
+    /**
+     * Successful Response
+     */
+    200: ProjectPublic;
+};
+
+export type UpdateProjectResponse = UpdateProjectResponses[keyof UpdateProjectResponses];
+
+export type GetProjectThreadsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Disable
+         *
+         * Disable pagination and return all results
+         */
+        disable?: boolean;
+    };
+    url: '/api/v1/projects/{project_id}/threads';
+};
+
+export type GetProjectThreadsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectThreadsError = GetProjectThreadsErrors[keyof GetProjectThreadsErrors];
+
+export type GetProjectThreadsResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseThread;
+};
+
+export type GetProjectThreadsResponse = GetProjectThreadsResponses[keyof GetProjectThreadsResponses];
+
+export type GetProjectStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/stats';
+};
+
+export type GetProjectStatsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectStatsError = GetProjectStatsErrors[keyof GetProjectStatsErrors];
+
+export type GetProjectStatsResponses = {
+    /**
+     * Response Get Project Stats
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetProjectStatsResponse = GetProjectStatsResponses[keyof GetProjectStatsResponses];
+
+export type ListEduAiThreadsData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Project Id
+         *
+         * Project ID to filter threads
+         */
+        project_id: string;
         /**
          * Page
          */
@@ -1552,23 +2379,23 @@ export type ListUserThreadsData = {
     url: '/api/v1/threads';
 };
 
-export type ListUserThreadsErrors = {
+export type ListEduAiThreadsErrors = {
     /**
      * Validation Error
      */
     422: HttpValidationError;
 };
 
-export type ListUserThreadsError = ListUserThreadsErrors[keyof ListUserThreadsErrors];
+export type ListEduAiThreadsError = ListEduAiThreadsErrors[keyof ListEduAiThreadsErrors];
 
-export type ListUserThreadsResponses = {
+export type ListEduAiThreadsResponses = {
     /**
      * Successful Response
      */
     200: PaginatedResponseThreadPublic;
 };
 
-export type ListUserThreadsResponse = ListUserThreadsResponses[keyof ListUserThreadsResponses];
+export type ListEduAiThreadsResponse = ListEduAiThreadsResponses[keyof ListEduAiThreadsResponses];
 
 export type CreateThreadData = {
     body: ThreadCreate;
@@ -2294,6 +3121,238 @@ export type RetryAgentRunResponses = {
 
 export type RetryAgentRunResponse = RetryAgentRunResponses[keyof RetryAgentRunResponses];
 
+export type StreamAgentRunData = {
+    body?: never;
+    path: {
+        /**
+         * Agent Run Id
+         */
+        agent_run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/agent-run/{agent_run_id}/stream';
+};
+
+export type StreamAgentRunErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type StreamAgentRunError = StreamAgentRunErrors[keyof StreamAgentRunErrors];
+
+export type StreamAgentRunResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type ListApiKeysData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Project Id
+         */
+        project_id?: string | null;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Disable
+         *
+         * Disable pagination and return all results
+         */
+        disable?: boolean;
+    };
+    url: '/api/v1/api-keys';
+};
+
+export type ListApiKeysErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListApiKeysError = ListApiKeysErrors[keyof ListApiKeysErrors];
+
+export type ListApiKeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseApiKeyPublic;
+};
+
+export type ListApiKeysResponse = ListApiKeysResponses[keyof ListApiKeysResponses];
+
+export type CreateApiKeyData = {
+    body: ApiKeyCreate;
+    path?: never;
+    query?: never;
+    url: '/api/v1/api-keys';
+};
+
+export type CreateApiKeyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateApiKeyError = CreateApiKeyErrors[keyof CreateApiKeyErrors];
+
+export type CreateApiKeyResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiKeyGenerateResponse;
+};
+
+export type CreateApiKeyResponse = CreateApiKeyResponses[keyof CreateApiKeyResponses];
+
+export type DeleteApiKeyData = {
+    body?: never;
+    path: {
+        /**
+         * Api Key Id
+         */
+        api_key_id: string;
+    };
+    query?: never;
+    url: '/api/v1/api-keys/{api_key_id}';
+};
+
+export type DeleteApiKeyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteApiKeyError = DeleteApiKeyErrors[keyof DeleteApiKeyErrors];
+
+export type DeleteApiKeyResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type DeleteApiKeyResponse = DeleteApiKeyResponses[keyof DeleteApiKeyResponses];
+
+export type GetApiKeyData = {
+    body?: never;
+    path: {
+        /**
+         * Api Key Id
+         */
+        api_key_id: string;
+    };
+    query?: never;
+    url: '/api/v1/api-keys/{api_key_id}';
+};
+
+export type GetApiKeyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetApiKeyError = GetApiKeyErrors[keyof GetApiKeyErrors];
+
+export type GetApiKeyResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiKeyDetail;
+};
+
+export type GetApiKeyResponse = GetApiKeyResponses[keyof GetApiKeyResponses];
+
+export type UpdateApiKeyData = {
+    body: ApiKeyUpdate;
+    path: {
+        /**
+         * Api Key Id
+         */
+        api_key_id: string;
+    };
+    query?: never;
+    url: '/api/v1/api-keys/{api_key_id}';
+};
+
+export type UpdateApiKeyErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateApiKeyError = UpdateApiKeyErrors[keyof UpdateApiKeyErrors];
+
+export type UpdateApiKeyResponses = {
+    /**
+     * Successful Response
+     */
+    200: ApiKeyPublic;
+};
+
+export type UpdateApiKeyResponse = UpdateApiKeyResponses[keyof UpdateApiKeyResponses];
+
+export type GetProjectApiKeysData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Disable
+         *
+         * Disable pagination and return all results
+         */
+        disable?: boolean;
+    };
+    url: '/api/v1/projects/{project_id}/api-keys';
+};
+
+export type GetProjectApiKeysErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetProjectApiKeysError = GetProjectApiKeysErrors[keyof GetProjectApiKeysErrors];
+
+export type GetProjectApiKeysResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseApiKeyPublic;
+};
+
+export type GetProjectApiKeysResponse = GetProjectApiKeysResponses[keyof GetProjectApiKeysResponses];
+
 export type ListKbFoldersData = {
     body?: never;
     path?: never;
@@ -2634,6 +3693,34 @@ export type DownloadKbEntryResponses = {
     200: unknown;
 };
 
+export type GetKbEntryContentData = {
+    body?: never;
+    path: {
+        /**
+         * Entry Id
+         */
+        entry_id: string;
+    };
+    query?: never;
+    url: '/api/v1/knowledge-base/entries/{entry_id}/content';
+};
+
+export type GetKbEntryContentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetKbEntryContentError = GetKbEntryContentErrors[keyof GetKbEntryContentErrors];
+
+export type GetKbEntryContentResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
 export type MoveKbEntryData = {
     body: FileMoveRequest;
     path: {
@@ -2743,3 +3830,158 @@ export type GetKbStatsResponses = {
 };
 
 export type GetKbStatsResponse = GetKbStatsResponses[keyof GetKbStatsResponses];
+
+export type GetCreditBalanceData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/billing/balance';
+};
+
+export type GetCreditBalanceResponses = {
+    /**
+     * Successful Response
+     */
+    200: CreditBalanceResponse;
+};
+
+export type GetCreditBalanceResponse = GetCreditBalanceResponses[keyof GetCreditBalanceResponses];
+
+export type GetAccountSummaryData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/billing/summary';
+};
+
+export type GetAccountSummaryResponses = {
+    /**
+     * Successful Response
+     */
+    200: CreditAccountSummary;
+};
+
+export type GetAccountSummaryResponse = GetAccountSummaryResponses[keyof GetAccountSummaryResponses];
+
+export type GetTransactionsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Limit
+         *
+         * Number of transactions to fetch
+         */
+        limit?: number;
+        /**
+         * Offset
+         *
+         * Offset for pagination
+         */
+        offset?: number;
+        /**
+         * Transaction Type
+         *
+         * Filter by transaction type
+         */
+        transaction_type?: string | null;
+    };
+    url: '/api/v1/billing/transactions';
+};
+
+export type GetTransactionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetTransactionsError = GetTransactionsErrors[keyof GetTransactionsErrors];
+
+export type GetTransactionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CreditTransactionsResponse;
+};
+
+export type GetTransactionsResponse = GetTransactionsResponses[keyof GetTransactionsResponses];
+
+export type AddCreditsData = {
+    body: AddCreditsRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/billing/credits/add';
+};
+
+export type AddCreditsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddCreditsError = AddCreditsErrors[keyof AddCreditsErrors];
+
+export type AddCreditsResponses = {
+    /**
+     * Successful Response
+     */
+    200: CreditBalanceResponse;
+};
+
+export type AddCreditsResponse = AddCreditsResponses[keyof AddCreditsResponses];
+
+export type GetAvailableModelsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/billing/available-models';
+};
+
+export type GetAvailableModelsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AvailableModelsResponse;
+};
+
+export type GetAvailableModelsResponse = GetAvailableModelsResponses[keyof GetAvailableModelsResponses];
+
+export type StartDemoEducationalTaskData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Project Id
+         *
+         * Project ID for the demo task
+         */
+        project_id: string;
+        /**
+         * Task Name
+         *
+         * Name of the demo task
+         */
+        task_name?: string;
+    };
+    url: '/api/v1/demo/start';
+};
+
+export type StartDemoEducationalTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type StartDemoEducationalTaskError = StartDemoEducationalTaskErrors[keyof StartDemoEducationalTaskErrors];
+
+export type StartDemoEducationalTaskResponses = {
+    /**
+     * Successful Response
+     */
+    200: AgentStartResponse;
+};
+
+export type StartDemoEducationalTaskResponse = StartDemoEducationalTaskResponses[keyof StartDemoEducationalTaskResponses];

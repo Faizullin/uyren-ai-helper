@@ -1,6 +1,6 @@
 """
-LangGraph Grading Workflow
-Multi-step AI grading orchestration with state management
+LangGraph Educational AI Workflow
+Multi-step AI processing orchestration with state management
 """
 
 import operator
@@ -16,33 +16,38 @@ from app.core.db import get_db
 from app.core.logger import logger
 from app.models.api_key import APIKey
 from app.modules.ai_models.manager import model_manager
+from app.modules.vector_store.manager import vector_store_manager
+from app.modules.vector_store.models import VectorStore, Document
+from app.models.knowledge_base import KnowledgeBaseEntry
 
-from .models import Assignment, CourseMaterial, GradingSession
-from .thirdparty import create_client
+from .models import LMSResource, LMSResourceAttachment
+from .tools.supabase_faiss import supabase_faiss_tool
+from .utils import validate_api_key, check_api_key_access
 
 
-class GradingState(TypedDict):
+class EducationalAIState(TypedDict):
     """
-    State that flows through the grading workflow
+    State that flows through the educational AI workflow
     All nodes read from and write to this state
     """
 
     # Input IDs
-    session_id: str  # GradingSession.id
-    assignment_id: str  # Assignment.id
+    lms_resource_id: str  # LMSResource.id
+    vector_store_id: str | None  # VectorStore.id for RAG operations
+    project_id: str | None  # Project.id for context
 
     # Loaded data
-    assignment: dict  # Assignment configuration
-    thirdparty_data: dict  # Student submission from external API
-    rag_context: str | None  # Retrieved course materials
+    lms_resource: dict  # LMS resource configuration
+    content_data: dict  # Content to process
+    rag_context: str | None  # Retrieved knowledge base materials
 
     # AI analysis results
     analysis: dict  # Qualitative analysis
-    grade_breakdown: dict  # Per-criterion scores
+    processed_content: dict  # Processed content results
 
     # Final outputs
-    total_grade: float
-    feedback: str
+    result: dict  # Final processing result
+    feedback: str  # Processing feedback
 
     # Workflow control
     messages: Annotated[list[BaseMessage], operator.add]  # Event log
@@ -50,229 +55,184 @@ class GradingState(TypedDict):
     retry_count: int
 
 
-async def fetch_assignment_data(state: GradingState) -> GradingState:
+async def fetch_lms_resource_data(state: EducationalAIState) -> EducationalAIState:
     """
-    NODE 1: Load assignment configuration and third-party submission data
+    NODE 1: Load LMS resource configuration and content data
 
     This node:
-    1. Loads assignment settings from our database
-    2. Calls third-party API to fetch student submission
-    3. Stores raw data in state for processing
-
-    The third-party data is stored as-is (no schema assumptions)
+    1. Loads LMS resource from our database
+    2. Extracts content and metadata
+    3. Stores data in state for processing
     """
-    logger.info(f"[GRADING] Fetching data for session {state['session_id']}")
+    logger.info(f"[EDU_AI] Fetching data for LMS resource {state['lms_resource_id']}")
 
     async with get_db() as session:
-        # Load grading session
-        grading_session = await session.get(GradingSession, state["session_id"])
-        if not grading_session:
-            return {**state, "error": "Grading session not found"}
+        # Load LMS resource
+        lms_resource = await session.get(LMSResource, state["lms_resource_id"])
+        if not lms_resource:
+            return {**state, "error": "LMS resource not found"}
 
-        # Load assignment configuration
-        assignment = await session.get(Assignment, state["assignment_id"])
-        if not assignment:
-            return {**state, "error": "Assignment not found"}
+        logger.debug(f"[EDU_AI] LMS Resource: {lms_resource.title}")
+        logger.debug(f"[EDU_AI] Target Type: {lms_resource.target_type}")
+        logger.debug(f"[EDU_AI] Metadata: {lms_resource.my_metadata}")
 
-        logger.debug(f"[GRADING] Assignment: {assignment.title}")
-        logger.debug(f"[GRADING] Settings: {assignment.settings}")
-
-        # Check if we already have third-party data (might be pre-loaded)
-        if grading_session.thirdparty_data:
-            thirdparty_data = grading_session.thirdparty_data
-            logger.debug("[GRADING] Using pre-loaded third-party data")
-        else:
-            # Fetch from third-party API
-            logger.info("[GRADING] Fetching from third-party API")
-
-            client = create_client(
-                assignment.thirdparty_api_url, assignment.thirdparty_api_key
-            )
-
-            # Assume thirdparty_data contains the submission_id to fetch
-            # OR fetch by student ID, assignment ID, etc.
-            # This depends on your third-party API structure
-            submission_id = grading_session.thirdparty_data.get("submission_id")
-            if submission_id:
-                thirdparty_data = await client.fetch_single_submission(submission_id)
-            else:
-                return {**state, "error": "No submission ID provided"}
-
-            # Update session with fetched data
-            grading_session.thirdparty_data = thirdparty_data
-            session.add(grading_session)
-            await session.commit()
+        # Extract content data
+        content_data = {
+            "title": lms_resource.title,
+            "description": lms_resource.description,
+            "content": lms_resource.content,
+            "thumbnail_url": lms_resource.thumbnail_url,
+            "target_type": lms_resource.target_type,
+            "target_id": str(lms_resource.target_id) if lms_resource.target_id else None,
+            "metadata": lms_resource.my_metadata,
+            "status": lms_resource.status,
+            "is_public": lms_resource.is_public,
+        }
 
         return {
             **state,
-            "assignment": {
-                "title": assignment.title,
-                "description": assignment.description,
-                "assignment_type": assignment.assignment_type,
-                "questions": assignment.questions,
-                "settings": assignment.settings,
-                "thirdparty_api_url": assignment.thirdparty_api_url,
-                "thirdparty_webhook_url": assignment.thirdparty_webhook_url,
-                "api_key_id": str(assignment.api_key_id)
-                if assignment.api_key_id
-                else None,
+            "lms_resource": {
+                "id": str(lms_resource.id),
+                "title": lms_resource.title,
+                "description": lms_resource.description,
+                "target_type": lms_resource.target_type,
+                "target_id": str(lms_resource.target_id) if lms_resource.target_id else None,
+                "metadata": lms_resource.my_metadata,
+                "status": lms_resource.status,
+                "is_public": lms_resource.is_public,
+                "created_at": lms_resource.created_at.isoformat(),
+                "updated_at": lms_resource.updated_at.isoformat(),
             },
-            "thirdparty_data": thirdparty_data,
+            "content_data": content_data,
             "messages": state["messages"]
             + [
                 (
                     "system",
-                    f"Loaded assignment: {assignment.title} (type: {assignment.assignment_type})",
+                    f"Loaded LMS resource: {lms_resource.title} (type: {lms_resource.target_type})",
                 )
             ],
         }
 
 
-async def retrieve_rag_context(state: GradingState) -> GradingState:
+async def retrieve_rag_context(state: EducationalAIState) -> EducationalAIState:
     """
-    NODE 2: Retrieve relevant course materials for context (RAG)
+    NODE 2: Retrieve relevant knowledge base materials for context (RAG)
 
-    If RAG is enabled in assignment settings:
-    1. Extract key terms from student submission
-    2. Search course materials using vector similarity
+    If vector store is available:
+    1. Extract key terms from LMS resource content
+    2. Search knowledge base using Supabase FAISS tool
     3. Return top N most relevant materials as context
 
-    If RAG is disabled: skip and return None
+    If no vector store: skip and return None
     """
-    use_rag = state["assignment"]["settings"].get("use_rag", False)
-
-    if not use_rag:
-        logger.debug("[GRADING] RAG disabled, skipping context retrieval")
+    if not state.get("vector_store_id"):
+        logger.debug("[EDU_AI] No vector store specified, skipping RAG context retrieval")
         return {**state, "rag_context": None}
 
-    logger.info("[GRADING] Retrieving course materials via RAG")
+    logger.info("[EDU_AI] Retrieving knowledge base materials via RAG")
 
     try:
-        # Extract submission content (handle different structures)
-        submission_content = ""
-        if "submission" in state["thirdparty_data"]:
-            submission_content = state["thirdparty_data"]["submission"].get(
-                "content", ""
-            )
-        elif "content" in state["thirdparty_data"]:
-            submission_content = state["thirdparty_data"]["content"]
+        # Extract content for search
+        content = state["content_data"].get("content", "")
+        title = state["content_data"].get("title", "")
 
-        if not submission_content:
-            logger.warning("[GRADING] No content to search, skipping RAG")
+        if not content and not title:
+            logger.warning("[EDU_AI] No content to search, skipping RAG")
             return {**state, "rag_context": None}
 
-        # TODO: Implement vector similarity search when pgvector is enabled
-        # For now, return placeholder
-        logger.warning("[GRADING] Vector search not implemented, using simple search")
+        # Use combined content for search
+        search_query = f"{title} {content}"[:500]  # Limit search query length
 
         async with get_db() as session:
-            # Simple keyword search (replace with vector search later)
-            result = await session.execute(
-                select(CourseMaterial)
-                .where(CourseMaterial.assignment_id == state["assignment_id"])
-                .limit(3)
+            # Use Supabase FAISS tool for vector search
+            search_result = await supabase_faiss_tool.search_similar_content(
+                session=session,
+                vector_store_id=state["vector_store_id"],
+                query_text=search_query,
+                owner_id=state.get("owner_id", ""),  # You may need to pass owner_id in state
+                similarity_threshold=0.7,
+                max_results=5,
+                target_type=state["lms_resource"].get("target_type"),
+                target_id=state["lms_resource"].get("target_id"),
             )
-            materials = result.scalars().all()
 
-            if materials:
-                context = "\n\n".join(
-                    [
-                        f"### {mat.title}\n{mat.content[:500]}..."  # First 500 chars
-                        for mat in materials
-                    ]
-                )
-                logger.debug(f"[GRADING] Retrieved {len(materials)} materials")
+            if search_result["status"] == "success" and search_result["results"]:
+                # Format context from search results
+                context_parts = []
+                for result in search_result["results"]:
+                    context_parts.append(
+                        f"### {result['title']}\n"
+                        f"Similarity: {result['similarity']:.2f}\n"
+                        f"Type: {result['target_type']}\n"
+                    )
+
+                context = "\n\n".join(context_parts)
+                logger.debug(f"[EDU_AI] Retrieved {len(search_result['results'])} relevant materials")
+                
                 return {
                     **state,
                     "rag_context": context,
                     "messages": state["messages"]
-                    + [("system", f"Retrieved {len(materials)} reference materials")],
+                    + [("system", f"Retrieved {len(search_result['results'])} relevant materials via RAG")],
                 }
 
         return {**state, "rag_context": None}
 
     except Exception as e:
-        logger.error(f"[GRADING] RAG error: {str(e)}")
+        logger.error(f"[EDU_AI] RAG error: {str(e)}")
         # Continue without RAG on error (graceful degradation)
         return {**state, "rag_context": None}
 
 
-async def analyze_submission(state: GradingState) -> GradingState:
+async def analyze_lms_content(state: EducationalAIState) -> EducationalAIState:
     """
-    NODE 3: AI-powered qualitative analysis
+    NODE 3: AI-powered content analysis
 
-    Uses AI model to analyze submission quality:
-    1. Identifies strengths and weaknesses
-    2. Provides specific, actionable feedback
-    3. Considers rubric criteria (if provided)
+    Uses AI model to analyze LMS resource content:
+    1. Identifies key concepts and themes
+    2. Provides content quality assessment
+    3. Suggests improvements and enhancements
     4. Uses RAG context for reference (if available)
 
-    Output: Detailed text analysis (not scores yet)
+    Output: Detailed content analysis
     """
-    logger.info("[GRADING] Analyzing submission with AI")
+    logger.info("[EDU_AI] Analyzing LMS content with AI")
 
-    # Get AI model from settings
-    model_name = state["assignment"]["settings"].get("grading_model", "gpt-5-mini")
-    teacher_instructions = state["assignment"]["settings"].get(
-        "teacher_instructions", ""
-    )
+    # Get AI model (default to a suitable model for content analysis)
+    model_name = "gpt-4"  # You can make this configurable
 
     # Resolve model (handles aliases like "gpt-5" → actual model ID)
     resolved_model = model_manager.resolve_model_id(model_name)
-    logger.debug(f"[GRADING] Using model: {resolved_model}")
+    logger.debug(f"[EDU_AI] Using model: {resolved_model}")
 
-    # Extract submission content
-    if "submission" in state["thirdparty_data"]:
-        content = state["thirdparty_data"]["submission"].get("content", "")
-        files = state["thirdparty_data"]["submission"].get("files", [])
-    else:
-        content = state["thirdparty_data"].get("content", "")
-        files = state["thirdparty_data"].get("files", [])
+    # Extract content
+    content = state["content_data"].get("content", "")
+    title = state["content_data"].get("title", "")
+    description = state["content_data"].get("description", "")
+    target_type = state["content_data"].get("target_type", "")
 
     # Build analysis prompt
-    prompt = f"""You are an expert teaching assistant grading student work.
+    prompt = f"""You are an expert educational content analyst reviewing learning materials.
 
-## Assignment
-**Title:** {state["assignment"]["title"]}
-**Description:** {state["assignment"]["description"]}
+## Content Information
+**Title:** {title}
+**Description:** {description}
+**Type:** {target_type}
 
-## Student Submission
+## Content to Analyze
 {content}
-"""
-
-    # Add file references if present
-    if files:
-        prompt += f"\n**Attached Files:** {len(files)} file(s)\n"
-        for i, file_url in enumerate(files, 1):
-            prompt += f"{i}. {file_url}\n"
-
-    # Add teacher instructions
-    if teacher_instructions:
-        prompt += f"""
-
-## Additional Teacher Instructions
-{teacher_instructions}
-"""
-
-    # Add RAG context if available
-    if state.get("rag_context"):
-        prompt += f"""
-
-## Reference Materials (for context)
-{state["rag_context"]}
 """
 
     prompt += """
 
 ## Your Task
-Analyze this submission thoroughly:
-1. **Strengths:** What did the student do well? Be specific.
-2. **Weaknesses:** What needs improvement? Provide examples.
-3. **Suggestions:** Specific, actionable feedback for improvement.
-4. **Overall Assessment:** Brief summary of quality.
+Analyze this educational content thoroughly:
+1. **Key Concepts:** Identify main topics and learning objectives.
+2. **Content Quality:** Assess clarity, organization, and educational value.
+3. **Suggestions:** Specific recommendations for improvement.
+4. **Overall Assessment:** Brief summary of content effectiveness.
 
-Be constructive, specific, and encouraging.
-Focus on learning, not just grading."""
+Be constructive, specific, and focus on educational value."""
 
     try:
         # Call AI model
@@ -283,13 +243,13 @@ Focus on learning, not just grading."""
         response = await client.chat.completions.create(
             model=resolved_model,
             messages=[{"role": "user", "content": prompt}],
-            temperature=state["assignment"]["settings"].get("temperature", 0.3),
-            max_tokens=state["assignment"]["settings"].get("max_tokens", 4000),
+            temperature=0.3,
+            max_tokens=4000,
         )
 
         analysis_text = response.choices[0].message.content
 
-        logger.debug(f"[GRADING] Analysis complete ({len(analysis_text)} chars)")
+        logger.debug(f"[EDU_AI] Analysis complete ({len(analysis_text)} chars)")
 
         return {
             **state,
@@ -299,99 +259,65 @@ Focus on learning, not just grading."""
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             },
             "messages": state["messages"]
-            + [("assistant", f"Analysis complete using {resolved_model}")],
+            + [("assistant", f"Content analysis complete using {resolved_model}")],
         }
 
     except Exception as e:
-        logger.error(f"[GRADING] Analysis error: {str(e)}")
+        logger.error(f"[EDU_AI] Analysis error: {str(e)}")
         return {**state, "error": f"Analysis failed: {str(e)}"}
 
 
-async def calculate_grade(state: GradingState) -> GradingState:
+async def process_content(state: EducationalAIState) -> EducationalAIState:
     """
-    NODE 4: Calculate numerical grade based on rubric
+    NODE 4: Process content and generate final result
 
-    Two modes:
-    1. Rubric-based: AI assigns points for each criterion
-    2. Holistic: AI assigns overall score (0-100)
+    This node:
+    1. Takes the analysis from previous node
+    2. Processes the content based on type
+    3. Generates structured output
+    4. Provides final feedback
 
-    Uses structured output (JSON) for consistent grading
+    Uses structured output (JSON) for consistent processing
     """
-    logger.info("[GRADING] Calculating grade")
+    logger.info("[EDU_AI] Processing content")
 
-    rubric = state["assignment"]["settings"].get("rubric")
-    max_points = state["assignment"]["settings"].get("max_points", 100)
+    # Get analysis from previous node
+    analysis = state.get("analysis", {})
+    content_data = state["content_data"]
+    target_type = content_data.get("target_type", "")
 
-    # Extract submission content
-    if "submission" in state["thirdparty_data"]:
-        content = state["thirdparty_data"]["submission"].get("content", "")
-    else:
-        content = state["thirdparty_data"].get("content", "")
-
-    model_name = state["assignment"]["settings"].get("grading_model", "gpt-5-mini")
+    model_name = "gpt-4"  # You can make this configurable
     resolved_model = model_manager.resolve_model_id(model_name)
 
-    if rubric:
-        # Rubric-based grading
-        logger.debug("[GRADING] Using rubric-based grading")
+    # Build processing prompt based on content type
+    logger.debug(f"[EDU_AI] Processing content type: {target_type}")
 
-        prompt = f"""Grade this submission using the rubric.
+    prompt = f"""Process this educational content and provide structured output.
 
-## Assignment
-{state["assignment"]["title"]}
+## Content Information
+**Title:** {content_data.get('title', '')}
+**Type:** {target_type}
+**Description:** {content_data.get('description', '')}
 
-## Student Submission
-{content}
+## Content
+{content_data.get('content', '')}
 
 ## Previous Analysis
-{state["analysis"]["full_text"]}
-
-## Grading Rubric
-"""
-        # Add each criterion
-        for criterion, points in rubric.items():
-            prompt += f"- **{criterion}**: {points} points\n"
-
-        prompt += """
+{analysis.get('full_text', '')}
 
 ## Your Task
-Assign points for each criterion. Return JSON:
+Process this content and return JSON with:
 {
-    "criterion_name": {
-        "score": <points earned>,
-        "max": <max points>,
-        "reason": "<brief justification>"
-    }
+    "content_quality": {{
+        "score": <0-100>,
+        "assessment": "<brief quality assessment>"
+    }},
+    "key_concepts": ["<concept1>", "<concept2>", ...],
+    "recommendations": ["<recommendation1>", "<recommendation2>", ...],
+    "summary": "<brief summary of processing results>"
 }
 
-Be fair, consistent, and evidence-based."""
-
-    else:
-        # Holistic grading
-        logger.debug("[GRADING] Using holistic grading")
-
-        prompt = f"""Grade this submission on a 0-{max_points} scale.
-
-## Assignment
-{state["assignment"]["title"]}
-
-## Student Submission
-{content}
-
-## Previous Analysis
-{state["analysis"]["full_text"]}
-
-## Your Task
-Assign a numerical grade (0-{max_points}). Return JSON:
-{{
-    "overall": {{
-        "score": <points earned>,
-        "max": {max_points},
-        "reason": "<2-3 sentence justification>"
-    }}
-}}
-
-Be fair and consistent."""
+Focus on educational value and content effectiveness."""
 
     try:
         client = AsyncOpenAI()
@@ -405,79 +331,88 @@ Be fair and consistent."""
 
         import json
 
-        grade_breakdown = json.loads(response.choices[0].message.content)
+        processed_result = json.loads(response.choices[0].message.content)
 
-        # Calculate total
-        if rubric:
-            total_score = sum(item["score"] for item in grade_breakdown.values())
-            total_possible = sum(item["max"] for item in grade_breakdown.values())
-            total_grade = (total_score / total_possible) * max_points
-        else:
-            total_grade = grade_breakdown["overall"]["score"]
-
-        logger.info(f"[GRADING] Final grade: {total_grade:.1f}/{max_points}")
+        logger.info(f"[EDU_AI] Content processing complete")
 
         return {
             **state,
-            "grade_breakdown": grade_breakdown,
-            "total_grade": round(total_grade, 2),
+            "processed_content": processed_result,
+            "result": processed_result,
             "messages": state["messages"]
-            + [("assistant", f"Grade: {total_grade:.1f}/{max_points}")],
+            + [("assistant", f"Content processing complete")],
         }
 
     except Exception as e:
-        logger.error(f"[GRADING] Grading error: {str(e)}")
-        return {**state, "error": f"Grading failed: {str(e)}"}
+        logger.error(f"[EDU_AI] Processing error: {str(e)}")
+        return {**state, "error": f"Processing failed: {str(e)}"}
 
 
-async def generate_feedback(state: GradingState) -> GradingState:
+async def generate_final_result(state: EducationalAIState) -> EducationalAIState:
     """
-    NODE 5: Generate final student-facing feedback
+    NODE 5: Generate final educational content result
 
     Combines:
-    1. Grade and rubric breakdown
-    2. Qualitative analysis
-    3. Encouragement and next steps
+    1. Content analysis results
+    2. Processing outcomes
+    3. Recommendations and next steps
 
-    Output: Formatted feedback ready to show student
+    Output: Formatted result ready for educational use
     """
-    logger.info("[GRADING] Generating feedback")
+    logger.info("[EDU_AI] Generating final result")
 
-    max_points = state["assignment"]["settings"].get("max_points", 100)
+    # Get processed content results
+    processed_content = state.get("processed_content", {})
+    analysis = state.get("analysis", {})
+    lms_resource = state["lms_resource"]
 
-    # Build feedback message
-    feedback_parts = [
-        f"# Grade: {state['total_grade']:.1f}/{max_points}",
+    # Build final result message
+    result_parts = [
+        f"# Content Analysis: {lms_resource['title']}",
+        f"**Type:** {lms_resource.get('target_type', 'Unknown')}",
         "",
-        "## Assessment",
-        state["analysis"]["full_text"],
+        "## Analysis Summary",
+        analysis.get("full_text", "No analysis available"),
         "",
     ]
 
-    # Add rubric breakdown if present
-    if state.get("grade_breakdown") and len(state["grade_breakdown"]) > 1:
-        feedback_parts.append("## Score Breakdown")
-        for criterion, details in state["grade_breakdown"].items():
-            if criterion != "overall":
-                feedback_parts.append(
-                    f"**{criterion}:** {details['score']}/{details['max']} - {details['reason']}"
-                )
-        feedback_parts.append("")
+    # Add processed results if available
+    if processed_content:
+        if "content_quality" in processed_content:
+            quality = processed_content["content_quality"]
+            result_parts.append(f"## Quality Assessment: {quality.get('score', 0)}/100")
+            result_parts.append(f"{quality.get('assessment', 'No assessment available')}")
+            result_parts.append("")
 
-    # Add encouragement based on grade
-    grade_percent = (state["total_grade"] / max_points) * 100
-    if grade_percent >= 90:
-        feedback_parts.append("🌟 Excellent work! You've demonstrated strong mastery.")
-    elif grade_percent >= 70:
-        feedback_parts.append("✅ Good effort! Review the feedback to improve further.")
-    elif grade_percent >= 50:
-        feedback_parts.append("📚 Keep working! Focus on the areas highlighted above.")
+        if "key_concepts" in processed_content:
+            result_parts.append("## Key Concepts Identified")
+            for concept in processed_content["key_concepts"]:
+                result_parts.append(f"- {concept}")
+            result_parts.append("")
+
+        if "recommendations" in processed_content:
+            result_parts.append("## Recommendations")
+            for rec in processed_content["recommendations"]:
+                result_parts.append(f"- {rec}")
+            result_parts.append("")
+
+        if "summary" in processed_content:
+            result_parts.append("## Summary")
+            result_parts.append(processed_content["summary"])
+            result_parts.append("")
+
+    # Add encouragement based on quality score
+    quality_score = processed_content.get("content_quality", {}).get("score", 0)
+    if quality_score >= 80:
+        result_parts.append("🌟 Excellent educational content! Well-structured and valuable.")
+    elif quality_score >= 60:
+        result_parts.append("✅ Good content! Consider the recommendations for enhancement.")
+    elif quality_score >= 40:
+        result_parts.append("📚 Content needs improvement. Review the recommendations above.")
     else:
-        feedback_parts.append(
-            "💡 This needs more work. Please review the materials and try again."
-        )
+        result_parts.append("💡 Content requires significant revision. Focus on the key areas mentioned.")
 
-    feedback = "\n".join(feedback_parts)
+    feedback = "\n".join(result_parts)
 
     return {
         **state,
@@ -486,158 +421,104 @@ async def generate_feedback(state: GradingState) -> GradingState:
     }
 
 
-async def save_results(state: GradingState) -> GradingState:
+async def save_results(state: EducationalAIState) -> EducationalAIState:
     """
-    NODE 6: Save grading results to database
+    NODE 6: Save educational AI processing results to database
 
-    Updates the GradingSession with:
-    1. Final grade
-    2. Feedback text
-    3. Detailed rubric scores
+    Updates the LMSResource with:
+    1. Processing results
+    2. Analysis feedback
+    3. Quality assessment
     4. Metadata (model used, timestamp, etc.)
 
-    Sets status to 'graded' (or 'reviewed' if manual review needed)
+    Sets status to 'processed' or updates metadata
     """
-    logger.info("[GRADING] Saving results")
+    logger.info("[EDU_AI] Saving results")
 
     async with get_db() as session:
-        grading_session = await session.get(GradingSession, state["session_id"])
-        if not grading_session:
-            return {**state, "error": "Session not found"}
+        lms_resource = await session.get(LMSResource, state["lms_resource_id"])
+        if not lms_resource:
+            return {**state, "error": "LMS resource not found"}
 
         # Update with results
-        grading_session.status = "graded"
-        grading_session.progress = 100
-        grading_session.completed_at = datetime.now(timezone.utc)
-        grading_session.updated_at = datetime.now(timezone.utc)
+        lms_resource.updated_at = datetime.now(timezone.utc)
 
-        # Store results in JSONB field
-        grading_session.results = {
-            "grade": state["total_grade"],
-            "max_points": state["assignment"]["settings"].get("max_points", 100),
+        # Store results in metadata field
+        processing_results = {
             "feedback": state["feedback"],
-            "rubric_scores": state.get("grade_breakdown", {}),
-            "analysis": state["analysis"]["full_text"],
-            "model_used": state["analysis"]["model_used"],
-            "graded_by": "ai",
-            "graded_at": datetime.now(timezone.utc).isoformat(),
+            "analysis": state.get("analysis", {}).get("full_text", ""),
+            "processed_content": state.get("processed_content", {}),
+            "model_used": state.get("analysis", {}).get("model_used", ""),
+            "processed_by": "ai",
+            "processed_at": datetime.now(timezone.utc).isoformat(),
         }
 
-        session.add(grading_session)
+        # Update metadata with processing results
+        current_metadata = lms_resource.my_metadata or {}
+        current_metadata["ai_processing"] = processing_results
+        lms_resource.my_metadata = current_metadata
+
+        session.add(lms_resource)
         await session.commit()
 
-        logger.info(f"[GRADING] Saved results for session {state['session_id']}")
-
-        # Submit grade back to third-party via webhook if configured
-        if state.get("assignment", {}).get("thirdparty_webhook_url"):
-            try:
-                logger.info("[GRADING] Submitting grade via webhook")
-
-                # Get API key for webhook auth
-                webhook_url = state["assignment"]["thirdparty_webhook_url"]
-                api_key = None
-                if state["assignment"].get("api_key_id"):
-                    async with get_db() as db_session:
-                        api_key_obj = await db_session.get(
-                            APIKey, state["assignment"]["api_key_id"]
-                        )
-                        if api_key_obj:
-                            api_key = api_key_obj.public_key
-
-                # Get submission ID from third-party data
-                submission_id = state["thirdparty_data"].get("submission_id")
-                if submission_id:
-                    client = create_client(
-                        state["assignment"]["thirdparty_api_url"], api_key
-                    )
-                    await client.submit_grade_webhook(
-                        webhook_url=webhook_url,
-                        submission_id=submission_id,
-                        grade_data=grading_session.results,
-                    )
-                    logger.info(
-                        f"[GRADING] Successfully submitted grade for {submission_id}"
-                    )
-            except Exception as e:
-                logger.error(f"[GRADING] Webhook submission failed: {str(e)}")
-                # Don't fail the whole grading process if webhook fails
+        logger.info(f"[EDU_AI] Saved results for LMS resource {state['lms_resource_id']}")
 
         return {
             **state,
-            "messages": state["messages"] + [("system", "Results saved successfully")],
+            "messages": state["messages"] + [("assistant", "Results saved successfully")],
         }
 
-
-def should_require_review(state: GradingState) -> Literal["review", "save"]:
+def should_continue_processing(state: EducationalAIState) -> Literal["continue", "complete"]:
     """
-    Conditional edge: Determine if human review is needed
+    Conditional edge: Determine if processing should continue
 
     Checks:
-    1. Assignment setting: require_manual_review
-    2. Grade threshold: borderline passes/fails
-    3. Error conditions: if something went wrong
+    1. If analysis was successful
+    2. If content processing completed
+    3. Error conditions
 
     Returns:
-    - "review": Pause for human approval
-    - "save": Save directly
+    - "continue": Continue to next step
+    - "complete": Complete processing
     """
-    require_review = state["assignment"]["settings"].get("require_manual_review", False)
+    if state.get("error"):
+        logger.info("[EDU_AI] Error detected, completing processing")
+        return "complete"
 
-    if require_review:
-        logger.info("[GRADING] Manual review required by settings")
-        return "review"
+    if state.get("analysis") and state.get("processed_content"):
+        logger.info("[EDU_AI] All processing steps completed successfully")
+        return "complete"
 
-    # Check for borderline grades (e.g., within 5% of passing)
-    max_points = state["assignment"]["settings"].get("max_points", 100)
-    passing_grade = max_points * 0.6  # 60% = passing
-    grade = state["total_grade"]
-
-    if abs(grade - passing_grade) <= max_points * 0.05:
-        logger.info(f"[GRADING] Borderline grade ({grade:.1f}), flagging for review")
-        return "review"
-
-    return "save"
+    return "continue"
 
 
-def create_grading_graph():
+def create_educational_ai_graph():
     """
-    Build the LangGraph workflow
+    Build the LangGraph educational AI workflow
 
     Flow:
-    START → fetch_assignment_data → retrieve_rag_context → analyze_submission
-          → calculate_grade → generate_feedback → [review?] → save_results → END
+    START → fetch_lms_resource_data → retrieve_rag_context → analyze_lms_content
+          → process_content → generate_final_result → save_results → END
 
-    The [review?] is a conditional branch based on settings
+    Optional RAG context retrieval based on vector store availability
     """
-    workflow = StateGraph(GradingState)
+    workflow = StateGraph(EducationalAIState)
 
     # Add all nodes
-    workflow.add_node("fetch", fetch_assignment_data)
+    workflow.add_node("fetch", fetch_lms_resource_data)
     workflow.add_node("retrieve_context", retrieve_rag_context)
-    workflow.add_node("analyze", analyze_submission)
-    workflow.add_node("grade", calculate_grade)
-    workflow.add_node("feedback", generate_feedback)
-    workflow.add_node("review", lambda s: {**s})  # Pauses for human input
+    workflow.add_node("analyze", analyze_lms_content)
+    workflow.add_node("process", process_content)
+    workflow.add_node("final_result", generate_final_result)
     workflow.add_node("save", save_results)
 
     # Define edges (flow)
     workflow.set_entry_point("fetch")
     workflow.add_edge("fetch", "retrieve_context")
     workflow.add_edge("retrieve_context", "analyze")
-    workflow.add_edge("analyze", "grade")
-    workflow.add_edge("grade", "feedback")
-
-    # Conditional: review or save directly?
-    workflow.add_conditional_edges(
-        "feedback",
-        should_require_review,
-        {
-            "review": "review",
-            "save": "save",
-        },
-    )
-
-    workflow.add_edge("review", "save")
+    workflow.add_edge("analyze", "process")
+    workflow.add_edge("process", "final_result")
+    workflow.add_edge("final_result", "save")
     workflow.add_edge("save", END)
 
     # Compile workflow without checkpointing
@@ -645,4 +526,4 @@ def create_grading_graph():
 
 
 # Export compiled graph
-grading_graph = create_grading_graph()
+educational_ai_graph = create_educational_ai_graph()

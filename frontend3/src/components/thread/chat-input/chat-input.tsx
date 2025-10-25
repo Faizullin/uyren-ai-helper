@@ -1,31 +1,54 @@
 'use client';
 
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  forwardRef,
-  useImperativeHandle,
-  useCallback,
-  useMemo,
-  memo,
-} from 'react';
 import { useAgents } from '@/hooks/use-agents';
-import { useAgentSelection } from '@/lib/stores/agent-selection-store';
+import { useAgentSelectionStore } from '@/lib/stores/agent-selection-store';
 import { useModelStore } from '@/lib/stores/model-store';
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { handleFiles, FileUploadHandler } from './file-upload-handler';
-import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Loader2, ArrowUp, X, Paperclip, StopCircle } from 'lucide-react';
-import { VoiceRecorder } from './voice-recorder';
-import { UnifiedConfigMenu } from './unified-config-menu';
-import { AttachmentGroup } from '../attachment-group';
 import { cn } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
+import { ArrowUp, BarChart3, Code2, FileText, Image as ImageIcon, Loader2, Paperclip, Presentation, Search, StopCircle, Users, X } from 'lucide-react';
+import { AttachmentGroup } from '../attachment-group';
+// import { handleFiles } from './file-upload-handler';
 import { ToolCallInput } from './floating-tool-preview';
+import { UnifiedConfigMenu } from './unified-config-menu';
+import { VoiceRecorder } from './voice-recorder';
+
+// Helper function to get the icon for each mode
+const getModeIcon = (mode: string) => {
+  const iconClass = "w-4 h-4";
+  switch (mode) {
+    case 'research':
+      return <Search className={iconClass} />;
+    case 'people':
+      return <Users className={iconClass} />;
+    case 'code':
+      return <Code2 className={iconClass} />;
+    case 'docs':
+      return <FileText className={iconClass} />;
+    case 'data':
+      return <BarChart3 className={iconClass} />;
+    case 'slides':
+      return <Presentation className={iconClass} />;
+    case 'image':
+      return <ImageIcon className={iconClass} />;
+    default:
+      return null;
+  }
+};
 
 export interface ChatInputHandles {
   getPendingFiles: () => File[];
@@ -70,6 +93,12 @@ export interface ChatInputProps {
   showToolPreview?: boolean;
   isLoggedIn?: boolean;
   hideAgentSelection?: boolean;
+  enableAdvancedConfig?: boolean;
+  selectedMode?: string | null;
+  onModeDeselect?: () => void;
+  animatePlaceholder?: boolean;
+  selectedCharts?: string[];
+  selectedOutputFormat?: string | null;
 }
 
 export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
@@ -94,6 +123,12 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
       bgColor = 'bg-card',
       isLoggedIn = true,
       hideAgentSelection = false,
+      enableAdvancedConfig = false,
+      selectedMode,
+      onModeDeselect,
+      animatePlaceholder = false,
+      selectedCharts = [],
+      selectedOutputFormat = null,
       ...unusedProps // Accept unused props for compatibility
     },
     ref,
@@ -104,6 +139,8 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
     const [isUploading, setIsUploading] = useState(false);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
+    const [isModeDismissing, setIsModeDismissing] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -119,11 +156,11 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
 
     // Simple model options
     const modelOptions = useMemo(() => [
-      { id: 'anthropic/claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
-      { id: 'anthropic/claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet' },
-      { id: 'anthropic/claude-3-5-haiku-latest', label: 'Claude 3.5 Haiku' },
-      { id: 'openai/gpt-4o', label: 'GPT-4o' },
-      { id: 'google/gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash' },
+      { id: 'anthropic/claude-sonnet-4-20250514', label: 'Claude Sonnet 4', requiresSubscription: false },
+      { id: 'anthropic/claude-3-5-sonnet-latest', label: 'Claude 3.5 Sonnet', requiresSubscription: false },
+      { id: 'anthropic/claude-3-5-haiku-latest', label: 'Claude 3.5 Haiku', requiresSubscription: false },
+      { id: 'openai/gpt-4o', label: 'GPT-4o', requiresSubscription: false },
+      { id: 'google/gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash', requiresSubscription: false },
     ], []);
 
     const handleModelChange = (modelId: string) => setSelectedModel(modelId);
@@ -131,7 +168,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
     const getActualModelId = (modelId: string) => modelId;
 
     const selectedAgent = agents.find((agent: any) => agent.id === selectedAgentId);
-    const { initializeFromAgents } = useAgentSelection();
+    const { initializeFromAgents } = useAgentSelectionStore();
 
     useImperativeHandle(ref, () => ({
       getPendingFiles: () => pendingFiles,
@@ -158,6 +195,64 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
       }
     }, [autoFocus]);
 
+    // Animated placeholder effect
+    useEffect(() => {
+      if (!mounted || value || !animatePlaceholder) {
+        return;
+      }
+
+      const placeholderText = placeholder || 'Describe what you need help with...';
+      let currentIndex = 0;
+      setAnimatedPlaceholder('');
+
+      const typingInterval = setInterval(() => {
+        if (currentIndex < placeholderText.length) {
+          setAnimatedPlaceholder(placeholderText.slice(0, currentIndex + 1));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, 50); // 50ms per character
+
+      return () => clearInterval(typingInterval);
+    }, [mounted, placeholder, value, animatePlaceholder]);
+
+    // Reset mode dismissing state when selectedMode changes
+    useEffect(() => {
+      setIsModeDismissing(false);
+    }, [selectedMode]);
+
+    // Generate Markdown for selected data options
+    const generateDataOptionsMarkdown = useCallback(() => {
+      if (selectedMode !== 'data' || (selectedCharts.length === 0 && !selectedOutputFormat)) {
+        return '';
+      }
+
+      let markdown = '\n\n----\n\n**Data Visualization Requirements:**\n';
+
+      if (selectedOutputFormat) {
+        markdown += `\n- **Output Format:** ${selectedOutputFormat}`;
+      }
+
+      if (selectedCharts.length > 0) {
+        markdown += '\n- **Preferred Charts:**';
+        selectedCharts.forEach(chartId => {
+          markdown += `\n  - ${chartId}`;
+        });
+      }
+
+      return markdown;
+    }, [selectedMode, selectedCharts, selectedOutputFormat]);
+
+    // Handle mode deselection with animation
+    const handleModeDeselect = useCallback(() => {
+      setIsModeDismissing(true);
+      setTimeout(() => {
+        onModeDeselect?.();
+        setIsModeDismissing(false);
+      }, 200); // Match animation duration
+    }, [onModeDeselect]);
+
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
       e.preventDefault();
       if (
@@ -180,6 +275,12 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
           .map((file) => `[Uploaded File: ${file.path}]`)
           .join('\n');
         message = message ? `${message}\n\n${fileInfo}` : fileInfo;
+      }
+
+      // Add data options markdown if in data mode
+      const dataOptionsMarkdown = generateDataOptionsMarkdown();
+      if (dataOptionsMarkdown) {
+        message += dataOptionsMarkdown;
       }
 
       const baseModelName = getActualModelId(selectedModel);
@@ -239,17 +340,17 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
       const files = Array.from(e.dataTransfer.files);
       if (files.length > 0) {
         setPendingFiles(prev => [...prev, ...files]);
-        
+
         if (sandboxId) {
-          await handleFiles(
-            files,
-            sandboxId,
-            setPendingFiles,
-            setUploadedFiles,
-            setIsUploading,
-            messages,
-            queryClient
-          );
+          // await handleFiles(
+          //   files,
+          //   sandboxId,
+          //   setPendingFiles,
+          //   setUploadedFiles,
+          //   setIsUploading,
+          //   messages,
+          //   queryClient
+          // );
         }
       }
     };
@@ -270,7 +371,6 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
           selectedModel={selectedModel}
           onModelChange={handleModelChange}
           modelOptions={modelOptions}
-          subscriptionStatus="active"
           canAccessModel={canAccessModel}
         />
       );
@@ -301,7 +401,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                   value={value}
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
-                  placeholder={placeholder}
+                  placeholder={animatePlaceholder && mounted ? animatedPlaceholder : placeholder}
                   disabled={disabled && !isAgentRunning}
                   className={cn(
                     "min-h-[80px] max-h-[200px] resize-none pr-32 text-base",
@@ -323,15 +423,15 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                           if (files.length > 0) {
                             setPendingFiles(prev => [...prev, ...files]);
                             if (sandboxId) {
-                              await handleFiles(
-                                files,
-                                sandboxId,
-                                setPendingFiles,
-                                setUploadedFiles,
-                                setIsUploading,
-                                messages,
-                                queryClient
-                              );
+                              // await handleFiles(
+                              //   files,
+                              //   sandboxId,
+                              //   setPendingFiles,
+                              //   setUploadedFiles,
+                              //   setIsUploading,
+                              //   messages,
+                              //   queryClient
+                              // );
                             }
                           }
                         }}
@@ -395,6 +495,27 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                   </TooltipProvider>
                 </div>
               </div>
+
+              {/* Mode display */}
+              {(selectedMode || isModeDismissing) && onModeDeselect && (
+                <div className="flex items-center justify-between">
+                  <div className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 text-sm transition-all duration-200",
+                    isModeDismissing && "opacity-0 scale-95"
+                  )}>
+                    {selectedMode && getModeIcon(selectedMode)}
+                    <span className="text-sm">{selectedMode?.charAt(0).toUpperCase()}{selectedMode?.slice(1)}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleModeDeselect}
+                    className="h-8 w-8 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
 
               {/* Agent info display */}
               {isLoggedIn && !hideAgentSelection && (

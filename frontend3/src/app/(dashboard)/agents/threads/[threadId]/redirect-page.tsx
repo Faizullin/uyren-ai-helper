@@ -15,7 +15,7 @@ export function RedirectPage({ threadId }: RedirectPageProps) {
 
   useEffect(() => {
     if (loadThreadQuery.data?.project_id) {
-      router.replace(`/projects/${loadThreadQuery.data.project_id}/thread/${threadId}`);
+      router.replace(`/projects/${loadThreadQuery.data.project_id}/threads/${threadId}`);
     }
   }, [loadThreadQuery.data, threadId, router]);
 

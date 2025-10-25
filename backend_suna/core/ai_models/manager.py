@@ -141,10 +141,7 @@ class ModelManager:
         if not model:
             return False, 0
         
-        if is_input:
-            max_allowed = model.context_window
-        else:
-            max_allowed = model.max_output_tokens or model.context_window
+        max_allowed = model.context_window
         
         return token_count <= max_allowed, max_allowed
     
@@ -158,7 +155,6 @@ class ModelManager:
             "name": model.name,
             "provider": model.provider.value,
             "context_window": model.context_window,
-            "max_output_tokens": model.max_output_tokens,
             "capabilities": [cap.value for cap in model.capabilities],
             "pricing": {
                 "input_per_million": model.pricing.input_cost_per_million_tokens,

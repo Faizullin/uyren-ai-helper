@@ -1,10 +1,9 @@
 'use client';
 
-import React from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { cn } from '@/lib/utils';
 import { MarkdownRenderer as FileMarkdownRenderer } from '@/components/file-renderers/authenticated-markdown-renderer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Project } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 interface MarkdownRendererProps {
     content: string;
@@ -37,7 +36,7 @@ export function MarkdownRenderer({
                 derivedBasePath = previewUrl;
             }
         }
-    } catch {}
+    } catch { }
     return (
         <div className={cn('w-full h-full overflow-hidden', className)}>
             <ScrollArea className="w-full h-full">

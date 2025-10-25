@@ -1,25 +1,34 @@
-import React from 'react';
-import {
-    FileText, FileImage, FileCode, FileSpreadsheet, FileVideo,
-    FileAudio, FileType, Database, Archive, File, ExternalLink,
-    Loader2, Download, ChevronDown
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { AttachmentGroup } from './attachment-group';
-import { HtmlRenderer } from './preview-renderers/html-renderer';
-import { MarkdownRenderer } from './preview-renderers/file-preview-markdown-renderer';
-import { CsvRenderer } from './preview-renderers/csv-renderer';
-import { XlsxRenderer } from './preview-renderers/xlsx-renderer';
-import { PdfRenderer as PdfPreviewRenderer } from './preview-renderers/pdf-renderer';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
+import {
+    Archive,
+    ChevronDown,
+    Database,
+    Download,
+    ExternalLink,
+    File,
+    FileAudio,
+    FileCode,
+    FileImage,
+    FileSpreadsheet,
+    FileText,
+    FileType,
+    FileVideo,
+    Loader2
+} from 'lucide-react';
+import React from 'react';
+import { AttachmentGroup } from './attachment-group';
+import { MarkdownRenderer } from './preview-renderers/file-preview-markdown-renderer';
+import { HtmlRenderer } from './preview-renderers/html-renderer';
+// import { PdfRenderer as PdfPreviewRenderer } from './preview-renderers/pdf-renderer';
 
-import { useFileContent, useImageContent } from '@/hooks/react-query/files';
-import { useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/components/layout/auth-provider';
+import { useFileContent, useImageContent } from '@/hooks/use-files';
 import { Project } from '@/lib/api';
 
 // Define basic file types
@@ -279,16 +288,9 @@ export function FileAttachment({
         if (isXlsx && xlsxBlobUrl && shouldShowPreview) {
             const parseSheetNames = async () => {
                 try {
-                    // Import XLSX dynamically to avoid bundle size issues
-                    const XLSX = await import('xlsx');
-
-                    // Convert blob URL to binary data
-                    const response = await fetch(xlsxBlobUrl);
-                    const arrayBuffer = await response.arrayBuffer();
-
-                    // Read workbook
-                    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-                    setXlsxSheetNames(workbook.SheetNames);
+                    // XLSX library not available - skip parsing
+                    console.warn('XLSX library not available, skipping sheet name parsing');
+                    setXlsxSheetNames(['Sheet 1']);
                 } catch (error) {
                     console.error('Failed to parse XLSX sheet names:', error);
                     setXlsxSheetNames([]);
@@ -410,9 +412,9 @@ export function FileAttachment({
                         <Loader2 className="h-8 w-8 text-primary animate-spin" />
                     </div>
                 )}
-                
+
                 <img
-                    src={sandboxId && session?.access_token ? imageUrl : (fileUrl || '')}
+                    src={sandboxId && session?.access_token ? (imageUrl || '') : (fileUrl || '')}
                     alt={filename}
                     className={cn(
                         // Preserve natural aspect ratio - let image dictate dimensions
@@ -483,17 +485,17 @@ export function FileAttachment({
         'htm': HtmlRenderer,
         'md': MarkdownRenderer,
         'markdown': MarkdownRenderer,
-        'csv': CsvRenderer,
-        'tsv': CsvRenderer,
-        'xlsx': XlsxRenderer,
-        'xls': XlsxRenderer
+        // 'csv': CsvRenderer,
+        // 'tsv': CsvRenderer,
+        // 'xlsx': XlsxRenderer,
+        // 'xls': XlsxRenderer
     };
 
     // HTML/MD/CSV/PDF preview when not collapsed and in grid layout
     // Only show preview if we have actual content or it's loading
     const hasContent = fileContent || pdfBlobUrl || xlsxBlobUrl;
     const isLoadingContent = fileContentLoading || pdfLoading || xlsxLoading;
-    
+
     if (shouldShowPreview && isGridLayout && (hasContent || isLoadingContent || hasError)) {
         // Determine the renderer component
         const Renderer = rendererMap[extension as keyof typeof rendererMap];
@@ -530,7 +532,7 @@ export function FileAttachment({
                     {/* Render PDF, XLSX, or text-based previews */}
                     {!hasError && (
                         <>
-                            {isPdf && (() => {
+                            {/* {isPdf && (() => {
                                 const pdfUrlForRender = localPreviewUrl || (sandboxId ? (pdfBlobUrl ?? null) : fileUrl);
                                 return pdfUrlForRender ? (
                                     <PdfPreviewRenderer
@@ -538,8 +540,8 @@ export function FileAttachment({
                                         className="h-full w-full"
                                     />
                                 ) : null;
-                            })()}
-                            {isXlsx && (() => {
+                            })()} */}
+                            {/* {isXlsx && (() => {
                                 const xlsxUrlForRender = localPreviewUrl || (sandboxId ? (xlsxBlobUrl ?? null) : fileUrl);
                                 return xlsxUrlForRender ? (
                                     <XlsxRenderer
@@ -549,7 +551,7 @@ export function FileAttachment({
                                         onSheetChange={(index) => setXlsxSheetIndex(index)}
                                     />
                                 ) : null;
-                            })()}
+                            })()} */}
                             {!isPdf && !isXlsx && fileContent && Renderer && (
                                 <Renderer
                                     content={fileContent}
@@ -678,7 +680,7 @@ export function FileAttachment({
 
     // Regular files with details
     const safeStyle = isGridLayout ? customStyle : { ...customStyle };
-    if (!isGridLayout) {
+    if (!isGridLayout && safeStyle) {
         delete safeStyle.height;
         delete (safeStyle as any)['--attachment-height'];
     }
@@ -763,7 +765,7 @@ export function FileAttachmentGrid({
     // When there are multiple files, use smaller max heights to prevent taking up too much screen space
     const getGridImageHeight = () => {
         if (!standalone) return 200; // Default for non-standalone
-        
+
         const fileCount = attachments.length;
         if (fileCount === 1) return 600; // Large for single file - preserves aspect ratio better
         if (fileCount === 2) return 400; // Medium for 2 files

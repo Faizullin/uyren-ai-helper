@@ -1,6 +1,5 @@
 import secrets
 import warnings
-from enum import Enum
 from typing import Annotated, Any, Literal
 
 from pydantic import (

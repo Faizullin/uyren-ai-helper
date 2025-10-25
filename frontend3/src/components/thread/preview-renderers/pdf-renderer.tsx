@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
-import dynamic from 'next/dynamic';
-import { cn } from '@/lib/utils';
 import '@/lib/polyfills'; // Import polyfill for Promise.withResolvers
+import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+import React from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 // Import styles for annotations and text layer
