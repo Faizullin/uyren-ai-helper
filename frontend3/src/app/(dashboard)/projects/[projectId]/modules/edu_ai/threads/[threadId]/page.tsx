@@ -1,13 +1,15 @@
-import { ThreadDetailPage } from './thread-detail-page';
+import { ProjectThreadContent } from '../../../../threads/[threadId]/_components/project-thread-content';
 
-interface ThreadDetailPageProps {
+interface EduAiThreadPageProps {
   params: Promise<{
     projectId: string;
     threadId: string;
   }>;
 }
 
-export default async function ThreadDetailPageRoute({ params }: ThreadDetailPageProps) {
+export default async function EduAiThreadPage({ params }: EduAiThreadPageProps) {
   const { projectId, threadId } = await params;
-  return <ThreadDetailPage projectId={projectId} threadId={threadId} />;
+
+  return <ProjectThreadContent projectId={projectId} threadId={threadId} />;
 }
+

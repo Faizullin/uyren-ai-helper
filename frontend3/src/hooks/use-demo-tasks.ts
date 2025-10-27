@@ -22,12 +22,7 @@ export function useStartDemoTask() {
           task_name: taskName,
         },
       });
-      
-      if (!response.data) {
-        throw new Error('No data received from server');
-      }
-      
-      return response.data;
+      return response.data!;
     },
     onSuccess: (data: AgentStartResponse) => {
       // Invalidate relevant queries to refresh data
@@ -35,16 +30,11 @@ export function useStartDemoTask() {
       queryClient.invalidateQueries({ queryKey: ['threads'] });
       queryClient.invalidateQueries({ queryKey: ['agent-runs'] });
 
-      const message = `Demo task started successfully! Agent Run ID: ${data.agent_run_id}`;
-      toast.success(message);
+      toast.success('Demo task started successfully!');
 
-      // Navigate to the created thread
-      if (data.thread_id) {
-        if (data.project_id) {
-          router.push(`/projects/${data.project_id}/threads/${data.thread_id}`);
-        } else {
-          router.push(`/agents/threads/${data.thread_id}`);
-        }
+      // Navigate directly to the agent run detail page to see live logs
+      if (data.agent_run_id && data.thread_id && data.project_id) {
+        router.push(`/projects/${data.project_id}/threads/${data.thread_id}/runs/${data.agent_run_id}`);
       }
     },
     onError: (error: any) => {

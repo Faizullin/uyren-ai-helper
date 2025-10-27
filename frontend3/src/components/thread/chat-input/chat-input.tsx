@@ -141,7 +141,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
     const [mounted, setMounted] = useState(false);
     const [animatedPlaceholder, setAnimatedPlaceholder] = useState('');
     const [isModeDismissing, setIsModeDismissing] = useState(false);
-
+    
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const queryClient = useQueryClient();
@@ -227,20 +227,20 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
       if (selectedMode !== 'data' || (selectedCharts.length === 0 && !selectedOutputFormat)) {
         return '';
       }
-
+      
       let markdown = '\n\n----\n\n**Data Visualization Requirements:**\n';
-
+      
       if (selectedOutputFormat) {
         markdown += `\n- **Output Format:** ${selectedOutputFormat}`;
       }
-
+      
       if (selectedCharts.length > 0) {
         markdown += '\n- **Preferred Charts:**';
         selectedCharts.forEach(chartId => {
           markdown += `\n  - ${chartId}`;
         });
       }
-
+      
       return markdown;
     }, [selectedMode, selectedCharts, selectedOutputFormat]);
 
@@ -276,7 +276,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
           .join('\n');
         message = message ? `${message}\n\n${fileInfo}` : fileInfo;
       }
-
+      
       // Add data options markdown if in data mode
       const dataOptionsMarkdown = generateDataOptionsMarkdown();
       if (dataOptionsMarkdown) {
@@ -365,13 +365,13 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
       if (!mounted || !isLoggedIn || hideAgentSelection) return null;
 
       return (
-        <UnifiedConfigMenu
+          <UnifiedConfigMenu
           selectedAgentId={selectedAgentId}
           onAgentSelect={onAgentSelect}
-          selectedModel={selectedModel}
-          onModelChange={handleModelChange}
-          modelOptions={modelOptions}
-          canAccessModel={canAccessModel}
+            selectedModel={selectedModel}
+            onModelChange={handleModelChange}
+            modelOptions={modelOptions}
+            canAccessModel={canAccessModel}
         />
       );
     }, [mounted, isLoggedIn, hideAgentSelection, selectedAgentId, onAgentSelect, selectedModel, handleModelChange, modelOptions]);
@@ -396,14 +396,14 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
               )}
 
               <div className="relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={value}
-                  onChange={handleChange}
-                  onKeyDown={handleKeyDown}
+        <Textarea
+          ref={textareaRef}
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
                   placeholder={animatePlaceholder && mounted ? animatedPlaceholder : placeholder}
                   disabled={disabled && !isAgentRunning}
-                  className={cn(
+          className={cn(
                     "min-h-[80px] max-h-[200px] resize-none pr-32 text-base",
                     "focus-visible:ring-1"
                   )}
@@ -414,7 +414,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                   {!hideAttachments && sandboxId && (
                     <>
                       <input
-                        ref={fileInputRef}
+              ref={fileInputRef}
                         type="file"
                         multiple
                         className="hidden"
@@ -463,38 +463,38 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                   )}
 
                   {/* Config menu */}
-                  {renderConfigDropdown}
+          {renderConfigDropdown}
 
                   {/* Submit/Stop button */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="submit"
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="submit"
                           size="icon"
                           disabled={(disabled || loading) && !isAgentRunning}
-                          className={cn(
+                  className={cn(
                             "rounded-full h-10 w-10",
                             isAgentRunning ? "bg-destructive hover:bg-destructive/90" : ""
                           )}
                           onClick={handleSubmit}
                         >
                           {loading ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
-                          ) : isAgentRunning ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : isAgentRunning ? (
                             <StopCircle className="h-5 w-5" />
-                          ) : (
-                            <ArrowUp className="h-5 w-5" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
+                  ) : (
+                    <ArrowUp className="h-5 w-5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
                       <TooltipContent>
                         {isAgentRunning ? 'Stop agent' : 'Send message'}
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
+                </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
 
               {/* Mode display */}
               {(selectedMode || isModeDismissing) && onModeDeselect && (
@@ -505,7 +505,7 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                   )}>
                     {selectedMode && getModeIcon(selectedMode)}
                     <span className="text-sm">{selectedMode?.charAt(0).toUpperCase()}{selectedMode?.slice(1)}</span>
-                  </div>
+                        </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -514,8 +514,8 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                   >
                     <X className="h-4 w-4" />
                   </Button>
-                </div>
-              )}
+            </div>
+          )}
 
               {/* Agent info display */}
               {isLoggedIn && !hideAgentSelection && (
@@ -529,8 +529,8 @@ export const ChatInput = memo(forwardRef<ChatInputHandles, ChatInputProps>(
                     </span>
                   </span>
                 </div>
-              )}
-            </div>
+          )}
+        </div>
           </CardContent>
         </Card>
       </div>

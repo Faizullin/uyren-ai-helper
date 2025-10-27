@@ -17,11 +17,11 @@ from app.core.logger import logger
 from app.models.api_key import APIKey
 from app.modules.ai_models.manager import model_manager
 from app.modules.vector_store.manager import vector_store_manager
-from app.modules.vector_store.models import VectorStore, Document
+from app.modules.vector_store.models import VectorStore
+from app.modules.vector_store.rag import get_search_provider, embedding_service
 from app.models.knowledge_base import KnowledgeBaseEntry
 
 from .models import LMSResource, LMSResourceAttachment
-from .tools.supabase_faiss import supabase_faiss_tool
 from .utils import validate_api_key, check_api_key_access
 
 
@@ -144,36 +144,42 @@ async def retrieve_rag_context(state: EducationalAIState) -> EducationalAIState:
         search_query = f"{title} {content}"[:500]  # Limit search query length
 
         async with get_db() as session:
-            # Use Supabase FAISS tool for vector search
-            search_result = await supabase_faiss_tool.search_similar_content(
+            # Generate query embedding
+            query_embedding = await embedding_service.generate_embedding(search_query)
+
+            # Use default pgvector provider for search
+            search_provider = get_search_provider("pgvector")
+
+            # Perform vector search
+            results = await search_provider.search(
                 session=session,
                 vector_store_id=state["vector_store_id"],
-                query_text=search_query,
-                owner_id=state.get("owner_id", ""),  # You may need to pass owner_id in state
+                query_embedding=query_embedding,
+                top_k=5,
                 similarity_threshold=0.7,
-                max_results=5,
                 target_type=state["lms_resource"].get("target_type"),
                 target_id=state["lms_resource"].get("target_id"),
             )
 
-            if search_result["status"] == "success" and search_result["results"]:
+            if results:
                 # Format context from search results
                 context_parts = []
-                for result in search_result["results"]:
+                for result in results:
                     context_parts.append(
-                        f"### {result['title']}\n"
+                        f"### {result.get('heading', 'Content')}\n"
                         f"Similarity: {result['similarity']:.2f}\n"
-                        f"Type: {result['target_type']}\n"
+                        f"Type: {result.get('target_type', 'Unknown')}\n"
+                        f"{result['content'][:300]}...\n"
                     )
 
                 context = "\n\n".join(context_parts)
-                logger.debug(f"[EDU_AI] Retrieved {len(search_result['results'])} relevant materials")
-                
+                logger.debug(f"[EDU_AI] Retrieved {len(results)} relevant materials")
+
                 return {
                     **state,
                     "rag_context": context,
                     "messages": state["messages"]
-                    + [("system", f"Retrieved {len(search_result['results'])} relevant materials via RAG")],
+                    + [("system", f"Retrieved {len(results)} relevant materials via RAG")],
                 }
 
         return {**state, "rag_context": None}

@@ -1,20 +1,33 @@
-"""Vector Store API routes."""
+"""Vector Store API routes for VectorStore, Page, and PageSection."""
 
 import uuid
-from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import func, select
 
 from app.core.db import SessionDep
 from app.core.logger import logger
-from app.models import Project
+from app.modules.vector_store.dependencies import (
+    verify_page_ownership,
+    verify_project_exists,
+    verify_vector_store_ownership,
+)
 from app.modules.vector_store.manager import vector_store_manager
-from app.modules.vector_store.models import Document, VectorStore
+from app.modules.vector_store.models import Page, VectorStore
+from app.modules.vector_store.rag import embedding_service, kb_integration
+from app.modules.vector_store.rag.search_providers import get_search_provider
 from app.modules.vector_store.schemas import (
-    DocumentCreate,
-    DocumentPublic,
-    DocumentUpdate,
+    PageChunkRequest,
+    PageChunkResponse,
+    PageCreate,
+    PagePublic,
+    PageSectionCreate,
+    PageSectionPublic,
+    PageSectionUpdate,
+    PageSectionWithSimilarity,
+    PageUpdate,
+    SearchRequest,
+    SearchResponse,
     VectorStoreCreate,
     VectorStorePublic,
     VectorStoreUpdate,
@@ -29,60 +42,10 @@ from app.schemas.common import (
 )
 from app.utils.authentication import CurrentUser
 
-router = APIRouter(tags=["vector-stores"])
+router = APIRouter()
 
 
-# ==================== Helper Functions ====================
-
-
-def verify_project_exists(
-    session: SessionDep, project_id: uuid.UUID, current_user: CurrentUser
-) -> Project:
-    """Verify project exists and user has access to it."""
-
-    project = session.get(Project, project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # Check ownership
-    if project.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to access this project"
-        )
-
-    return project
-
-
-def verify_vector_store_ownership(
-    session: SessionDep, vector_store_id: uuid.UUID, current_user: CurrentUser
-) -> VectorStore:
-    """Verify user owns the vector store."""
-    vector_store = vector_store_manager.get_vector_store(
-        session, vector_store_id, current_user.id
-    )
-    if not vector_store:
-        raise HTTPException(status_code=404, detail="Vector store not found")
-
-    return vector_store
-
-
-def verify_document_ownership(
-    session: SessionDep, document_id: uuid.UUID, current_user: CurrentUser
-) -> Document:
-    """Verify user owns the document."""
-    document = session.get(Document, document_id)
-    if not document:
-        raise HTTPException(status_code=404, detail="Document not found")
-
-    if document.owner_id != current_user.id:
-        raise HTTPException(
-            status_code=403, detail="Not authorized to access this document"
-        )
-
-    return document
-
-
-# ==================== Vector Store CRUD Endpoints ====================
+# ==================== VectorStore CRUD Endpoints ====================
 
 
 @router.get(
@@ -98,8 +61,7 @@ async def list_project_vector_stores(
     pagination: PaginationQueryParams = Depends(get_pagination_params),
 ) -> PaginatedResponse[VectorStorePublic]:
     """List all vector stores for a specific project."""
-    # Verify project exists and user has access
-    verify_project_exists(session, project_id, current_user)
+    await verify_project_exists(session, project_id, current_user)
 
     query = select(VectorStore).where(
         VectorStore.owner_id == current_user.id, VectorStore.project_id == project_id
@@ -114,12 +76,9 @@ async def list_project_vector_stores(
     )
 
     query = query.order_by(VectorStore.created_at.desc())
-
     results, total = paginate_query(session, query, count_query, pagination)
 
-    # Convert to public schemas
     vector_stores = [VectorStorePublic.model_validate(vs) for vs in results]
-
     return create_paginated_response(vector_stores, pagination, total)
 
 
@@ -135,7 +94,7 @@ async def get_vector_store(
     current_user: CurrentUser,
 ) -> VectorStorePublic:
     """Get a specific vector store by ID."""
-    vector_store = verify_vector_store_ownership(session, vector_store_id, current_user)
+    vector_store = await verify_vector_store_ownership(session, vector_store_id, current_user)
     return VectorStorePublic.model_validate(vector_store)
 
 
@@ -152,10 +111,8 @@ async def create_vector_store(
     current_user: CurrentUser,
 ) -> VectorStorePublic:
     """Create a new vector store for a project."""
-    # Verify project exists and user has access
-    verify_project_exists(session, project_id, current_user)
+    await verify_project_exists(session, project_id, current_user)
 
-    # Create vector store
     vector_store = vector_store_manager.create_vector_store(
         session=session,
         owner_id=current_user.id,
@@ -165,7 +122,6 @@ async def create_vector_store(
     )
 
     logger.info(f"Created vector store {vector_store.id} for project {project_id}")
-
     return VectorStorePublic.model_validate(vector_store)
 
 
@@ -182,11 +138,9 @@ async def update_vector_store(
     current_user: CurrentUser,
 ) -> VectorStorePublic:
     """Update an existing vector store."""
-    verify_vector_store_ownership(session, vector_store_id, current_user)
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
 
-    # Update fields
     update_data = vector_store_data.model_dump(exclude_unset=True)
-
     updated_vector_store = vector_store_manager.update_vector_store(
         session=session,
         vector_store_id=vector_store_id,
@@ -198,7 +152,6 @@ async def update_vector_store(
         raise HTTPException(status_code=500, detail="Failed to update vector store")
 
     logger.info(f"Updated vector store {vector_store_id}")
-
     return VectorStorePublic.model_validate(updated_vector_store)
 
 
@@ -214,7 +167,7 @@ async def delete_vector_store(
     current_user: CurrentUser,
 ) -> Message:
     """Delete a vector store."""
-    verify_vector_store_ownership(session, vector_store_id, current_user)
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
 
     success = vector_store_manager.delete_vector_store(
         session, vector_store_id, current_user.id
@@ -224,301 +177,563 @@ async def delete_vector_store(
         raise HTTPException(status_code=500, detail="Failed to delete vector store")
 
     logger.info(f"Deleted vector store {vector_store_id}")
-
     return Message(message="Vector store deleted successfully")
 
 
-# ==================== Document CRUD Endpoints ====================
+# ==================== Page CRUD Endpoints ====================
 
 
 @router.get(
-    "/vector-stores/{vector_store_id}/documents",
-    response_model=PaginatedResponse[DocumentPublic],
-    summary="List Vector Store Documents",
-    operation_id="list_vector_store_documents",
+    "/vector-stores/{vector_store_id}/pages",
+    response_model=PaginatedResponse[PagePublic],
+    summary="List Pages",
+    operation_id="list_pages",
 )
-async def list_vector_store_documents(
+async def list_pages(
     vector_store_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
     pagination: PaginationQueryParams = Depends(get_pagination_params),
-) -> PaginatedResponse[DocumentPublic]:
-    """List all documents in a vector store."""
-    # Verify vector store ownership
-    verify_vector_store_ownership(session, vector_store_id, current_user)
+    target_type: str | None = None,
+    target_id: uuid.UUID | None = None,
+) -> PaginatedResponse[PagePublic]:
+    """List all pages in a vector store."""
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
 
-    query = select(Document).where(
-        Document.vector_store_id == vector_store_id,
-        Document.owner_id == current_user.id,
+    query = select(Page).where(
+        Page.vector_store_id == vector_store_id,
+        Page.owner_id == current_user.id,
     )
+
+    if target_type:
+        query = query.where(Page.target_type == target_type)
+    if target_id:
+        query = query.where(Page.target_id == target_id)
+
     count_query = (
         select(func.count())
-        .select_from(Document)
+        .select_from(Page)
         .where(
-            Document.vector_store_id == vector_store_id,
-            Document.owner_id == current_user.id,
+            Page.vector_store_id == vector_store_id,
+            Page.owner_id == current_user.id,
         )
     )
 
-    query = query.order_by(Document.created_at.desc())
+    if target_type:
+        count_query = count_query.where(Page.target_type == target_type)
+    if target_id:
+        count_query = count_query.where(Page.target_id == target_id)
 
+    query = query.order_by(Page.created_at.desc())
     results, total = paginate_query(session, query, count_query, pagination)
 
-    # Convert to public schemas
-    documents = [DocumentPublic.model_validate(doc) for doc in results]
-
-    return create_paginated_response(documents, pagination, total)
+    pages = [PagePublic.model_validate(page) for page in results]
+    return create_paginated_response(pages, pagination, total)
 
 
 @router.get(
-    "/documents/{document_id}",
-    response_model=DocumentPublic,
-    summary="Get Document",
-    operation_id="get_document",
+    "/pages/{page_id}",
+    response_model=PagePublic,
+    summary="Get Page",
+    operation_id="get_page",
 )
-async def get_document(
-    document_id: uuid.UUID,
+async def get_page(
+    page_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
-) -> DocumentPublic:
-    """Get a specific document by ID."""
-    document = verify_document_ownership(session, document_id, current_user)
-    return DocumentPublic.model_validate(document)
+) -> PagePublic:
+    """Get a specific page by ID."""
+    page = await verify_page_ownership(session, page_id, current_user)
+    return PagePublic.model_validate(page)
+
+
+@router.get(
+    "/vector-stores/{vector_store_id}/pages/by-path",
+    response_model=PagePublic,
+    summary="Get Page by Path",
+    operation_id="get_page_by_path",
+)
+async def get_page_by_path(
+    vector_store_id: uuid.UUID,
+    path: str,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> PagePublic:
+    """Get a page by its unique path (like chatbot's read by ID)."""
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
+
+    page = vector_store_manager.get_page_by_path(session, path, vector_store_id)
+    if not page:
+        raise HTTPException(status_code=404, detail=f"Page not found at path: {path}")
+
+    # Verify ownership
+    if page.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return PagePublic.model_validate(page)
 
 
 @router.post(
-    "/vector-stores/{vector_store_id}/documents",
-    response_model=DocumentPublic,
-    summary="Add Document to Vector Store",
-    operation_id="add_document_to_vector_store",
+    "/vector-stores/{vector_store_id}/pages",
+    response_model=PagePublic,
+    summary="Create Page",
+    operation_id="create_page",
 )
-async def add_document_to_vector_store(
+async def create_page(
     vector_store_id: uuid.UUID,
-    document_data: DocumentCreate,
+    page_data: PageCreate,
     session: SessionDep,
     current_user: CurrentUser,
-) -> DocumentPublic:
-    """Add a document to a vector store."""
-    # Verify vector store ownership
-    verify_vector_store_ownership(session, vector_store_id, current_user)
+) -> PagePublic:
+    """Create a new page in a vector store."""
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
 
-    # Add document
-    document = vector_store_manager.add_document(
+    page = vector_store_manager.create_page(
         session=session,
         vector_store_id=vector_store_id,
         owner_id=current_user.id,
-        title=document_data.title,
-        content=document_data.content,
-        content_type=document_data.content_type,
-        source_url=document_data.source_url,
-        source_file_path=document_data.source_file_path,
-        target_type=document_data.target_type,
-        target_id=document_data.target_id,
+        path=page_data.path,
+        content=page_data.content,
+        meta=page_data.meta,
+        target_type=page_data.target_type,
+        target_id=page_data.target_id,
+        source=page_data.source,
+        parent_page_id=page_data.parent_page_id,
     )
 
-    if not document:
-        raise HTTPException(status_code=500, detail="Failed to add document")
-
-    logger.info(f"Added document {document.id} to vector store {vector_store_id}")
-
-    return DocumentPublic.model_validate(document)
-
-
-@router.post(
-    "/vector-stores/{vector_store_id}/documents/course/{course_id}",
-    response_model=DocumentPublic,
-    summary="Add Course Document",
-    operation_id="add_course_document",
-)
-async def add_course_document(
-    vector_store_id: uuid.UUID,
-    course_id: uuid.UUID,
-    document_data: DocumentCreate,
-    session: SessionDep,
-    current_user: CurrentUser,
-) -> DocumentPublic:
-    """Add a document for a specific course."""
-    # Verify vector store ownership
-    verify_vector_store_ownership(session, vector_store_id, current_user)
-
-    # Add course document
-    document = vector_store_manager.add_course_document(
-        session=session,
-        vector_store_id=vector_store_id,
-        owner_id=current_user.id,
-        course_id=course_id,
-        title=document_data.title,
-        content=document_data.content,
-        content_type=document_data.content_type,
-        source_url=document_data.source_url,
-        source_file_path=document_data.source_file_path,
-    )
-
-    if not document:
-        raise HTTPException(status_code=500, detail="Failed to add course document")
-
-    logger.info(f"Added course document {document.id} for course {course_id}")
-
-    return DocumentPublic.model_validate(document)
-
-
-@router.post(
-    "/vector-stores/{vector_store_id}/documents/lesson/{lesson_id}",
-    response_model=DocumentPublic,
-    summary="Add Lesson Document",
-    operation_id="add_lesson_document",
-)
-async def add_lesson_document(
-    vector_store_id: uuid.UUID,
-    lesson_id: uuid.UUID,
-    document_data: DocumentCreate,
-    session: SessionDep,
-    current_user: CurrentUser,
-) -> DocumentPublic:
-    """Add a document for a specific lesson."""
-    # Verify vector store ownership
-    verify_vector_store_ownership(session, vector_store_id, current_user)
-
-    # Add lesson document
-    document = vector_store_manager.add_lesson_document(
-        session=session,
-        vector_store_id=vector_store_id,
-        owner_id=current_user.id,
-        lesson_id=lesson_id,
-        title=document_data.title,
-        content=document_data.content,
-        content_type=document_data.content_type,
-        source_url=document_data.source_url,
-        source_file_path=document_data.source_file_path,
-    )
-
-    if not document:
-        raise HTTPException(status_code=500, detail="Failed to add lesson document")
-
-    logger.info(f"Added lesson document {document.id} for lesson {lesson_id}")
-
-    return DocumentPublic.model_validate(document)
+    logger.info(f"Created page {page.id} in vector store {vector_store_id}")
+    return PagePublic.model_validate(page)
 
 
 @router.put(
-    "/documents/{document_id}",
-    response_model=DocumentPublic,
-    summary="Update Document",
-    operation_id="update_document",
+    "/pages/{page_id}",
+    response_model=PagePublic,
+    summary="Update Page",
+    operation_id="update_page",
 )
-async def update_document(
-    document_id: uuid.UUID,
-    document_data: DocumentUpdate,
+async def update_page(
+    page_id: uuid.UUID,
+    page_data: PageUpdate,
     session: SessionDep,
     current_user: CurrentUser,
-) -> DocumentPublic:
-    """Update an existing document."""
-    document = verify_document_ownership(session, document_id, current_user)
+) -> PagePublic:
+    """Update an existing page."""
+    await verify_page_ownership(session, page_id, current_user)
 
-    # Update fields
-    update_data = document_data.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(document, key, value)
+    update_data = page_data.model_dump(exclude_unset=True)
+    updated_page = vector_store_manager.update_page(
+        session=session,
+        page_id=page_id,
+        owner_id=current_user.id,
+        **update_data,
+    )
 
-    document.updated_at = datetime.now(timezone.utc)
+    if not updated_page:
+        raise HTTPException(status_code=500, detail="Failed to update page")
 
-    session.add(document)
-    session.commit()
-    session.refresh(document)
-
-    logger.info(f"Updated document {document_id}")
-
-    return DocumentPublic.model_validate(document)
+    logger.info(f"Updated page {page_id}")
+    return PagePublic.model_validate(updated_page)
 
 
 @router.delete(
-    "/documents/{document_id}",
+    "/pages/{page_id}",
     response_model=Message,
-    summary="Delete Document",
-    operation_id="delete_document",
+    summary="Delete Page",
+    operation_id="delete_page",
 )
-async def delete_document(
-    document_id: uuid.UUID,
+async def delete_page(
+    page_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
 ) -> Message:
-    """Delete a document."""
-    document = verify_document_ownership(session, document_id, current_user)
+    """Delete a page and all its sections."""
+    await verify_page_ownership(session, page_id, current_user)
 
-    session.delete(document)
+    success = vector_store_manager.delete_page(session, page_id, current_user.id)
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete page")
+
+    logger.info(f"Deleted page {page_id}")
+    return Message(message="Page deleted successfully")
+
+
+# ==================== PageSection CRUD Endpoints ====================
+
+
+@router.get(
+    "/pages/{page_id}/sections",
+    response_model=list[PageSectionPublic],
+    summary="List Page Sections",
+    operation_id="list_page_sections",
+)
+async def list_page_sections(
+    page_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> list[PageSectionPublic]:
+    """List all sections for a page."""
+    await verify_page_ownership(session, page_id, current_user)
+
+    sections = vector_store_manager.list_page_sections(session, page_id)
+    return [PageSectionPublic.model_validate(section) for section in sections]
+
+
+@router.get(
+    "/sections/{section_id}",
+    response_model=PageSectionPublic,
+    summary="Get Page Section",
+    operation_id="get_page_section",
+)
+async def get_page_section(
+    section_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> PageSectionPublic:
+    """Get a specific page section by ID."""
+    section = vector_store_manager.get_page_section(session, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Page section not found")
+
+    # Verify ownership through page
+    page = vector_store_manager.get_page(session, section.page_id, current_user.id)
+    if not page:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return PageSectionPublic.model_validate(section)
+
+
+@router.post(
+    "/pages/{page_id}/sections",
+    response_model=PageSectionPublic,
+    summary="Create Page Section",
+    operation_id="create_page_section",
+)
+async def create_page_section(
+    page_id: uuid.UUID,
+    section_data: PageSectionCreate,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> PageSectionPublic:
+    """Create a new page section."""
+    await verify_page_ownership(session, page_id, current_user)
+
+    section = vector_store_manager.create_page_section(
+        session=session,
+        page_id=page_id,
+        content=section_data.content,
+        heading=section_data.heading,
+        slug=section_data.slug,
+    )
+
+    logger.info(f"Created section {section.id} for page {page_id}")
+    return PageSectionPublic.model_validate(section)
+
+
+@router.put(
+    "/sections/{section_id}",
+    response_model=PageSectionPublic,
+    summary="Update Page Section",
+    operation_id="update_page_section",
+)
+async def update_page_section(
+    section_id: uuid.UUID,
+    section_data: PageSectionUpdate,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> PageSectionPublic:
+    """Update an existing page section."""
+    section = vector_store_manager.get_page_section(session, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Page section not found")
+
+    # Verify ownership through page
+    page = vector_store_manager.get_page(session, section.page_id, current_user.id)
+    if not page:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Update fields
+    update_data = section_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        if hasattr(section, field):
+            setattr(section, field, value)
+
+    from datetime import datetime, timezone
+
+    section.updated_at = datetime.now(timezone.utc)
+
+    session.add(section)
     session.commit()
+    session.refresh(section)
 
-    logger.info(f"Deleted document {document_id}")
+    logger.info(f"Updated section {section_id}")
+    return PageSectionPublic.model_validate(section)
 
-    return Message(message="Document deleted successfully")
+
+@router.delete(
+    "/sections/{section_id}",
+    response_model=Message,
+    summary="Delete Page Section",
+    operation_id="delete_page_section",
+)
+async def delete_page_section(
+    section_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> Message:
+    """Delete a page section."""
+    section = vector_store_manager.get_page_section(session, section_id)
+    if not section:
+        raise HTTPException(status_code=404, detail="Page section not found")
+
+    # Verify ownership through page
+    page = vector_store_manager.get_page(session, section.page_id, current_user.id)
+    if not page:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    success = vector_store_manager.delete_page_section(session, section_id)
+
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete page section")
+
+    logger.info(f"Deleted section {section_id}")
+    return Message(message="Page section deleted successfully")
 
 
-# ==================== Target-Specific Document Endpoints ====================
+# ==================== Advanced Read Operations ====================
 
 
 @router.get(
-    "/courses/{course_id}/documents",
-    response_model=PaginatedResponse[DocumentPublic],
-    summary="Get Course Documents",
-    operation_id="get_course_documents",
+    "/pages/{page_id}/with-sections",
+    response_model=dict,
+    summary="Get Page with All Sections",
+    operation_id="get_page_with_sections",
 )
-async def get_course_documents(
-    course_id: uuid.UUID,
+async def get_page_with_sections(
+    page_id: uuid.UUID,
     session: SessionDep,
     current_user: CurrentUser,
-    pagination: PaginationQueryParams = Depends(get_pagination_params),
-) -> PaginatedResponse[DocumentPublic]:
-    """Get all documents for a specific course."""
-    # Get course documents
-    documents = vector_store_manager.get_course_documents(
-        session=session,
-        course_id=course_id,
-        owner_id=current_user.id,
-    )
+) -> dict:
+    """Get page and all its sections in one call (like chatbot's /read/all)."""
+    page = await verify_page_ownership(session, page_id, current_user)
+    sections = vector_store_manager.list_page_sections(session, page_id)
 
-    # Apply pagination
-    total = len(documents)
-    start = pagination.offset
-    end = start + pagination.limit
-    paginated_documents = documents[start:end]
-
-    # Convert to public schemas
-    document_publics = [
-        DocumentPublic.model_validate(doc) for doc in paginated_documents
-    ]
-
-    return create_paginated_response(document_publics, pagination, total)
+    return {
+        "page": PagePublic.model_validate(page),
+        "sections": [PageSectionPublic.model_validate(s) for s in sections],
+        "section_count": len(sections),
+    }
 
 
-@router.get(
-    "/lessons/{lesson_id}/documents",
-    response_model=PaginatedResponse[DocumentPublic],
-    summary="Get Lesson Documents",
-    operation_id="get_lesson_documents",
+# ==================== Bulk Operations ====================
+
+
+@router.post(
+    "/vector-stores/{vector_store_id}/pages/batch",
+    response_model=dict,
+    summary="Batch Create Pages",
+    operation_id="batch_create_pages",
 )
-async def get_lesson_documents(
-    lesson_id: uuid.UUID,
+async def batch_create_pages(
+    vector_store_id: uuid.UUID,
+    pages_data: list[PageCreate],
     session: SessionDep,
     current_user: CurrentUser,
-    pagination: PaginationQueryParams = Depends(get_pagination_params),
-) -> PaginatedResponse[DocumentPublic]:
-    """Get all documents for a specific lesson."""
-    # Get lesson documents
-    documents = vector_store_manager.get_lesson_documents(
-        session=session,
-        lesson_id=lesson_id,
-        owner_id=current_user.id,
+    auto_chunk: bool = True,
+) -> dict:
+    """Create multiple pages at once (like chatbot's /ingest with list)."""
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
+
+    created_pages = []
+    total_sections = 0
+
+    for page_data in pages_data:
+        # Create page
+        page = vector_store_manager.create_page(
+            session=session,
+            vector_store_id=vector_store_id,
+            owner_id=current_user.id,
+            path=page_data.path,
+            content=page_data.content,
+            meta=page_data.meta,
+            target_type=page_data.target_type,
+            target_id=page_data.target_id,
+            source=page_data.source,
+            parent_page_id=page_data.parent_page_id,
+        )
+
+        # Auto-chunk content if provided and auto_chunk is True
+        if auto_chunk and page_data.content:
+            sections = vector_store_manager.chunk_content_to_sections(
+                session=session,
+                page_id=page.id,
+                content=page_data.content,
+            )
+            total_sections += len(sections)
+
+        created_pages.append(page)
+
+    logger.info(
+        f"Batch created {len(created_pages)} pages with {total_sections} sections"
     )
 
-    # Apply pagination
-    total = len(documents)
-    start = pagination.offset
-    end = start + pagination.limit
-    paginated_documents = documents[start:end]
+    return {
+        "message": f"Successfully created {len(created_pages)} pages",
+        "pages_created": len(created_pages),
+        "sections_created": total_sections,
+        "pages": [PagePublic.model_validate(p) for p in created_pages],
+    }
 
-    # Convert to public schemas
-    document_publics = [
-        DocumentPublic.model_validate(doc) for doc in paginated_documents
-    ]
 
-    return create_paginated_response(document_publics, pagination, total)
+@router.post(
+    "/pages/{page_id}/chunk",
+    response_model=PageChunkResponse,
+    summary="Chunk Page Content",
+    operation_id="chunk_page_content",
+)
+async def chunk_page_content(
+    page_id: uuid.UUID,
+    chunk_request: PageChunkRequest,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> PageChunkResponse:
+    """Chunk page content into sections automatically."""
+    await verify_page_ownership(session, page_id, current_user)
+
+    sections = vector_store_manager.chunk_content_to_sections(
+        session=session,
+        page_id=page_id,
+        content=chunk_request.content,
+        chunk_size=chunk_request.chunk_size,
+        chunk_overlap=chunk_request.chunk_overlap,
+    )
+
+    logger.info(f"Chunked content into {len(sections)} sections for page {page_id}")
+
+    return PageChunkResponse(
+        page_id=page_id,
+        sections_created=len(sections),
+        sections=[PageSectionPublic.model_validate(s) for s in sections],
+    )
+
+
+# ==================== Knowledge Base Integration ====================
+
+
+@router.post(
+    "/vector-stores/{vector_store_id}/add-kb-file",
+    response_model=dict,
+    summary="Add Knowledge Base File",
+    operation_id="add_kb_file_to_vector_store",
+)
+async def add_kb_file_to_vector_store(
+    vector_store_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+    kb_entry_id: uuid.UUID,
+    target_type: str | None = None,
+    target_id: uuid.UUID | None = None,
+) -> dict:
+    """
+    Add knowledge base file to vector store.
+
+    File must be uploaded to KB first, then reference it here by kb_entry_id.
+    """
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
+
+    result = await kb_integration.process_kb_entry_for_rag(
+        session=session,
+        kb_entry_id=kb_entry_id,
+        vector_store_id=vector_store_id,
+        owner_id=current_user.id,
+        target_type=target_type,
+        target_id=target_id,
+    )
+
+    if result["status"] != "success":
+        raise HTTPException(status_code=500, detail=result["message"])
+
+    return result
+
+
+# ==================== Semantic Search ====================
+
+
+@router.post(
+    "/vector-stores/{vector_store_id}/search",
+    response_model=SearchResponse,
+    summary="Semantic Search Page Sections",
+    operation_id="search_page_sections",
+)
+async def search_page_sections(
+    vector_store_id: uuid.UUID,
+    search_request: SearchRequest,
+    session: SessionDep,
+    current_user: CurrentUser,
+    provider: str = "pgvector",
+) -> SearchResponse:
+    """
+    Semantic search using vector embeddings.
+
+    Providers:
+    - pgvector: Direct PostgreSQL pgvector search (default, good for small-medium datasets)
+    - faiss: FAISS in-memory search (fast for large datasets, loads fresh index)
+
+    Requires embeddings to be generated first via embedding service.
+
+    Note: No owner_id filtering - searches across all data in vector store.
+    """
+    await verify_vector_store_ownership(session, vector_store_id, current_user)
+
+    # Generate query embedding
+    try:
+        query_embedding = await embedding_service.generate_embedding(search_request.query)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    # Get search provider
+    try:
+        search_provider = get_search_provider(provider)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    # Perform search using selected provider
+    try:
+        results = await search_provider.search(
+            session=session,
+            vector_store_id=vector_store_id,
+            query_embedding=query_embedding,
+            top_k=search_request.top_k,
+            similarity_threshold=search_request.similarity_threshold,
+            target_type=search_request.target_type,
+            target_id=search_request.target_id,
+        )
+
+        # Format results
+        search_results = []
+        for result in results:
+            search_results.append(
+                PageSectionWithSimilarity(
+                    id=uuid.UUID(result["id"]),
+                    page_id=uuid.UUID(result["page_id"]),
+                    content=result["content"],
+                    heading=result["heading"],
+                    slug=result["slug"],
+                    similarity=result["similarity"],
+                )
+            )
+
+        logger.info(
+            f"Search query '{search_request.query}' using {provider} returned {len(search_results)} results"
+        )
+
+        return SearchResponse(
+            query=search_request.query,
+            results=search_results,
+            results_count=len(search_results),
+            vector_store_id=vector_store_id,
+        )
+
+    except Exception as e:
+        logger.error(f"Error in {provider} search: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")

@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { AddCreditsData, AddCreditsErrors, AddCreditsResponses, CreateAgentData, CreateAgentErrors, CreateAgentResponses, CreateApiKeyData, CreateApiKeyErrors, CreateApiKeyResponses, CreateKbFolderData, CreateKbFolderErrors, CreateKbFolderResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateThreadData, CreateThreadErrors, CreateThreadMessageData, CreateThreadMessageErrors, CreateThreadMessageResponses, CreateThreadResponses, CreateUserData, CreateUserErrors, CreateUserResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteApiKeyData, DeleteApiKeyErrors, DeleteApiKeyResponses, DeleteCurrentUserAccountData, DeleteCurrentUserAccountResponses, DeleteKbEntryData, DeleteKbEntryErrors, DeleteKbEntryResponses, DeleteKbFolderData, DeleteKbFolderErrors, DeleteKbFolderResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteThreadData, DeleteThreadErrors, DeleteThreadMessageData, DeleteThreadMessageErrors, DeleteThreadMessageResponses, DeleteThreadResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DownloadKbEntryData, DownloadKbEntryErrors, DownloadKbEntryResponses, GenerateAgentIconData, GenerateAgentIconErrors, GenerateAgentIconResponses, GetAccountSummaryData, GetAccountSummaryResponses, GetAgentData, GetAgentErrors, GetAgentKbAssignmentsData, GetAgentKbAssignmentsErrors, GetAgentKbAssignmentsResponses, GetAgentResponses, GetAgentRunStatusData, GetAgentRunStatusErrors, GetAgentRunStatusResponses, GetApiKeyData, GetApiKeyErrors, GetApiKeyResponses, GetAvailableModelsData, GetAvailableModelsResponses, GetCreditBalanceData, GetCreditBalanceResponses, GetCurrentUserProfileData, GetCurrentUserProfileResponses, GetKbEntryContentData, GetKbEntryContentErrors, GetKbEntryContentResponses, GetKbEntryData, GetKbEntryErrors, GetKbEntryResponses, GetKbFolderData, GetKbFolderErrors, GetKbFolderResponses, GetKbStatsData, GetKbStatsResponses, GetProjectApiKeysData, GetProjectApiKeysErrors, GetProjectApiKeysResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectStatsData, GetProjectStatsErrors, GetProjectStatsResponses, GetProjectThreadsData, GetProjectThreadsErrors, GetProjectThreadsResponses, GetThreadData, GetThreadErrors, GetThreadMessageData, GetThreadMessageErrors, GetThreadMessageResponses, GetThreadMessagesData, GetThreadMessagesErrors, GetThreadMessagesResponses, GetThreadResponses, GetTransactionsData, GetTransactionsErrors, GetTransactionsResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, InitiateAgentSessionData, InitiateAgentSessionErrors, InitiateAgentSessionResponses, ListActiveAgentRunsData, ListActiveAgentRunsErrors, ListActiveAgentRunsResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListApiKeysData, ListApiKeysErrors, ListApiKeysResponses, ListEduAiThreadsData, ListEduAiThreadsErrors, ListEduAiThreadsResponses, ListFolderEntriesData, ListFolderEntriesErrors, ListFolderEntriesResponses, ListKbFoldersData, ListKbFoldersErrors, ListKbFoldersResponses, ListThreadAgentRunsData, ListThreadAgentRunsErrors, ListThreadAgentRunsResponses, ListUserProjectsData, ListUserProjectsErrors, ListUserProjectsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginAccessTokenData, LoginAccessTokenErrors, LoginAccessTokenResponses, LoginData, LoginErrors, LoginResponses, MoveKbEntryData, MoveKbEntryErrors, MoveKbEntryResponses, RegisterData, RegisterErrors, RegisterResponses, RetryAgentRunData, RetryAgentRunErrors, RetryAgentRunResponses, StartAgentRunData, StartAgentRunErrors, StartAgentRunResponses, StartDemoEducationalTaskData, StartDemoEducationalTaskErrors, StartDemoEducationalTaskResponses, StopAgentRunData, StopAgentRunErrors, StopAgentRunResponses, StreamAgentRunData, StreamAgentRunErrors, StreamAgentRunResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentKbAssignmentsData, UpdateAgentKbAssignmentsErrors, UpdateAgentKbAssignmentsResponses, UpdateAgentResponses, UpdateApiKeyData, UpdateApiKeyErrors, UpdateApiKeyResponses, UpdateCurrentUserPasswordData, UpdateCurrentUserPasswordErrors, UpdateCurrentUserPasswordResponses, UpdateCurrentUserProfileData, UpdateCurrentUserProfileErrors, UpdateCurrentUserProfileResponses, UpdateKbEntryData, UpdateKbEntryErrors, UpdateKbEntryResponses, UpdateKbFolderData, UpdateKbFolderErrors, UpdateKbFolderResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateThreadData, UpdateThreadErrors, UpdateThreadMessageData, UpdateThreadMessageErrors, UpdateThreadMessageResponses, UpdateThreadResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses, UploadFileToFolderData, UploadFileToFolderErrors, UploadFileToFolderResponses } from './types.gen';
+import type { AddCreditsData, AddCreditsErrors, AddCreditsResponses, AddKbEntryToVectorStoreData, AddKbEntryToVectorStoreErrors, AddKbEntryToVectorStoreResponses, AddKbFileToVectorStoreData, AddKbFileToVectorStoreErrors, AddKbFileToVectorStoreResponses, AddKbFolderToVectorStoreData, AddKbFolderToVectorStoreErrors, AddKbFolderToVectorStoreResponses, BatchCreatePagesData, BatchCreatePagesErrors, BatchCreatePagesResponses, ChunkPageContentData, ChunkPageContentErrors, ChunkPageContentResponses, CreateAgentData, CreateAgentErrors, CreateAgentResponses, CreateApiKeyData, CreateApiKeyErrors, CreateApiKeyResponses, CreateKbFolderData, CreateKbFolderErrors, CreateKbFolderResponses, CreatePageData, CreatePageErrors, CreatePageResponses, CreatePageSectionData, CreatePageSectionErrors, CreatePageSectionResponses, CreateProjectData, CreateProjectErrors, CreateProjectResponses, CreateThreadData, CreateThreadErrors, CreateThreadMessageData, CreateThreadMessageErrors, CreateThreadMessageResponses, CreateThreadResponses, CreateUserData, CreateUserErrors, CreateUserResponses, CreateVectorStoreData, CreateVectorStoreErrors, CreateVectorStoreForRagData, CreateVectorStoreForRagErrors, CreateVectorStoreForRagResponses, CreateVectorStoreResponses, DeleteAgentData, DeleteAgentErrors, DeleteAgentResponses, DeleteAgentRunData, DeleteAgentRunErrors, DeleteAgentRunResponses, DeleteApiKeyData, DeleteApiKeyErrors, DeleteApiKeyResponses, DeleteCurrentUserAccountData, DeleteCurrentUserAccountResponses, DeleteKbEntryData, DeleteKbEntryErrors, DeleteKbEntryResponses, DeleteKbFolderData, DeleteKbFolderErrors, DeleteKbFolderResponses, DeletePageData, DeletePageErrors, DeletePageResponses, DeletePageSectionData, DeletePageSectionErrors, DeletePageSectionResponses, DeleteProjectData, DeleteProjectErrors, DeleteProjectResponses, DeleteThreadData, DeleteThreadErrors, DeleteThreadMessageData, DeleteThreadMessageErrors, DeleteThreadMessageResponses, DeleteThreadResponses, DeleteUserData, DeleteUserErrors, DeleteUserResponses, DeleteVectorStoreData, DeleteVectorStoreErrors, DeleteVectorStoreResponses, DownloadKbEntryData, DownloadKbEntryErrors, DownloadKbEntryResponses, GenerateAgentIconData, GenerateAgentIconErrors, GenerateAgentIconResponses, GetAccountSummaryData, GetAccountSummaryResponses, GetAgentData, GetAgentErrors, GetAgentKbAssignmentsData, GetAgentKbAssignmentsErrors, GetAgentKbAssignmentsResponses, GetAgentResponses, GetAgentRunStatusData, GetAgentRunStatusErrors, GetAgentRunStatusResponses, GetApiKeyData, GetApiKeyErrors, GetApiKeyResponses, GetAvailableModelsData, GetAvailableModelsResponses, GetCreditBalanceData, GetCreditBalanceResponses, GetCurrentUserProfileData, GetCurrentUserProfileResponses, GetKbEntryContentData, GetKbEntryContentErrors, GetKbEntryContentResponses, GetKbEntryData, GetKbEntryErrors, GetKbEntryResponses, GetKbFolderData, GetKbFolderErrors, GetKbFolderResponses, GetKbStatsData, GetKbStatsResponses, GetPageByPathData, GetPageByPathErrors, GetPageByPathResponses, GetPageData, GetPageErrors, GetPageResponses, GetPageSectionData, GetPageSectionErrors, GetPageSectionResponses, GetPageWithSectionsData, GetPageWithSectionsErrors, GetPageWithSectionsResponses, GetProjectApiKeysData, GetProjectApiKeysErrors, GetProjectApiKeysResponses, GetProjectData, GetProjectErrors, GetProjectResponses, GetProjectStatsData, GetProjectStatsErrors, GetProjectStatsResponses, GetProjectThreadsData, GetProjectThreadsErrors, GetProjectThreadsResponses, GetThreadData, GetThreadErrors, GetThreadMessageData, GetThreadMessageErrors, GetThreadMessageResponses, GetThreadMessagesData, GetThreadMessagesErrors, GetThreadMessagesResponses, GetThreadResponses, GetTransactionsData, GetTransactionsErrors, GetTransactionsResponses, GetUserByIdData, GetUserByIdErrors, GetUserByIdResponses, GetVectorStoreData, GetVectorStoreErrors, GetVectorStoreResponses, GetVectorStoreStatsData, GetVectorStoreStatsErrors, GetVectorStoreStatsResponses, InitiateAgentSessionData, InitiateAgentSessionErrors, InitiateAgentSessionResponses, ListActiveAgentRunsData, ListActiveAgentRunsErrors, ListActiveAgentRunsResponses, ListAgentsData, ListAgentsErrors, ListAgentsResponses, ListApiKeysData, ListApiKeysErrors, ListApiKeysResponses, ListEduAiThreadsData, ListEduAiThreadsErrors, ListEduAiThreadsResponses, ListFolderEntriesData, ListFolderEntriesErrors, ListFolderEntriesResponses, ListKbFoldersData, ListKbFoldersErrors, ListKbFoldersResponses, ListPagesData, ListPageSectionsData, ListPageSectionsErrors, ListPageSectionsResponses, ListPagesErrors, ListPagesResponses, ListProjectVectorStoresData, ListProjectVectorStoresErrors, ListProjectVectorStoresResponses, ListThreadAgentRunsData, ListThreadAgentRunsErrors, ListThreadAgentRunsResponses, ListUserProjectsData, ListUserProjectsErrors, ListUserProjectsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, LoginAccessTokenData, LoginAccessTokenErrors, LoginAccessTokenResponses, LoginData, LoginErrors, LoginResponses, MoveKbEntryData, MoveKbEntryErrors, MoveKbEntryResponses, RegisterData, RegisterErrors, RegisterResponses, RetryAgentRunData, RetryAgentRunErrors, RetryAgentRunResponses, SearchPageSectionsData, SearchPageSectionsErrors, SearchPageSectionsResponses, StartAgentRunData, StartAgentRunErrors, StartAgentRunResponses, StartDemoEducationalTaskData, StartDemoEducationalTaskErrors, StartDemoEducationalTaskResponses, StopAgentRunData, StopAgentRunErrors, StopAgentRunResponses, StreamAgentRunData, StreamAgentRunErrors, StreamAgentRunResponses, UpdateAgentData, UpdateAgentErrors, UpdateAgentKbAssignmentsData, UpdateAgentKbAssignmentsErrors, UpdateAgentKbAssignmentsResponses, UpdateAgentResponses, UpdateApiKeyData, UpdateApiKeyErrors, UpdateApiKeyResponses, UpdateCurrentUserPasswordData, UpdateCurrentUserPasswordErrors, UpdateCurrentUserPasswordResponses, UpdateCurrentUserProfileData, UpdateCurrentUserProfileErrors, UpdateCurrentUserProfileResponses, UpdateKbEntryData, UpdateKbEntryErrors, UpdateKbEntryResponses, UpdateKbFolderData, UpdateKbFolderErrors, UpdateKbFolderResponses, UpdatePageData, UpdatePageErrors, UpdatePageResponses, UpdatePageSectionData, UpdatePageSectionErrors, UpdatePageSectionResponses, UpdateProjectData, UpdateProjectErrors, UpdateProjectResponses, UpdateThreadData, UpdateThreadErrors, UpdateThreadMessageData, UpdateThreadMessageErrors, UpdateThreadMessageResponses, UpdateThreadResponses, UpdateUserData, UpdateUserErrors, UpdateUserResponses, UpdateVectorStoreData, UpdateVectorStoreErrors, UpdateVectorStoreResponses, UploadFileToFolderData, UploadFileToFolderErrors, UploadFileToFolderResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -517,6 +517,82 @@ export class EduAiService {
             ...options
         });
     }
+    
+    /**
+     * Create Vector Store for RAG
+     *
+     * Create a new vector store for RAG operations.
+     */
+    public static create_vector_store_for_rag<ThrowOnError extends boolean = false>(options: Options<CreateVectorStoreForRagData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateVectorStoreForRagResponses, CreateVectorStoreForRagErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/create',
+            ...options
+        });
+    }
+    
+    /**
+     * Add Knowledge Base Entry to Vector Store
+     *
+     * Add a knowledge base entry to vector store.
+     */
+    public static add_kb_entry_to_vector_store<ThrowOnError extends boolean = false>(options: Options<AddKbEntryToVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).post<AddKbEntryToVectorStoreResponses, AddKbEntryToVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/{vector_store_id}/add-kb-entry',
+            ...options
+        });
+    }
+    
+    /**
+     * Add All KB Files from Folder
+     *
+     * Bulk process all files in a knowledge base folder.
+     */
+    public static add_kb_folder_to_vector_store<ThrowOnError extends boolean = false>(options: Options<AddKbFolderToVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).post<AddKbFolderToVectorStoreResponses, AddKbFolderToVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/{vector_store_id}/add-kb-folder',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Vector Store Statistics
+     *
+     * Get statistics for a vector store.
+     */
+    public static get_vector_store_stats<ThrowOnError extends boolean = false>(options: Options<GetVectorStoreStatsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetVectorStoreStatsResponses, GetVectorStoreStatsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/{vector_store_id}/stats',
+            ...options
+        });
+    }
 }
 
 export class EduAiThreadsService {
@@ -960,6 +1036,29 @@ export class AgentRunsService {
     }
     
     /**
+     * Delete Agent Run
+     *
+     * Delete an agent run. Only the owner can delete their own runs.
+     *
+     * Checks that:
+     * 1. Agent run exists
+     * 2. Current user is the owner of the thread that contains this run
+     */
+    public static delete_agent_run<ThrowOnError extends boolean = false>(options: Options<DeleteAgentRunData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteAgentRunResponses, DeleteAgentRunErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/agent-runs/{agent_run_id}',
+            ...options
+        });
+    }
+    
+    /**
      * Get Agent Run Status
      *
      * Get the status and details of an agent run.
@@ -1164,6 +1263,453 @@ export class ApiKeysService {
             ],
             url: '/api/v1/projects/{project_id}/api-keys',
             ...options
+        });
+    }
+}
+
+export class VectorStoreService {
+    /**
+     * List Project Vector Stores
+     *
+     * List all vector stores for a specific project.
+     */
+    public static list_project_vector_stores<ThrowOnError extends boolean = false>(options: Options<ListProjectVectorStoresData, ThrowOnError>) {
+        return (options.client ?? client).get<ListProjectVectorStoresResponses, ListProjectVectorStoresErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}/vector-stores',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Vector Store
+     *
+     * Create a new vector store for a project.
+     */
+    public static create_vector_store<ThrowOnError extends boolean = false>(options: Options<CreateVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateVectorStoreResponses, CreateVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/projects/{project_id}/vector-stores',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Vector Store
+     *
+     * Delete a vector store.
+     */
+    public static delete_vector_store<ThrowOnError extends boolean = false>(options: Options<DeleteVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeleteVectorStoreResponses, DeleteVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Vector Store
+     *
+     * Get a specific vector store by ID.
+     */
+    public static get_vector_store<ThrowOnError extends boolean = false>(options: Options<GetVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).get<GetVectorStoreResponses, GetVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Vector Store
+     *
+     * Update an existing vector store.
+     */
+    public static update_vector_store<ThrowOnError extends boolean = false>(options: Options<UpdateVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).put<UpdateVectorStoreResponses, UpdateVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * List Pages
+     *
+     * List all pages in a vector store.
+     */
+    public static list_pages<ThrowOnError extends boolean = false>(options: Options<ListPagesData, ThrowOnError>) {
+        return (options.client ?? client).get<ListPagesResponses, ListPagesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}/pages',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Page
+     *
+     * Create a new page in a vector store.
+     */
+    public static create_page<ThrowOnError extends boolean = false>(options: Options<CreatePageData, ThrowOnError>) {
+        return (options.client ?? client).post<CreatePageResponses, CreatePageErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}/pages',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Page
+     *
+     * Delete a page and all its sections.
+     */
+    public static delete_page<ThrowOnError extends boolean = false>(options: Options<DeletePageData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeletePageResponses, DeletePageErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Page
+     *
+     * Get a specific page by ID.
+     */
+    public static get_page<ThrowOnError extends boolean = false>(options: Options<GetPageData, ThrowOnError>) {
+        return (options.client ?? client).get<GetPageResponses, GetPageErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Page
+     *
+     * Update an existing page.
+     */
+    public static update_page<ThrowOnError extends boolean = false>(options: Options<UpdatePageData, ThrowOnError>) {
+        return (options.client ?? client).put<UpdatePageResponses, UpdatePageErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Get Page by Path
+     *
+     * Get a page by its unique path (like chatbot's read by ID).
+     */
+    public static get_page_by_path<ThrowOnError extends boolean = false>(options: Options<GetPageByPathData, ThrowOnError>) {
+        return (options.client ?? client).get<GetPageByPathResponses, GetPageByPathErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}/pages/by-path',
+            ...options
+        });
+    }
+    
+    /**
+     * List Page Sections
+     *
+     * List all sections for a page.
+     */
+    public static list_page_sections<ThrowOnError extends boolean = false>(options: Options<ListPageSectionsData, ThrowOnError>) {
+        return (options.client ?? client).get<ListPageSectionsResponses, ListPageSectionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}/sections',
+            ...options
+        });
+    }
+    
+    /**
+     * Create Page Section
+     *
+     * Create a new page section.
+     */
+    public static create_page_section<ThrowOnError extends boolean = false>(options: Options<CreatePageSectionData, ThrowOnError>) {
+        return (options.client ?? client).post<CreatePageSectionResponses, CreatePageSectionErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}/sections',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Delete Page Section
+     *
+     * Delete a page section.
+     */
+    public static delete_page_section<ThrowOnError extends boolean = false>(options: Options<DeletePageSectionData, ThrowOnError>) {
+        return (options.client ?? client).delete<DeletePageSectionResponses, DeletePageSectionErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/sections/{section_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Page Section
+     *
+     * Get a specific page section by ID.
+     */
+    public static get_page_section<ThrowOnError extends boolean = false>(options: Options<GetPageSectionData, ThrowOnError>) {
+        return (options.client ?? client).get<GetPageSectionResponses, GetPageSectionErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/sections/{section_id}',
+            ...options
+        });
+    }
+    
+    /**
+     * Update Page Section
+     *
+     * Update an existing page section.
+     */
+    public static update_page_section<ThrowOnError extends boolean = false>(options: Options<UpdatePageSectionData, ThrowOnError>) {
+        return (options.client ?? client).put<UpdatePageSectionResponses, UpdatePageSectionErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/sections/{section_id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Get Page with All Sections
+     *
+     * Get page and all its sections in one call (like chatbot's /read/all).
+     */
+    public static get_page_with_sections<ThrowOnError extends boolean = false>(options: Options<GetPageWithSectionsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetPageWithSectionsResponses, GetPageWithSectionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}/with-sections',
+            ...options
+        });
+    }
+    
+    /**
+     * Batch Create Pages
+     *
+     * Create multiple pages at once (like chatbot's /ingest with list).
+     */
+    public static batch_create_pages<ThrowOnError extends boolean = false>(options: Options<BatchCreatePagesData, ThrowOnError>) {
+        return (options.client ?? client).post<BatchCreatePagesResponses, BatchCreatePagesErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}/pages/batch',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Chunk Page Content
+     *
+     * Chunk page content into sections automatically.
+     */
+    public static chunk_page_content<ThrowOnError extends boolean = false>(options: Options<ChunkPageContentData, ThrowOnError>) {
+        return (options.client ?? client).post<ChunkPageContentResponses, ChunkPageContentErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/pages/{page_id}/chunk',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * Add Knowledge Base File
+     *
+     * Add knowledge base file to vector store.
+     *
+     * File must be uploaded to KB first, then reference it here by kb_entry_id.
+     */
+    public static add_kb_file_to_vector_store<ThrowOnError extends boolean = false>(options: Options<AddKbFileToVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).post<AddKbFileToVectorStoreResponses, AddKbFileToVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}/add-kb-file',
+            ...options
+        });
+    }
+    
+    /**
+     * Semantic Search Page Sections
+     *
+     * Semantic search using vector embeddings.
+     *
+     * Providers:
+     * - pgvector: Direct PostgreSQL pgvector search (default, good for small-medium datasets)
+     * - faiss: FAISS in-memory search (fast for large datasets, loads fresh index)
+     *
+     * Requires embeddings to be generated first via embedding service.
+     *
+     * Note: No owner_id filtering - searches across all data in vector store.
+     */
+    public static search_page_sections<ThrowOnError extends boolean = false>(options: Options<SearchPageSectionsData, ThrowOnError>) {
+        return (options.client ?? client).post<SearchPageSectionsResponses, SearchPageSectionsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/vector-stores/{vector_store_id}/search',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
         });
     }
 }
@@ -1633,6 +2179,84 @@ export class DemoTasksService {
                 }
             ],
             url: '/api/v1/demo/start',
+            ...options
+        });
+    }
+}
+
+export class RagQueryService {
+    /**
+     * Create Vector Store for RAG
+     *
+     * Create a new vector store for RAG operations.
+     */
+    public static create_vector_store_for_rag<ThrowOnError extends boolean = false>(options: Options<CreateVectorStoreForRagData, ThrowOnError>) {
+        return (options.client ?? client).post<CreateVectorStoreForRagResponses, CreateVectorStoreForRagErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/create',
+            ...options
+        });
+    }
+    
+    /**
+     * Add Knowledge Base Entry to Vector Store
+     *
+     * Add a knowledge base entry to vector store.
+     */
+    public static add_kb_entry_to_vector_store<ThrowOnError extends boolean = false>(options: Options<AddKbEntryToVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).post<AddKbEntryToVectorStoreResponses, AddKbEntryToVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/{vector_store_id}/add-kb-entry',
+            ...options
+        });
+    }
+    
+    /**
+     * Add All KB Files from Folder
+     *
+     * Bulk process all files in a knowledge base folder.
+     */
+    public static add_kb_folder_to_vector_store<ThrowOnError extends boolean = false>(options: Options<AddKbFolderToVectorStoreData, ThrowOnError>) {
+        return (options.client ?? client).post<AddKbFolderToVectorStoreResponses, AddKbFolderToVectorStoreErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/{vector_store_id}/add-kb-folder',
+            ...options
+        });
+    }
+    
+    /**
+     * Get Vector Store Statistics
+     *
+     * Get statistics for a vector store.
+     */
+    public static get_vector_store_stats<ThrowOnError extends boolean = false>(options: Options<GetVectorStoreStatsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetVectorStoreStatsResponses, GetVectorStoreStatsErrors, ThrowOnError>({
+            responseType: 'json',
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/edu-ai/vector-store/{vector_store_id}/stats',
             ...options
         });
     }

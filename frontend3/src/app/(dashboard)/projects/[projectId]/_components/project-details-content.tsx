@@ -42,7 +42,8 @@ import {
   FolderOpen,
   MessageSquare,
   BookOpen,
-  GraduationCap
+  GraduationCap,
+  Database
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -182,6 +183,13 @@ export function ProjectDetailsContent({ projectId }: ProjectDetailsContentProps)
             <Link href={`/projects/${projectId}/threads`}>
               <MessageSquare className="h-4 w-4 mr-2" />
               View Threads
+            </Link>
+          </Button>
+
+          <Button variant="outline" asChild>
+            <Link href={`/projects/${projectId}/vector-stores`}>
+              <Database className="h-4 w-4 mr-2" />
+              Vector Stores
             </Link>
           </Button>
           

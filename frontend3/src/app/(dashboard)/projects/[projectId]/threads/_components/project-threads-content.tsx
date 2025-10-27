@@ -2,18 +2,30 @@
 
 import React, { useState } from 'react';
 import { useProject, useProjectThreads } from '@/hooks/use-projects';
+import { useDeleteThread } from '@/hooks/use-threads';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { 
   ArrowLeft,
   Search,
   Calendar,
   MessageSquare,
   Plus,
-  FolderOpen
+  FolderOpen,
+  Trash2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -23,9 +35,11 @@ interface ProjectThreadsContentProps {
 
 export function ProjectThreadsContent({ projectId }: ProjectThreadsContentProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [threadToDelete, setThreadToDelete] = useState<string | null>(null);
 
   const projectQuery = useProject(projectId);
   const threadsQuery = useProjectThreads(projectId);
+  const deleteThreadMutation = useDeleteThread();
 
   const filteredThreads = threadsQuery.data?.data?.filter(thread =>
     thread.id && (
@@ -33,6 +47,17 @@ export function ProjectThreadsContent({ projectId }: ProjectThreadsContentProps)
       thread.description?.toLowerCase().includes(searchTerm.toLowerCase())
     )
   ) || [];
+
+  const handleDeleteThread = async () => {
+    if (!threadToDelete) return;
+    
+    try {
+      await deleteThreadMutation.mutateAsync(threadToDelete);
+      setThreadToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete thread:', error);
+    }
+  };
 
   if (projectQuery.isLoading || threadsQuery.isLoading) {
     return (
@@ -153,14 +178,29 @@ export function ProjectThreadsContent({ projectId }: ProjectThreadsContentProps)
           {filteredThreads.map((thread) => (
             <Card key={thread.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg">
-                  <Link 
-                    href={`/projects/${projectId}/threads/${thread.id}`}
-                    className="hover:text-primary transition-colors"
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-lg flex-1">
+                    <Link 
+                      href={`/projects/${projectId}/threads/${thread.id}`}
+                      className="hover:text-primary transition-colors"
+                    >
+                      {thread.title}
+                    </Link>
+                  </CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (thread.id) {
+                        setThreadToDelete(thread.id);
+                      }
+                    }}
                   >
-                    {thread.title}
-                  </Link>
-                </CardTitle>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
                 <CardDescription className="mt-1">
                   {thread.description || 'No description'}
                 </CardDescription>
@@ -183,6 +223,27 @@ export function ProjectThreadsContent({ projectId }: ProjectThreadsContentProps)
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!threadToDelete} onOpenChange={() => setThreadToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this thread and all its messages. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteThread}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

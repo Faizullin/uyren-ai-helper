@@ -2,9 +2,9 @@
 
 import uuid
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.user import User
@@ -56,6 +56,7 @@ class ThreadMessage(ThreadMessageBase, table=True):
     thread_id: uuid.UUID = Field(
         foreign_key="thread.id", nullable=False, ondelete="CASCADE"
     )
+    data: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

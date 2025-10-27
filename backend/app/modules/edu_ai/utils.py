@@ -7,9 +7,10 @@ import json
 from datetime import datetime
 from typing import Any
 
+from sqlmodel import select
+
 from app.core.logger import logger
 from app.models.api_key import APIKey
-from sqlmodel import select
 
 
 def safe_json_serialize(data: Any) -> str:
@@ -44,34 +45,33 @@ def validate_json_string(json_string: str) -> bool:
 def validate_api_key(session, api_key: str) -> tuple[bool, APIKey | None]:
     """
     Validate API key and return validation status and API key object.
-    
+
     Args:
         session: Database session
         api_key: API key string to validate
-        
+
     Returns:
         Tuple of (is_valid, api_key_object)
     """
     try:
         # Query for API key by public key
         query = select(APIKey).where(
-            APIKey.public_key == api_key,
-            APIKey.status == "active"
+            APIKey.public_key == api_key, APIKey.status == "active"
         )
         result = session.exec(query).first()
-        
+
         if not result:
             logger.warning(f"Invalid API key: {api_key}")
             return False, None
-            
+
         # Check if API key is expired
         if result.expires_at and result.expires_at < datetime.now():
             logger.warning(f"Expired API key: {api_key}")
             return False, None
-            
+
         logger.info(f"Valid API key: {api_key}")
         return True, result
-        
+
     except Exception as e:
         logger.error(f"Error validating API key: {e}")
         return False, None
@@ -80,23 +80,23 @@ def validate_api_key(session, api_key: str) -> tuple[bool, APIKey | None]:
 def check_api_key_access(session, api_key: str, project_id: str | None = None) -> bool:
     """
     Check if API key has access to the requested resource.
-    
+
     Args:
         session: Database session
         api_key: API key string
         project_id: Optional project ID to check access for
-        
+
     Returns:
         True if access is granted, False otherwise
     """
     is_valid, api_key_obj = validate_api_key(session, api_key)
-    
+
     if not is_valid or not api_key_obj:
         return False
-        
+
     # If project_id is specified, check if API key has access to it
     if project_id and api_key_obj.project_id:
         return str(api_key_obj.project_id) == str(project_id)
-        
+
     # If no project_id specified or API key has no project restriction
     return True

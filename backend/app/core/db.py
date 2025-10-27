@@ -1,4 +1,5 @@
-from collections.abc import Generator
+from collections.abc import AsyncGenerator, Generator
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends
@@ -10,9 +11,17 @@ from app.core.security import get_password_hash
 engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
 
 
-# Database session dependency
+# Database session dependency (synchronous)
 def get_db() -> Generator[Session, None, None]:
-    """Get database session."""
+    """Get database session (synchronous)."""
+    with Session(engine) as session:
+        yield session
+
+
+# Async database session context manager
+@asynccontextmanager
+async def get_db_async() -> AsyncGenerator[Session, None]:
+    """Get database session (async context manager for background tasks)."""
     with Session(engine) as session:
         yield session
 

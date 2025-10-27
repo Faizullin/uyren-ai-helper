@@ -127,7 +127,7 @@ async def create_project(
     from app.modules.limits_checker import check_project_count_limit
 
     limit_check = await check_project_count_limit(session, current_user.id)
-    if not limit_check["allowed"]:
+    if not limit_check["can_create"]:
         raise HTTPException(
             status_code=403,
             detail=f"Project creation limit exceeded: {limit_check['message']}",

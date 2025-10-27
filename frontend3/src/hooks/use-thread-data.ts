@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useThread } from '@/hooks/use-threads';
 import { useProject } from '@/hooks/use-projects';
 import { useAgentRunsQuery } from '@/hooks/use-agent-runs';
-import { useMessages } from '@/hooks/use-threads';
 
 export function useThreadData(threadId: string, projectId?: string) {
   // State
@@ -17,7 +16,7 @@ export function useThreadData(threadId: string, projectId?: string) {
   const threadQuery = useThread(threadId);
   const projectQuery = useProject(projectId || '');
   const agentRunsQuery = useAgentRunsQuery(threadId);
-  const messagesQuery = useMessages(threadId);
+  // const messagesQuery = useMessages(threadId);
 
   // Initialize data
   useEffect(() => {
@@ -64,7 +63,7 @@ export function useThreadData(threadId: string, projectId?: string) {
     threadQuery,
     projectQuery,
     agentRunsQuery,
-    messagesQuery,
+    // messagesQuery,
     isLoading,
     error,
     initialLoadCompleted: initialLoadCompleted.current,

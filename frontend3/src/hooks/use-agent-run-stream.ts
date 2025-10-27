@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { createSseClient } from '@/client/core/serverSentEvents.gen';
+import { config } from '@/lib/config';
+import { createClient } from '@/lib/supabase/client';
 
 /**
  * Stream log entry received from the agent run stream
@@ -41,6 +43,8 @@ export function useAgentRunStream(
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const retryCountRef = useRef(0);
+  const maxRetries = 3;
   const { enabled = true, onLog, onStatusChange, onError } = options;
 
   const connect = useCallback(async () => {
@@ -56,13 +60,28 @@ export function useAgentRunStream(
     abortControllerRef.current = abortController;
 
     try {
-      // Use OpenAPI client's SSE functionality
+      // Get auth token
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        const errorMsg = 'Not authenticated';
+        setError(errorMsg);
+        onError?.(errorMsg);
+        return;
+      }
+
+      // Use OpenAPI client's SSE functionality with full URL and auth
+      const fullUrl = `${config.BACKEND_URL}/api/v1/agent-run/${runId}/stream`;
+      
       const sseClient = createSseClient<StreamLogEntry>({
-        url: `/api/v1/agent-run/${runId}/stream`,
+        url: fullUrl,
         signal: abortController.signal,
         headers: {
           'Accept': 'text/event-stream',
           'Cache-Control': 'no-cache',
+          'Authorization': `Bearer ${token}`,
         },
         onSseEvent: (event) => {
           const data = event.data as StreamLogEntry;
@@ -101,14 +120,23 @@ export function useAgentRunStream(
           const errorMsg = err instanceof Error ? err.message : 'Connection error';
           setError(errorMsg);
           setIsConnected(false);
+          retryCountRef.current += 1;
+          
+          // Stop retrying after max attempts
+          if (retryCountRef.current >= maxRetries) {
+            console.log(`Max retries (${maxRetries}) reached for agent run ${runId}, stopping reconnection`);
+            abortController.abort();
+          }
+          
           onError?.(errorMsg);
         },
-        sseMaxRetryAttempts: 3,
+        sseMaxRetryAttempts: maxRetries,
         sseDefaultRetryDelay: 3000,
       });
 
       setIsConnected(true);
       setError(null);
+      retryCountRef.current = 0; // Reset retry count on successful connection
 
       // Start consuming the stream
       const stream = sseClient.stream;
@@ -142,25 +170,26 @@ export function useAgentRunStream(
     setLogs([]);
   }, []);
 
-  // Auto-connect when runId changes
+  // Auto-connect when runId or enabled changes
   useEffect(() => {
+    // Reset error state when starting a new connection
+    setError(null);
+    retryCountRef.current = 0;
+    
     if (runId && enabled) {
       connect();
-    } else {
-      disconnect();
     }
 
     return () => {
-      disconnect();
+      // Cleanup on unmount or when dependencies change
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+        setIsConnected(false);
+      }
     };
-  }, [runId, enabled, connect, disconnect]);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      disconnect();
-    };
-  }, [disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runId, enabled]);
 
   return {
     logs,

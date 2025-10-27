@@ -14,8 +14,7 @@ logger.info(
     f"Dramatiq broker initialized with Redis: {settings.REDIS_HOST}:{settings.REDIS_PORT}"
 )
 
-
-from app.modules.edu_ai import tasks as edu_ai_tasks  # noqa: F401
+from app.modules.edu_ai import tasks as edu_ai_tasks
 
 __all__ = [
     "redis_broker",

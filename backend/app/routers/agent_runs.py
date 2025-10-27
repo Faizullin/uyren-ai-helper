@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlmodel import Session, func, select
 
@@ -44,7 +44,7 @@ from app.schemas.common import (
     get_pagination_params,
     paginate_query,
 )
-from app.utils.authentication import CurrentUser
+from app.utils.authentication import CurrentUser, get_user_from_token
 
 router = APIRouter(tags=["agent-runs"])
 
@@ -710,15 +710,18 @@ async def retry_agent(
 async def stream_agent_run(
     agent_run_id: uuid.UUID,
     session: SessionDep,
-    current_user: CurrentUser,
+    token: str = Query(..., description="Authentication token for SSE"),
 ) -> StreamingResponse:
     """
     Stream the responses of an agent run using Redis Lists and Pub/Sub.
 
     This endpoint provides real-time streaming of agent run updates using Server-Sent Events (SSE).
-    It follows the same pattern as the backend_suna streaming implementation.
+    Uses token query parameter since EventSource API doesn't support custom headers.
     """
     logger.debug(f"Starting stream for agent run: {agent_run_id}")
+
+    # Authenticate user from token
+    current_user = get_user_from_token(session, token)
 
     # Get agent run with access check
     agent_run = await _get_agent_run_with_access_check(session, agent_run_id, current_user)
@@ -741,6 +744,7 @@ async def stream_agent_run(
             # 1. Fetch and yield initial responses from Redis list
             redis_client = await redis.get_client()
             initial_responses_json = await redis_client.lrange(response_list_key, 0, -1)
+            logger.debug(f"Initial responses from Redis: {len(initial_responses_json)} items")
             initial_responses = []
             if initial_responses_json:
                 initial_responses = [json.loads(r) for r in initial_responses_json]
@@ -775,6 +779,7 @@ async def stream_agent_run(
                     for finished in done:
                         try:
                             message = finished.result()
+                            print(f"[Message]: {message}")
                             if message and isinstance(message, dict) and message.get("type") == "message":
                                 channel = message.get("channel")
                                 data = message.get("data")
@@ -807,6 +812,8 @@ async def stream_agent_run(
             while not terminate_stream:
                 try:
                     queue_item = await message_queue.get()
+
+                    print(f"[Queue item]: {queue_item}")
 
                     if queue_item["type"] == "new_response":
                         # Fetch new responses from Redis list starting after the last processed index
@@ -887,3 +894,36 @@ async def stream_agent_run(
             "Access-Control-Allow-Origin": "*"
         }
     )
+
+
+@router.delete(
+    "/agent-runs/{agent_run_id}",
+    response_model=dict,
+    summary="Delete Agent Run",
+    operation_id="delete_agent_run",
+)
+async def delete_agent_run(
+    agent_run_id: uuid.UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+) -> dict:
+    """
+    Delete an agent run. Only the owner can delete their own runs.
+
+    Checks that:
+    1. Agent run exists
+    2. Current user is the owner of the thread that contains this run
+    """
+    # Get agent run with access check (verifies ownership through thread)
+    agent_run = await _get_agent_run_with_access_check(session, agent_run_id, current_user)
+
+    # Delete the agent run
+    session.delete(agent_run)
+    session.commit()
+
+    logger.info(f"Deleted agent run {agent_run_id} for user {current_user.id}")
+
+    return {
+        "message": "Agent run deleted successfully",
+        "agent_run_id": str(agent_run_id),
+    }

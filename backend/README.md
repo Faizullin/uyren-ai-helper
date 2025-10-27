@@ -73,6 +73,16 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ## Database Migrations
 
+### Setup Vector Store (First Time Only)
+
+Before running migrations, enable pgvector in **Supabase SQL Editor**:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE SCHEMA IF NOT EXISTS vector_store;
+GRANT USAGE ON SCHEMA vector_store TO postgres, service_role;
+```
+
 ### Create Migration
 ```bash
 docker-compose -f docker-compose.dev.yml exec backend alembic revision --autogenerate -m "Add new model"

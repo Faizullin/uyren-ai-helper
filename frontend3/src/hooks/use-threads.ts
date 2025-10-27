@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { EduAiThreadsService, ThreadsService, AgentRunsService } from '@/client';
 import { toast } from 'sonner';
+import { isActiveStatus } from '@/lib/constants/agent-run-status';
 
 // Query keys
 export const threadQueryKeys = {
@@ -45,6 +46,22 @@ export function useThread(threadId: string, options?: { enabled?: boolean }) {
   });
 }
 
+// Hook for getting thread messages
+export function useThreadMessages(threadId: string, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...threadQueryKeys.detail(threadId), 'messages'] as const,
+    queryFn: async () => {
+      const response = await ThreadsService.get_thread_messages({
+        path: { thread_id: threadId },
+        query: { order: 'asc' },
+      });
+      return response.data?.data || [];
+    },
+    enabled: options?.enabled !== false && !!threadId,
+    staleTime: 10 * 1000, // 10 seconds
+  });
+}
+
 // Hook for getting thread agent runs
 export function useThreadAgentRuns(threadId: string, options?: { enabled?: boolean }) {
   return useQuery({
@@ -76,33 +93,11 @@ export function useAgentRunStatus(runId: string, options?: { enabled?: boolean; 
     },
     enabled: options?.enabled !== false && !!runId,
     staleTime: 5 * 1000, // 5 seconds
-    refetchInterval: options?.autoRefresh ? 2000 : false, // Auto-refresh every 2 seconds if enabled
-  });
-}
-
-// Hook for creating a new thread
-export function useCreateThread() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: { title: string; description?: string; project_id?: string }) => {
-      const response = await ThreadsService.create_thread({
-        body: {
-          title: data.title,
-          description: data.description || null,
-          project_id: data.project_id || null,
-        }
-      });
-      return response.data;
-    },
-    onSuccess: (newThread) => {
-      // Invalidate and refetch threads lists
-      queryClient.invalidateQueries({ queryKey: threadQueryKeys.lists() });
-      toast.success('Thread created successfully');
-    },
-    onError: (error: any) => {
-      toast.error('Failed to create thread');
-      console.error('Create thread error:', error);
+    refetchInterval: (query) => {
+      // Only auto-refresh if enabled AND run is still active
+      if (!options?.autoRefresh) return false;
+      const data = query.state.data;
+      return data?.status && isActiveStatus(data.status) ? 2000 : false;
     },
   });
 }
@@ -127,6 +122,46 @@ export function useStopAgentRun() {
     onError: (error: any) => {
       toast.error('Failed to stop agent run');
       console.error('Stop agent run error:', error);
+    },
+  });
+}
+
+export function useRetryAgentRun() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (runId: string) => {
+      const response = await AgentRunsService.retry_agent_run({
+        path: { agent_run_id: runId },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: threadQueryKeys.all });
+      toast.success('Agent run retried successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to retry agent run');
+    },
+  });
+}
+
+export function useDeleteAgentRun() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (runId: string) => {
+      const response = await AgentRunsService.delete_agent_run({
+        path: { agent_run_id: runId },
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: threadQueryKeys.all });
+      toast.success('Agent run deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete agent run');
     },
   });
 }

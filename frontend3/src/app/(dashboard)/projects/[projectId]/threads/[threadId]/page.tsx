@@ -12,3 +12,4 @@ export default async function ProjectThreadPage({ params }: ProjectThreadPagePro
 
   return <ProjectThreadContent projectId={projectId} threadId={threadId} />;
 }
+

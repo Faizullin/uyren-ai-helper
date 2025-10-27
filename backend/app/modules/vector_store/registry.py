@@ -1,19 +1,18 @@
 """Vector Store Registry for Supabase pgvector configuration."""
 
-
 from app.modules.vector_store.models import VectorStoreConfig, VectorStoreProvider
 
 
 class VectorStoreRegistry:
     """Registry for Supabase vector store configuration."""
-    
+
     def __init__(self):
         self._configs: dict[str, VectorStoreConfig] = {}
         self._initialize_supabase_config()
-    
+
     def _initialize_supabase_config(self):
         """Initialize Supabase pgvector configuration."""
-        
+
         # Supabase with pgvector configuration
         self.register(
             VectorStoreConfig(
@@ -36,33 +35,33 @@ class VectorStoreRegistry:
                 timeout=30,
             )
         )
-    
+
     def register(self, config: VectorStoreConfig) -> None:
         """Register a vector store configuration."""
         self._configs[config.provider.value] = config
-    
+
     def get_config(self, provider: VectorStoreProvider) -> VectorStoreConfig | None:
         """Get configuration for a specific provider."""
         return self._configs.get(provider.value)
-    
+
     def list_providers(self) -> list[str]:
         """List all available providers."""
         return list(self._configs.keys())
-    
+
     def get_all_configs(self) -> dict[str, VectorStoreConfig]:
         """Get all registered configurations."""
         return self._configs.copy()
-    
+
     def is_provider_supported(self, provider: VectorStoreProvider) -> bool:
         """Check if a provider is supported."""
         return provider.value in self._configs
-    
+
     def get_provider_info(self, provider: VectorStoreProvider) -> dict[str, str] | None:
         """Get basic info about a provider."""
         config = self.get_config(provider)
         if not config:
             return None
-        
+
         return {
             "name": config.name,
             "description": config.description or "",

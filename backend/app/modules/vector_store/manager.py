@@ -1,5 +1,6 @@
-"""Vector Store Manager for handling vector operations."""
+"""Vector Store Manager for Page and PageSection operations."""
 
+import hashlib
 import json
 import uuid
 from datetime import datetime, timezone
@@ -8,23 +9,13 @@ from typing import Any
 from sqlmodel import Session, select
 
 from app.core.logger import logger
-from app.modules.vector_store.models import (
-    Document,
-    DocumentChunk,
-    SearchResult,
-    VectorStore,
-    VectorStoreConfig,
-    VectorStoreProvider,
-    VectorStoreStats,
-)
-from app.modules.vector_store.registry import vector_store_registry
+from app.modules.vector_store.models import Page, PageSection, VectorStore
 
 
 class VectorStoreManager:
-    """Manager for vector store operations."""
+    """Manager for vector store, page, and page section operations."""
 
-    def __init__(self):
-        self.registry = vector_store_registry
+    # ==================== VectorStore Operations ====================
 
     def create_vector_store(
         self,
@@ -33,41 +24,16 @@ class VectorStoreManager:
         name: str,
         project_id: uuid.UUID | None = None,
         description: str | None = None,
-        custom_config: dict[str, Any] | None = None,
     ) -> VectorStore:
-        """Create a new Supabase vector store."""
+        """Create a new vector store."""
 
-        # Get Supabase configuration
-        base_config = self.registry.get_config(VectorStoreProvider.SUPABASE)
-        if not base_config:
-            raise ValueError("Supabase vector store configuration not found")
-
-        # Merge custom configuration
-        config_dict = base_config.config.copy()
-        if custom_config:
-            config_dict.update(custom_config)
-
-        # Create vector store configuration
-        vector_config = VectorStoreConfig(
-            provider=VectorStoreProvider.SUPABASE,
-            name=name,
-            description=description or base_config.description,
-            config=config_dict,
-            embedding_model=base_config.embedding_model,
-            embedding_dimension=base_config.embedding_dimension,
-            batch_size=base_config.batch_size,
-            max_retries=base_config.max_retries,
-            timeout=base_config.timeout,
-        )
-
-        # Create vector store record
         vector_store = VectorStore(
             owner_id=owner_id,
             project_id=project_id,
             name=name,
             description=description,
-            provider=VectorStoreProvider.SUPABASE.value,
-            config=json.dumps(vector_config.model_dump()),
+            provider="supabase",
+            config=json.dumps({"embedding_model": "text-embedding-3-small", "dimension": 1536}),
             status="active",
         )
 
@@ -75,15 +41,13 @@ class VectorStoreManager:
         session.commit()
         session.refresh(vector_store)
 
-        logger.info(f"Created Supabase vector store {vector_store.id}")
-
+        logger.info(f"Created vector store {vector_store.id}")
         return vector_store
 
     def get_vector_store(
         self, session: Session, vector_store_id: uuid.UUID, owner_id: uuid.UUID
     ) -> VectorStore | None:
         """Get a vector store by ID."""
-
         statement = select(VectorStore).where(
             VectorStore.id == vector_store_id,
             VectorStore.owner_id == owner_id,
@@ -96,19 +60,14 @@ class VectorStoreManager:
         owner_id: uuid.UUID,
         project_id: uuid.UUID | None = None,
     ) -> list[VectorStore]:
-        """List Supabase vector stores for a user."""
-
-        statement = select(VectorStore).where(
-            VectorStore.owner_id == owner_id,
-            VectorStore.provider == VectorStoreProvider.SUPABASE.value,
-        )
+        """List vector stores for a user."""
+        statement = select(VectorStore).where(VectorStore.owner_id == owner_id)
 
         if project_id:
             statement = statement.where(VectorStore.project_id == project_id)
 
         statement = statement.order_by(VectorStore.created_at.desc())
-
-        return session.exec(statement).all()
+        return list(session.exec(statement).all())
 
     def update_vector_store(
         self,
@@ -118,12 +77,10 @@ class VectorStoreManager:
         **updates: Any,
     ) -> VectorStore | None:
         """Update a vector store."""
-
         vector_store = self.get_vector_store(session, vector_store_id, owner_id)
         if not vector_store:
             return None
 
-        # Update fields
         for field, value in updates.items():
             if hasattr(vector_store, field):
                 setattr(vector_store, field, value)
@@ -135,14 +92,12 @@ class VectorStoreManager:
         session.refresh(vector_store)
 
         logger.info(f"Updated vector store {vector_store_id}")
-
         return vector_store
 
     def delete_vector_store(
         self, session: Session, vector_store_id: uuid.UUID, owner_id: uuid.UUID
     ) -> bool:
-        """Delete a vector store."""
-
+        """Delete a vector store and all associated pages/sections."""
         vector_store = self.get_vector_store(session, vector_store_id, owner_id)
         if not vector_store:
             return False
@@ -151,318 +106,260 @@ class VectorStoreManager:
         session.commit()
 
         logger.info(f"Deleted vector store {vector_store_id}")
-
         return True
 
-    def add_document(
+    # ==================== Page Operations ====================
+
+    def create_page(
         self,
         session: Session,
         vector_store_id: uuid.UUID,
         owner_id: uuid.UUID,
-        title: str,
-        content: str,
-        content_type: str = "text/plain",
-        source_url: str | None = None,
-        source_file_path: str | None = None,
+        path: str,
+        content: str | None = None,
+        meta: dict[str, Any] | None = None,
         target_type: str | None = None,
         target_id: uuid.UUID | None = None,
-    ) -> Document | None:
-        """Add a document to a vector store."""
+        source: str | None = None,
+        parent_page_id: uuid.UUID | None = None,
+    ) -> Page:
+        """Create a new page."""
+        # Calculate checksum
+        checksum = hashlib.sha256((content or "").encode("utf-8")).hexdigest()
 
-        vector_store = self.get_vector_store(session, vector_store_id, owner_id)
-        if not vector_store:
-            return None
-
-        document = Document(
-            vector_store_id=vector_store_id,
+        page = Page(
             owner_id=owner_id,
+            vector_store_id=vector_store_id,
+            parent_page_id=parent_page_id,
+            path=path,
+            checksum=checksum,
+            meta=json.dumps(meta) if meta else None,
             target_type=target_type,
             target_id=target_id,
-            title=title,
-            content=content,
-            content_type=content_type,
-            source_url=source_url,
-            source_file_path=source_file_path,
-            processing_status="pending",
+            source=source,
+            version=uuid.uuid4(),
         )
 
-        session.add(document)
+        session.add(page)
         session.commit()
-        session.refresh(document)
+        session.refresh(page)
 
-        logger.info(f"Added document {document.id} to vector store {vector_store_id}")
+        logger.info(f"Created page {page.id} at path: {path}")
+        return page
 
-        return document
-
-    def get_documents_by_target(
-        self,
-        session: Session,
-        target_type: str,
-        target_id: uuid.UUID,
-        owner_id: uuid.UUID,
-    ) -> list[Document]:
-        """Get documents by target type and ID (e.g., course or lesson)."""
-
-        statement = select(Document).where(
-            Document.target_type == target_type,
-            Document.target_id == target_id,
-            Document.owner_id == owner_id,
+    def get_page(
+        self, session: Session, page_id: uuid.UUID, owner_id: uuid.UUID
+    ) -> Page | None:
+        """Get a page by ID."""
+        statement = select(Page).where(
+            Page.id == page_id,
+            Page.owner_id == owner_id,
         )
+        return session.exec(statement).first()
 
-        statement = statement.order_by(Document.created_at.desc())
+    def get_page_by_path(
+        self, session: Session, path: str, vector_store_id: uuid.UUID
+    ) -> Page | None:
+        """Get a page by path."""
+        statement = select(Page).where(
+            Page.path == path,
+            Page.vector_store_id == vector_store_id,
+        )
+        return session.exec(statement).first()
 
-        return session.exec(statement).all()
-
-    def add_course_document(
+    def list_pages(
         self,
         session: Session,
         vector_store_id: uuid.UUID,
         owner_id: uuid.UUID,
-        course_id: uuid.UUID,
-        title: str,
+        target_type: str | None = None,
+        target_id: uuid.UUID | None = None,
+    ) -> list[Page]:
+        """List pages in a vector store."""
+        statement = select(Page).where(
+            Page.vector_store_id == vector_store_id,
+            Page.owner_id == owner_id,
+        )
+
+        if target_type:
+            statement = statement.where(Page.target_type == target_type)
+        if target_id:
+            statement = statement.where(Page.target_id == target_id)
+
+        statement = statement.order_by(Page.created_at.desc())
+        return list(session.exec(statement).all())
+
+    def update_page(
+        self,
+        session: Session,
+        page_id: uuid.UUID,
+        owner_id: uuid.UUID,
+        **updates: Any,
+    ) -> Page | None:
+        """Update a page."""
+        page = self.get_page(session, page_id, owner_id)
+        if not page:
+            return None
+
+        for field, value in updates.items():
+            if hasattr(page, field):
+                setattr(page, field, value)
+
+        page.updated_at = datetime.now(timezone.utc)
+        page.last_refresh = datetime.now(timezone.utc)
+
+        session.add(page)
+        session.commit()
+        session.refresh(page)
+
+        logger.info(f"Updated page {page_id}")
+        return page
+
+    def delete_page(
+        self, session: Session, page_id: uuid.UUID, owner_id: uuid.UUID
+    ) -> bool:
+        """Delete a page and all its sections."""
+        page = self.get_page(session, page_id, owner_id)
+        if not page:
+            return False
+
+        # First, delete all page sections
+        sections = session.exec(
+            select(PageSection).where(PageSection.page_id == page_id)
+        ).all()
+
+        for section in sections:
+            session.delete(section)
+
+        logger.info(f"Deleted {len(sections)} sections for page {page_id}")
+
+        # Then delete the page itself
+        session.delete(page)
+        session.commit()
+
+        logger.info(f"Deleted page {page_id}")
+        return True
+
+    # ==================== PageSection Operations ====================
+
+    def create_page_section(
+        self,
+        session: Session,
+        page_id: uuid.UUID,
         content: str,
-        content_type: str = "text/plain",
-        source_url: str | None = None,
-        source_file_path: str | None = None,
-    ) -> Document | None:
-        """Add a document for a specific course."""
-        return self.add_document(
-            session=session,
-            vector_store_id=vector_store_id,
-            owner_id=owner_id,
-            title=title,
+        heading: str | None = None,
+        slug: str | None = None,
+        embedding: list[float] | None = None,
+    ) -> PageSection:
+        """Create a new page section with optional embedding."""
+        # Estimate token count
+        token_count = len(content.split())
+
+        section = PageSection(
+            page_id=page_id,
             content=content,
-            content_type=content_type,
-            source_url=source_url,
-            source_file_path=source_file_path,
-            target_type="course",
-            target_id=course_id,
+            token_count=token_count,
+            slug=slug,
+            heading=heading,
+            embedding=embedding,
         )
 
-    def add_lesson_document(
+        session.add(section)
+        session.commit()
+        session.refresh(section)
+
+        logger.info(f"Created page section {section.id} for page {page_id}")
+        return section
+
+    def get_page_section(
+        self, session: Session, section_id: uuid.UUID
+    ) -> PageSection | None:
+        """Get a page section by ID."""
+        return session.get(PageSection, section_id)
+
+    def list_page_sections(
+        self, session: Session, page_id: uuid.UUID
+    ) -> list[PageSection]:
+        """List all sections for a page."""
+        statement = select(PageSection).where(
+            PageSection.page_id == page_id
+        ).order_by(PageSection.created_at.asc())
+        return list(session.exec(statement).all())
+
+    def update_page_section_embedding(
         self,
         session: Session,
-        vector_store_id: uuid.UUID,
-        owner_id: uuid.UUID,
-        lesson_id: uuid.UUID,
-        title: str,
+        section_id: uuid.UUID,
+        embedding: list[float],
+    ) -> PageSection | None:
+        """Update the embedding for a page section."""
+        section = self.get_page_section(session, section_id)
+        if not section:
+            return None
+
+        section.embedding = embedding
+        section.updated_at = datetime.now(timezone.utc)
+
+        session.add(section)
+        session.commit()
+        session.refresh(section)
+
+        logger.info(f"Updated embedding for section {section_id}")
+        return section
+
+    def delete_page_section(
+        self, session: Session, section_id: uuid.UUID
+    ) -> bool:
+        """Delete a page section."""
+        section = self.get_page_section(session, section_id)
+        if not section:
+            return False
+
+        session.delete(section)
+        session.commit()
+
+        logger.info(f"Deleted page section {section_id}")
+        return True
+
+    def chunk_content_to_sections(
+        self,
+        session: Session,
+        page_id: uuid.UUID,
         content: str,
-        content_type: str = "text/plain",
-        source_url: str | None = None,
-        source_file_path: str | None = None,
-    ) -> Document | None:
-        """Add a document for a specific lesson."""
-        return self.add_document(
-            session=session,
-            vector_store_id=vector_store_id,
-            owner_id=owner_id,
-            title=title,
-            content=content,
-            content_type=content_type,
-            source_url=source_url,
-            source_file_path=source_file_path,
-            target_type="lesson",
-            target_id=lesson_id,
-        )
-
-    def get_course_documents(
-        self,
-        session: Session,
-        course_id: uuid.UUID,
-        owner_id: uuid.UUID,
-    ) -> list[Document]:
-        """Get all documents for a specific course."""
-        return self.get_documents_by_target(
-            session=session,
-            target_type="course",
-            target_id=course_id,
-            owner_id=owner_id,
-        )
-
-    def get_lesson_documents(
-        self,
-        session: Session,
-        lesson_id: uuid.UUID,
-        owner_id: uuid.UUID,
-    ) -> list[Document]:
-        """Get all documents for a specific lesson."""
-        return self.get_documents_by_target(
-            session=session,
-            target_type="lesson",
-            target_id=lesson_id,
-            owner_id=owner_id,
-        )
-
-    def chunk_document(
-        self,
-        session: Session,
-        document_id: uuid.UUID,
         chunk_size: int = 1000,
         chunk_overlap: int = 200,
-    ) -> list[DocumentChunk]:
-        """Chunk a document into smaller pieces."""
-
-        document = session.get(Document, document_id)
-        if not document:
-            return []
-
-        # Simple text chunking (can be enhanced with more sophisticated methods)
-        content = document.content
-        chunks = []
-
+    ) -> list[PageSection]:
+        """Chunk content and create page sections."""
+        sections = []
         start = 0
-        chunk_index = 0
+        index = 0
 
         while start < len(content):
             end = min(start + chunk_size, len(content))
 
             # Try to break at sentence boundary
             if end < len(content):
-                for i in range(end, max(start, end - 100), -1):
-                    if content[i] in ".!?\n":
-                        end = i + 1
+                for char in ["\n\n", "\n", ". ", "! ", "? "]:
+                    pos = content.rfind(char, start, end)
+                    if pos > start:
+                        end = pos + len(char)
                         break
 
-            chunk_content = content[start:end].strip()
-            if chunk_content:
-                chunk = DocumentChunk(
-                    document_id=document_id,
-                    vector_store_id=document.vector_store_id,
-                    content=chunk_content,
-                    chunk_index=chunk_index,
-                    chunk_size=len(chunk_content),
-                    status="pending",
+            chunk = content[start:end].strip()
+            if chunk:
+                section = self.create_page_section(
+                    session=session,
+                    page_id=page_id,
+                    content=chunk,
+                    slug=f"section-{index}",
                 )
-
-                chunks.append(chunk)
-                chunk_index += 1
+                sections.append(section)
+                index += 1
 
             start = end - chunk_overlap
 
-        # Save chunks to database
-        for chunk in chunks:
-            session.add(chunk)
-
-        session.commit()
-
-        # Update document chunk count
-        document.chunk_count = len(chunks)
-        document.processing_status = "completed"
-        document.processed_at = datetime.now(timezone.utc)
-
-        session.add(document)
-        session.commit()
-
-        logger.info(f"Created {len(chunks)} chunks for document {document_id}")
-
-        return chunks
-
-    def embed_chunks(
-        self,
-        session: Session,
-        chunk_ids: list[uuid.UUID],
-        embedding_model: str | None = None,
-    ) -> list[DocumentChunk]:
-        """Embed document chunks (placeholder implementation)."""
-
-        # This is a placeholder implementation
-        # In a real implementation, you would:
-        # 1. Get the embedding model configuration
-        # 2. Call the embedding API (OpenAI, HuggingFace, etc.)
-        # 3. Store the embeddings in the vector database
-        # 4. Update the chunk status
-
-        chunks = session.exec(
-            select(DocumentChunk).where(DocumentChunk.id.in_(chunk_ids))
-        ).all()
-
-        for chunk in chunks:
-            # Placeholder: mark as embedded
-            chunk.status = "embedded"
-            chunk.embedded_at = datetime.now(timezone.utc)
-            chunk.embedding_model = embedding_model or "text-embedding-3-small"
-
-            session.add(chunk)
-
-        session.commit()
-
-        logger.info(f"Embedded {len(chunks)} chunks")
-
-        return chunks
-
-    def search_similar(
-        self,
-        session: Session,
-        vector_store_id: uuid.UUID,
-        query: str,
-        limit: int = 10,
-        score_threshold: float = 0.7,
-    ) -> list[SearchResult]:
-        """Search for similar documents (placeholder implementation)."""
-
-        # This is a placeholder implementation
-        # In a real implementation, you would:
-        # 1. Embed the query using the same model as the chunks
-        # 2. Perform similarity search in the vector database
-        # 3. Return ranked results
-
-        vector_store = session.get(VectorStore, vector_store_id)
-        if not vector_store:
-            return []
-
-        # Placeholder: return empty results
-        logger.info(f"Searching vector store {vector_store_id} for query: {query}")
-
-        return []
-
-    def get_vector_store_stats(
-        self, session: Session, vector_store_id: uuid.UUID
-    ) -> VectorStoreStats | None:
-        """Get statistics for a vector store."""
-
-        vector_store = session.get(VectorStore, vector_store_id)
-        if not vector_store:
-            return None
-
-        # Get document count
-        document_count = session.exec(
-            select(Document).where(Document.vector_store_id == vector_store_id)
-        ).count()
-
-        # Get chunk count
-        chunk_count = session.exec(
-            select(DocumentChunk).where(
-                DocumentChunk.vector_store_id == vector_store_id
-            )
-        ).count()
-
-        # Get total tokens (placeholder)
-        total_tokens = sum(
-            session.exec(
-                select(Document.total_tokens).where(
-                    Document.vector_store_id == vector_store_id
-                )
-            ).all()
-        )
-
-        return VectorStoreStats(
-            vector_store_id=vector_store_id,
-            document_count=document_count,
-            chunk_count=chunk_count,
-            total_tokens=total_tokens,
-            storage_size_bytes=0,  # Placeholder
-            last_updated=vector_store.updated_at,
-        )
-
-    def get_provider_config(
-        self, provider: VectorStoreProvider
-    ) -> VectorStoreConfig | None:
-        """Get configuration for a vector store provider."""
-        return self.registry.get_config(provider)
-
-    def list_supported_providers(self) -> list[str]:
-        """List all supported vector store providers."""
-        return self.registry.list_providers()
+        logger.info(f"Created {len(sections)} sections for page {page_id}")
+        return sections
 
 
 # Global manager instance

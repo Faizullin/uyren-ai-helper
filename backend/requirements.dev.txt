@@ -12,6 +12,7 @@ sqlmodel
 psycopg[binary]
 psycopg2-binary
 alembic
+pgvector
 
 # Authentication & Security
 pyjwt
@@ -47,6 +48,8 @@ langchain-text-splitters
 langgraph
 langgraph-checkpoint
 openai
+faiss-cpu
+numpy
 
 # File Processing
 python-docx

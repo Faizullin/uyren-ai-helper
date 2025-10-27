@@ -59,13 +59,9 @@ def normalize_email(email: str) -> str:
     return email.lower().strip()
 
 
-def get_current_user(
-    session: SessionDep,
-    token: Annotated[str, Depends(oauth2_scheme)],
-) -> User:
-    """Get current authenticated user."""
+def verify_token(token: str) -> TokenPayload:
+    """Verify JWT token and return payload."""
     try:
-        # payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         payload = jwt.decode(token, options={
             "verify_signature": False,
             "verify_exp": True,
@@ -84,6 +80,27 @@ def get_current_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
         )
+
+    return token_data
+
+
+def get_current_user(
+    session: SessionDep,
+    token: Annotated[str, Depends(oauth2_scheme)],
+) -> User:
+    """Get current authenticated user."""
+    token_data = verify_token(token)
+
+    user = session.exec(select(User).where(User.id == token_data.sub)).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+
+    return user
+
+
+def get_user_from_token(session: SessionDep, token: str) -> User:
+    """Get user from token string (for query params, SSE, etc.)."""
+    token_data = verify_token(token)
 
     user = session.exec(select(User).where(User.id == token_data.sub)).first()
     if not user:

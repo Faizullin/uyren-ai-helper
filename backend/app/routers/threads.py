@@ -9,6 +9,7 @@ from sqlmodel import func, select
 from app.core.db import SessionDep
 from app.core.logger import logger
 from app.models import (
+    AgentRun,
     Thread,
     ThreadMessage,
 )
@@ -165,13 +166,31 @@ async def delete_thread(
     session: SessionDep,
     current_user: CurrentUser,
 ) -> Message:
-    """Delete thread and all associated messages."""
+    """Delete thread with all associated agent runs and messages."""
     # Verify access
     thread = await verify_thread_access(session, thread_id, current_user)
 
+    # Delete all agent runs
+    agent_runs = session.exec(
+        select(AgentRun).where(AgentRun.thread_id == thread_id)
+    ).all()
+    for run in agent_runs:
+        session.delete(run)
+    logger.debug(f"Deleted {len(agent_runs)} agent runs for thread {thread_id}")
+
+    # Delete all messages
+    messages = session.exec(
+        select(ThreadMessage).where(ThreadMessage.thread_id == thread_id)
+    ).all()
+    for msg in messages:
+        session.delete(msg)
+    logger.debug(f"Deleted {len(messages)} messages for thread {thread_id}")
+
+    # Delete thread
     session.delete(thread)
     session.commit()
-    logger.debug(f"Deleted thread: {thread_id}")
+
+    logger.info(f"Deleted thread {thread_id} with {len(agent_runs)} runs and {len(messages)} messages")
     return Message(message="Thread deleted successfully")
 
 
@@ -243,6 +262,7 @@ async def create_message(
     message = ThreadMessage(
         content=message_in.content,
         role=message_in.role,
+        data=message_in.data,
         thread_id=thread_id,
     )
     session.add(message)

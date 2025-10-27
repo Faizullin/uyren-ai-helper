@@ -1203,6 +1203,290 @@ export type ModelInfo = {
 };
 
 /**
+ * PageChunkRequest
+ *
+ * Request to chunk page content into sections.
+ */
+export type PageChunkRequest = {
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Chunk Size
+     */
+    chunk_size?: number;
+    /**
+     * Chunk Overlap
+     */
+    chunk_overlap?: number;
+};
+
+/**
+ * PageChunkResponse
+ *
+ * Response after chunking page content.
+ */
+export type PageChunkResponse = {
+    /**
+     * Page Id
+     */
+    page_id: string;
+    /**
+     * Sections Created
+     */
+    sections_created: number;
+    /**
+     * Sections
+     */
+    sections: Array<PageSectionPublic>;
+};
+
+/**
+ * PageCreate
+ *
+ * Page creation schema.
+ */
+export type PageCreate = {
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Content
+     */
+    content?: string | null;
+    /**
+     * Meta
+     */
+    meta?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Target Type
+     */
+    target_type?: string | null;
+    /**
+     * Target Id
+     */
+    target_id?: string | null;
+    /**
+     * Source
+     */
+    source?: string | null;
+    /**
+     * Parent Page Id
+     */
+    parent_page_id?: string | null;
+};
+
+/**
+ * PagePublic
+ *
+ * Public page schema for API responses.
+ */
+export type PagePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Vector Store Id
+     */
+    vector_store_id: string;
+    /**
+     * Parent Page Id
+     */
+    parent_page_id: string | null;
+    /**
+     * Path
+     */
+    path: string;
+    /**
+     * Checksum
+     */
+    checksum: string | null;
+    /**
+     * Meta
+     */
+    meta: string | null;
+    /**
+     * Target Type
+     */
+    target_type: string | null;
+    /**
+     * Target Id
+     */
+    target_id: string | null;
+    /**
+     * Source
+     */
+    source: string | null;
+    /**
+     * Version
+     */
+    version: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Last Refresh
+     */
+    last_refresh: string | null;
+};
+
+/**
+ * PageSectionCreate
+ *
+ * Page section creation schema.
+ */
+export type PageSectionCreate = {
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Heading
+     */
+    heading?: string | null;
+    /**
+     * Slug
+     */
+    slug?: string | null;
+};
+
+/**
+ * PageSectionPublic
+ *
+ * Public page section schema for API responses (excludes embedding vector).
+ */
+export type PageSectionPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Page Id
+     */
+    page_id: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Token Count
+     */
+    token_count: number;
+    /**
+     * Slug
+     */
+    slug: string | null;
+    /**
+     * Heading
+     */
+    heading: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * PageSectionUpdate
+ *
+ * Page section update schema.
+ */
+export type PageSectionUpdate = {
+    /**
+     * Content
+     */
+    content?: string | null;
+    /**
+     * Heading
+     */
+    heading?: string | null;
+    /**
+     * Slug
+     */
+    slug?: string | null;
+};
+
+/**
+ * PageSectionWithSimilarity
+ *
+ * Page section with similarity score for search results.
+ */
+export type PageSectionWithSimilarity = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Page Id
+     */
+    page_id: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Heading
+     */
+    heading: string | null;
+    /**
+     * Slug
+     */
+    slug: string | null;
+    /**
+     * Similarity
+     */
+    similarity: number;
+};
+
+/**
+ * PageUpdate
+ *
+ * Page update schema.
+ */
+export type PageUpdate = {
+    /**
+     * Path
+     */
+    path?: string | null;
+    /**
+     * Meta
+     */
+    meta?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Target Type
+     */
+    target_type?: string | null;
+    /**
+     * Target Id
+     */
+    target_id?: string | null;
+    /**
+     * Source
+     */
+    source?: string | null;
+};
+
+/**
  * PaginatedResponse[APIKeyPublic]
  */
 export type PaginatedResponseApiKeyPublic = {
@@ -1232,6 +1516,17 @@ export type PaginatedResponseAgentRunPublic = {
      * Data
      */
     data: Array<AgentRunPublic>;
+    pagination?: PaginationMeta | null;
+};
+
+/**
+ * PaginatedResponse[PagePublic]
+ */
+export type PaginatedResponsePagePublic = {
+    /**
+     * Data
+     */
+    data: Array<PagePublic>;
     pagination?: PaginationMeta | null;
 };
 
@@ -1276,6 +1571,17 @@ export type PaginatedResponseThread = {
      * Data
      */
     data: Array<Thread>;
+    pagination?: PaginationMeta | null;
+};
+
+/**
+ * PaginatedResponse[VectorStorePublic]
+ */
+export type PaginatedResponseVectorStorePublic = {
+    /**
+     * Data
+     */
+    data: Array<VectorStorePublic>;
     pagination?: PaginationMeta | null;
 };
 
@@ -1425,6 +1731,58 @@ export type RegisterResponse = {
      * Full Name
      */
     full_name?: string | null;
+};
+
+/**
+ * SearchRequest
+ *
+ * Search request schema.
+ */
+export type SearchRequest = {
+    /**
+     * Query
+     */
+    query: string;
+    /**
+     * Top K
+     */
+    top_k?: number;
+    /**
+     * Similarity Threshold
+     */
+    similarity_threshold?: number;
+    /**
+     * Target Type
+     */
+    target_type?: string | null;
+    /**
+     * Target Id
+     */
+    target_id?: string | null;
+};
+
+/**
+ * SearchResponse
+ *
+ * Search response schema.
+ */
+export type SearchResponse = {
+    /**
+     * Query
+     */
+    query: string;
+    /**
+     * Results
+     */
+    results: Array<PageSectionWithSimilarity>;
+    /**
+     * Results Count
+     */
+    results_count: number;
+    /**
+     * Vector Store Id
+     */
+    vector_store_id: string;
 };
 
 /**
@@ -1803,6 +2161,106 @@ export type ValidationError = {
      * Error Type
      */
     type: string;
+};
+
+/**
+ * VectorStoreCreate
+ *
+ * Vector store creation schema.
+ */
+export type VectorStoreCreate = {
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description?: string | null;
+};
+
+/**
+ * VectorStorePublic
+ *
+ * Public vector store schema for API responses.
+ */
+export type VectorStorePublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Owner Id
+     */
+    owner_id: string;
+    /**
+     * Project Id
+     */
+    project_id: string | null;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Provider
+     */
+    provider: string;
+    /**
+     * Config
+     */
+    config: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Is Public
+     */
+    is_public: boolean;
+    /**
+     * Document Count
+     */
+    document_count: number;
+    /**
+     * Chunk Count
+     */
+    chunk_count: number;
+    /**
+     * Total Tokens
+     */
+    total_tokens: number;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * VectorStoreUpdate
+ *
+ * Vector store update schema.
+ */
+export type VectorStoreUpdate = {
+    /**
+     * Name
+     */
+    name?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Status
+     */
+    status?: string | null;
 };
 
 export type LoginAccessTokenData = {
@@ -3031,6 +3489,40 @@ export type ListThreadAgentRunsResponses = {
 
 export type ListThreadAgentRunsResponse = ListThreadAgentRunsResponses[keyof ListThreadAgentRunsResponses];
 
+export type DeleteAgentRunData = {
+    body?: never;
+    path: {
+        /**
+         * Agent Run Id
+         */
+        agent_run_id: string;
+    };
+    query?: never;
+    url: '/api/v1/agent-runs/{agent_run_id}';
+};
+
+export type DeleteAgentRunErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteAgentRunError = DeleteAgentRunErrors[keyof DeleteAgentRunErrors];
+
+export type DeleteAgentRunResponses = {
+    /**
+     * Response Delete Agent Run
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type DeleteAgentRunResponse = DeleteAgentRunResponses[keyof DeleteAgentRunResponses];
+
 export type GetAgentRunStatusData = {
     body?: never;
     path: {
@@ -3352,6 +3844,719 @@ export type GetProjectApiKeysResponses = {
 };
 
 export type GetProjectApiKeysResponse = GetProjectApiKeysResponses[keyof GetProjectApiKeysResponses];
+
+export type ListProjectVectorStoresData = {
+    body?: never;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: {
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Disable
+         *
+         * Disable pagination and return all results
+         */
+        disable?: boolean;
+    };
+    url: '/api/v1/projects/{project_id}/vector-stores';
+};
+
+export type ListProjectVectorStoresErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListProjectVectorStoresError = ListProjectVectorStoresErrors[keyof ListProjectVectorStoresErrors];
+
+export type ListProjectVectorStoresResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponseVectorStorePublic;
+};
+
+export type ListProjectVectorStoresResponse = ListProjectVectorStoresResponses[keyof ListProjectVectorStoresResponses];
+
+export type CreateVectorStoreData = {
+    body: VectorStoreCreate;
+    path: {
+        /**
+         * Project Id
+         */
+        project_id: string;
+    };
+    query?: never;
+    url: '/api/v1/projects/{project_id}/vector-stores';
+};
+
+export type CreateVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateVectorStoreError = CreateVectorStoreErrors[keyof CreateVectorStoreErrors];
+
+export type CreateVectorStoreResponses = {
+    /**
+     * Successful Response
+     */
+    200: VectorStorePublic;
+};
+
+export type CreateVectorStoreResponse = CreateVectorStoreResponses[keyof CreateVectorStoreResponses];
+
+export type DeleteVectorStoreData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: never;
+    url: '/api/v1/vector-stores/{vector_store_id}';
+};
+
+export type DeleteVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeleteVectorStoreError = DeleteVectorStoreErrors[keyof DeleteVectorStoreErrors];
+
+export type DeleteVectorStoreResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type DeleteVectorStoreResponse = DeleteVectorStoreResponses[keyof DeleteVectorStoreResponses];
+
+export type GetVectorStoreData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: never;
+    url: '/api/v1/vector-stores/{vector_store_id}';
+};
+
+export type GetVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetVectorStoreError = GetVectorStoreErrors[keyof GetVectorStoreErrors];
+
+export type GetVectorStoreResponses = {
+    /**
+     * Successful Response
+     */
+    200: VectorStorePublic;
+};
+
+export type GetVectorStoreResponse = GetVectorStoreResponses[keyof GetVectorStoreResponses];
+
+export type UpdateVectorStoreData = {
+    body: VectorStoreUpdate;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: never;
+    url: '/api/v1/vector-stores/{vector_store_id}';
+};
+
+export type UpdateVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdateVectorStoreError = UpdateVectorStoreErrors[keyof UpdateVectorStoreErrors];
+
+export type UpdateVectorStoreResponses = {
+    /**
+     * Successful Response
+     */
+    200: VectorStorePublic;
+};
+
+export type UpdateVectorStoreResponse = UpdateVectorStoreResponses[keyof UpdateVectorStoreResponses];
+
+export type ListPagesData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: {
+        /**
+         * Target Type
+         */
+        target_type?: string | null;
+        /**
+         * Target Id
+         */
+        target_id?: string | null;
+        /**
+         * Page
+         */
+        page?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+        /**
+         * Disable
+         *
+         * Disable pagination and return all results
+         */
+        disable?: boolean;
+    };
+    url: '/api/v1/vector-stores/{vector_store_id}/pages';
+};
+
+export type ListPagesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPagesError = ListPagesErrors[keyof ListPagesErrors];
+
+export type ListPagesResponses = {
+    /**
+     * Successful Response
+     */
+    200: PaginatedResponsePagePublic;
+};
+
+export type ListPagesResponse = ListPagesResponses[keyof ListPagesResponses];
+
+export type CreatePageData = {
+    body: PageCreate;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: never;
+    url: '/api/v1/vector-stores/{vector_store_id}/pages';
+};
+
+export type CreatePageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePageError = CreatePageErrors[keyof CreatePageErrors];
+
+export type CreatePageResponses = {
+    /**
+     * Successful Response
+     */
+    200: PagePublic;
+};
+
+export type CreatePageResponse = CreatePageResponses[keyof CreatePageResponses];
+
+export type DeletePageData = {
+    body?: never;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}';
+};
+
+export type DeletePageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeletePageError = DeletePageErrors[keyof DeletePageErrors];
+
+export type DeletePageResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type DeletePageResponse = DeletePageResponses[keyof DeletePageResponses];
+
+export type GetPageData = {
+    body?: never;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}';
+};
+
+export type GetPageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPageError = GetPageErrors[keyof GetPageErrors];
+
+export type GetPageResponses = {
+    /**
+     * Successful Response
+     */
+    200: PagePublic;
+};
+
+export type GetPageResponse = GetPageResponses[keyof GetPageResponses];
+
+export type UpdatePageData = {
+    body: PageUpdate;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}';
+};
+
+export type UpdatePageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePageError = UpdatePageErrors[keyof UpdatePageErrors];
+
+export type UpdatePageResponses = {
+    /**
+     * Successful Response
+     */
+    200: PagePublic;
+};
+
+export type UpdatePageResponse = UpdatePageResponses[keyof UpdatePageResponses];
+
+export type GetPageByPathData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query: {
+        /**
+         * Path
+         */
+        path: string;
+    };
+    url: '/api/v1/vector-stores/{vector_store_id}/pages/by-path';
+};
+
+export type GetPageByPathErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPageByPathError = GetPageByPathErrors[keyof GetPageByPathErrors];
+
+export type GetPageByPathResponses = {
+    /**
+     * Successful Response
+     */
+    200: PagePublic;
+};
+
+export type GetPageByPathResponse = GetPageByPathResponses[keyof GetPageByPathResponses];
+
+export type ListPageSectionsData = {
+    body?: never;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}/sections';
+};
+
+export type ListPageSectionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ListPageSectionsError = ListPageSectionsErrors[keyof ListPageSectionsErrors];
+
+export type ListPageSectionsResponses = {
+    /**
+     * Response List Page Sections
+     *
+     * Successful Response
+     */
+    200: Array<PageSectionPublic>;
+};
+
+export type ListPageSectionsResponse = ListPageSectionsResponses[keyof ListPageSectionsResponses];
+
+export type CreatePageSectionData = {
+    body: PageSectionCreate;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}/sections';
+};
+
+export type CreatePageSectionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreatePageSectionError = CreatePageSectionErrors[keyof CreatePageSectionErrors];
+
+export type CreatePageSectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageSectionPublic;
+};
+
+export type CreatePageSectionResponse = CreatePageSectionResponses[keyof CreatePageSectionResponses];
+
+export type DeletePageSectionData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sections/{section_id}';
+};
+
+export type DeletePageSectionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type DeletePageSectionError = DeletePageSectionErrors[keyof DeletePageSectionErrors];
+
+export type DeletePageSectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: Message;
+};
+
+export type DeletePageSectionResponse = DeletePageSectionResponses[keyof DeletePageSectionResponses];
+
+export type GetPageSectionData = {
+    body?: never;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sections/{section_id}';
+};
+
+export type GetPageSectionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPageSectionError = GetPageSectionErrors[keyof GetPageSectionErrors];
+
+export type GetPageSectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageSectionPublic;
+};
+
+export type GetPageSectionResponse = GetPageSectionResponses[keyof GetPageSectionResponses];
+
+export type UpdatePageSectionData = {
+    body: PageSectionUpdate;
+    path: {
+        /**
+         * Section Id
+         */
+        section_id: string;
+    };
+    query?: never;
+    url: '/api/v1/sections/{section_id}';
+};
+
+export type UpdatePageSectionErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type UpdatePageSectionError = UpdatePageSectionErrors[keyof UpdatePageSectionErrors];
+
+export type UpdatePageSectionResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageSectionPublic;
+};
+
+export type UpdatePageSectionResponse = UpdatePageSectionResponses[keyof UpdatePageSectionResponses];
+
+export type GetPageWithSectionsData = {
+    body?: never;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}/with-sections';
+};
+
+export type GetPageWithSectionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetPageWithSectionsError = GetPageWithSectionsErrors[keyof GetPageWithSectionsErrors];
+
+export type GetPageWithSectionsResponses = {
+    /**
+     * Response Get Page With Sections
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetPageWithSectionsResponse = GetPageWithSectionsResponses[keyof GetPageWithSectionsResponses];
+
+export type BatchCreatePagesData = {
+    /**
+     * Pages Data
+     */
+    body: Array<PageCreate>;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: {
+        /**
+         * Auto Chunk
+         */
+        auto_chunk?: boolean;
+    };
+    url: '/api/v1/vector-stores/{vector_store_id}/pages/batch';
+};
+
+export type BatchCreatePagesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type BatchCreatePagesError = BatchCreatePagesErrors[keyof BatchCreatePagesErrors];
+
+export type BatchCreatePagesResponses = {
+    /**
+     * Response Batch Create Pages
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type BatchCreatePagesResponse = BatchCreatePagesResponses[keyof BatchCreatePagesResponses];
+
+export type ChunkPageContentData = {
+    body: PageChunkRequest;
+    path: {
+        /**
+         * Page Id
+         */
+        page_id: string;
+    };
+    query?: never;
+    url: '/api/v1/pages/{page_id}/chunk';
+};
+
+export type ChunkPageContentErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ChunkPageContentError = ChunkPageContentErrors[keyof ChunkPageContentErrors];
+
+export type ChunkPageContentResponses = {
+    /**
+     * Successful Response
+     */
+    200: PageChunkResponse;
+};
+
+export type ChunkPageContentResponse = ChunkPageContentResponses[keyof ChunkPageContentResponses];
+
+export type AddKbFileToVectorStoreData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query: {
+        /**
+         * Kb Entry Id
+         */
+        kb_entry_id: string;
+        /**
+         * Target Type
+         */
+        target_type?: string | null;
+        /**
+         * Target Id
+         */
+        target_id?: string | null;
+    };
+    url: '/api/v1/vector-stores/{vector_store_id}/add-kb-file';
+};
+
+export type AddKbFileToVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddKbFileToVectorStoreError = AddKbFileToVectorStoreErrors[keyof AddKbFileToVectorStoreErrors];
+
+export type AddKbFileToVectorStoreResponses = {
+    /**
+     * Response Add Kb File To Vector Store
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type AddKbFileToVectorStoreResponse = AddKbFileToVectorStoreResponses[keyof AddKbFileToVectorStoreResponses];
+
+export type SearchPageSectionsData = {
+    body: SearchRequest;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: {
+        /**
+         * Provider
+         */
+        provider?: string;
+    };
+    url: '/api/v1/vector-stores/{vector_store_id}/search';
+};
+
+export type SearchPageSectionsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type SearchPageSectionsError = SearchPageSectionsErrors[keyof SearchPageSectionsErrors];
+
+export type SearchPageSectionsResponses = {
+    /**
+     * Successful Response
+     */
+    200: SearchResponse;
+};
+
+export type SearchPageSectionsResponse = SearchPageSectionsResponses[keyof SearchPageSectionsResponses];
 
 export type ListKbFoldersData = {
     body?: never;
@@ -3985,3 +5190,197 @@ export type StartDemoEducationalTaskResponses = {
 };
 
 export type StartDemoEducationalTaskResponse = StartDemoEducationalTaskResponses[keyof StartDemoEducationalTaskResponses];
+
+export type CreateVectorStoreForRagData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Name
+         *
+         * Vector store name
+         */
+        name: string;
+        /**
+         * Description
+         *
+         * Optional description
+         */
+        description?: string | null;
+        /**
+         * Project Id
+         *
+         * Optional project ID
+         */
+        project_id?: string | null;
+        /**
+         * Api Key
+         *
+         * Optional API key
+         */
+        api_key?: string | null;
+    };
+    url: '/api/v1/edu-ai/vector-store/create';
+};
+
+export type CreateVectorStoreForRagErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CreateVectorStoreForRagError = CreateVectorStoreForRagErrors[keyof CreateVectorStoreForRagErrors];
+
+export type CreateVectorStoreForRagResponses = {
+    /**
+     * Response Create Vector Store For Rag
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type CreateVectorStoreForRagResponse = CreateVectorStoreForRagResponses[keyof CreateVectorStoreForRagResponses];
+
+export type AddKbEntryToVectorStoreData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query: {
+        /**
+         * Kb Entry Id
+         *
+         * Knowledge base entry ID
+         */
+        kb_entry_id: string;
+        /**
+         * Target Type
+         *
+         * Target type (course, lesson)
+         */
+        target_type?: string | null;
+        /**
+         * Target Id
+         *
+         * Target ID
+         */
+        target_id?: string | null;
+    };
+    url: '/api/v1/edu-ai/vector-store/{vector_store_id}/add-kb-entry';
+};
+
+export type AddKbEntryToVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddKbEntryToVectorStoreError = AddKbEntryToVectorStoreErrors[keyof AddKbEntryToVectorStoreErrors];
+
+export type AddKbEntryToVectorStoreResponses = {
+    /**
+     * Response Add Kb Entry To Vector Store
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type AddKbEntryToVectorStoreResponse = AddKbEntryToVectorStoreResponses[keyof AddKbEntryToVectorStoreResponses];
+
+export type AddKbFolderToVectorStoreData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query: {
+        /**
+         * Folder Id
+         *
+         * Knowledge base folder ID
+         */
+        folder_id: string;
+        /**
+         * Target Type
+         *
+         * Target type (course, lesson)
+         */
+        target_type?: string | null;
+        /**
+         * Target Id
+         *
+         * Target ID
+         */
+        target_id?: string | null;
+    };
+    url: '/api/v1/edu-ai/vector-store/{vector_store_id}/add-kb-folder';
+};
+
+export type AddKbFolderToVectorStoreErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type AddKbFolderToVectorStoreError = AddKbFolderToVectorStoreErrors[keyof AddKbFolderToVectorStoreErrors];
+
+export type AddKbFolderToVectorStoreResponses = {
+    /**
+     * Response Add Kb Folder To Vector Store
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type AddKbFolderToVectorStoreResponse = AddKbFolderToVectorStoreResponses[keyof AddKbFolderToVectorStoreResponses];
+
+export type GetVectorStoreStatsData = {
+    body?: never;
+    path: {
+        /**
+         * Vector Store Id
+         */
+        vector_store_id: string;
+    };
+    query?: never;
+    url: '/api/v1/edu-ai/vector-store/{vector_store_id}/stats';
+};
+
+export type GetVectorStoreStatsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetVectorStoreStatsError = GetVectorStoreStatsErrors[keyof GetVectorStoreStatsErrors];
+
+export type GetVectorStoreStatsResponses = {
+    /**
+     * Response Get Vector Store Stats
+     *
+     * Successful Response
+     */
+    200: {
+        [key: string]: unknown;
+    };
+};
+
+export type GetVectorStoreStatsResponse = GetVectorStoreStatsResponses[keyof GetVectorStoreStatsResponses];

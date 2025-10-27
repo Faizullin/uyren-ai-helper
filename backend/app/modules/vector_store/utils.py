@@ -5,18 +5,17 @@ import json
 import re
 from typing import Any
 
-from app.modules.vector_store.models import DocumentChunk, VectorStoreConfig
+from app.modules.vector_store.models import PageSection
 
 
 def calculate_content_hash(content: str) -> str:
-    """Calculate SHA-256 hash of content for deduplication."""
+    """Calculate SHA-256 hash of content for change detection."""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
 def estimate_token_count(text: str) -> int:
     """Estimate token count for text (rough approximation)."""
     # Simple estimation: ~4 characters per token for English text
-    # This is a rough approximation and should be replaced with proper tokenization
     return len(text) // 4
 
 
@@ -27,7 +26,6 @@ def chunk_text(
     separators: list[str] | None = None,
 ) -> list[str]:
     """Split text into overlapping chunks."""
-
     if separators is None:
         separators = ["\n\n", "\n", ". ", "! ", "? ", " ", ""]
 
@@ -49,28 +47,13 @@ def chunk_text(
                         best_break = last_separator
 
             if best_break > 0:
-                end = (
-                    start
-                    + best_break
-                    + len(
-                        separators[
-                            separators.index(
-                                text[
-                                    start + best_break : start
-                                    + best_break
-                                    + len(separators[0])
-                                ]
-                            )
-                        ]
-                    )
-                )
+                end = start + best_break + 1
 
         chunk = text[start:end].strip()
         if chunk:
             chunks.append(chunk)
 
         start = end - chunk_overlap
-
         if start >= len(text):
             break
 
@@ -92,8 +75,7 @@ def clean_text(text: str) -> str:
 
 
 def extract_metadata_from_content(content: str) -> dict[str, Any]:
-    """Extract metadata from content (placeholder implementation)."""
-
+    """Extract metadata from content."""
     metadata = {
         "content_length": len(content),
         "word_count": len(content.split()),
@@ -108,76 +90,86 @@ def extract_metadata_from_content(content: str) -> dict[str, Any]:
     return metadata
 
 
-def validate_supabase_vector_config(config: dict[str, Any]) -> bool:
-    """Validate Supabase vector store configuration."""
+def extract_headings_from_markdown(content: str) -> list[dict[str, Any]]:
+    """Extract headings from markdown content."""
+    headings = []
+    lines = content.split("\n")
 
-    required_fields = [
-        "table_name",
-        "vector_dimension",
-        "index_type",
-        "metric",
-        "lists",
-    ]
+    for i, line in enumerate(lines):
+        # Match markdown headings (# Heading)
+        match = re.match(r"^(#{1,6})\s+(.+)$", line.strip())
+        if match:
+            level = len(match.group(1))
+            text = match.group(2).strip()
+            slug = text.lower().replace(" ", "-")
+            slug = re.sub(r"[^\w\-]", "", slug)
 
-    for field in required_fields:
-        if field not in config or not config[field]:
-            return False
+            headings.append({
+                "level": level,
+                "text": text,
+                "slug": slug,
+                "line": i,
+            })
 
-    # Validate vector dimension
-    if (
-        not isinstance(config["vector_dimension"], int)
-        or config["vector_dimension"] <= 0
-    ):
-        return False
-
-    # Validate metric
-    if config["metric"] not in ["cosine", "euclidean", "inner_product"]:
-        return False
-
-    return True
+    return headings
 
 
-def serialize_config(config: VectorStoreConfig) -> str:
-    """Serialize vector store configuration to JSON string."""
-    return json.dumps(config.model_dump(), default=str)
+def split_content_by_headings(content: str) -> list[dict[str, Any]]:
+    """Split content into sections by markdown headings."""
+    headings = extract_headings_from_markdown(content)
+    lines = content.split("\n")
+    sections = []
+
+    for i, heading in enumerate(headings):
+        start_line = heading["line"]
+        end_line = headings[i + 1]["line"] if i + 1 < len(headings) else len(lines)
+
+        section_content = "\n".join(lines[start_line:end_line]).strip()
+
+        sections.append({
+            "heading": heading["text"],
+            "slug": heading["slug"],
+            "level": heading["level"],
+            "content": section_content,
+        })
+
+    # Add intro section if content starts before first heading
+    if headings and headings[0]["line"] > 0:
+        intro_content = "\n".join(lines[:headings[0]["line"]]).strip()
+        if intro_content:
+            sections.insert(0, {
+                "heading": "Introduction",
+                "slug": "introduction",
+                "level": 1,
+                "content": intro_content,
+            })
+
+    return sections
 
 
-def deserialize_config(config_json: str) -> VectorStoreConfig:
-    """Deserialize vector store configuration from JSON string."""
-    config_dict = json.loads(config_json)
-    return VectorStoreConfig(**config_dict)
-
-
-def format_search_result(
-    chunk: DocumentChunk,
-    score: float,
-    document_title: str | None = None,
+def format_page_section_result(
+    section: PageSection,
+    similarity: float | None = None,
 ) -> dict[str, Any]:
-    """Format search result for API response."""
-
+    """Format page section for API response."""
     result = {
-        "chunk_id": str(chunk.id),
-        "document_id": str(chunk.document_id),
-        "content": chunk.content,
-        "score": score,
-        "metadata": {
-            "chunk_index": chunk.chunk_index,
-            "chunk_size": chunk.chunk_size,
-            "embedding_model": chunk.embedding_model,
-            "token_count": chunk.token_count,
-            "created_at": chunk.created_at.isoformat() if chunk.created_at else None,
-        },
+        "section_id": str(section.id),
+        "page_id": str(section.page_id),
+        "content": section.content,
+        "heading": section.heading,
+        "slug": section.slug,
+        "token_count": section.token_count,
+        "created_at": section.created_at.isoformat() if section.created_at else None,
     }
 
-    if document_title:
-        result["metadata"]["document_title"] = document_title
+    if similarity is not None:
+        result["similarity"] = similarity
 
     return result
 
 
 def get_embedding_dimension(model: str) -> int:
     """Get embedding dimension for a specific model."""
-
     model_dimensions = {
         "text-embedding-ada-002": 1536,
         "text-embedding-3-small": 1536,
@@ -191,26 +183,6 @@ def get_embedding_dimension(model: str) -> int:
     return model_dimensions.get(model, 1536)
 
 
-def calculate_embedding_cost(
-    token_count: int,
-    model: str = "text-embedding-3-small",
-    operation: str = "input",
-) -> float:
-    """Calculate embedding cost based on token count and model."""
-
-    # Pricing per 1M tokens (as of 2024)
-    pricing = {
-        "text-embedding-ada-002": {"input": 0.0001},
-        "text-embedding-3-small": {"input": 0.00002},
-        "text-embedding-3-large": {"input": 0.00013},
-    }
-
-    model_pricing = pricing.get(model, {"input": 0.00002})
-    cost_per_token = model_pricing.get(operation, 0.00002) / 1_000_000
-
-    return token_count * cost_per_token
-
-
 def validate_chunk_size(chunk_size: int) -> bool:
     """Validate chunk size is within reasonable limits."""
     return 100 <= chunk_size <= 10000
@@ -221,83 +193,41 @@ def validate_chunk_overlap(chunk_overlap: int, chunk_size: int) -> bool:
     return 0 <= chunk_overlap < chunk_size // 2
 
 
-def get_supabase_display_name() -> str:
-    """Get display name for Supabase vector store."""
-    return "Supabase Vector Store"
-
-
-def get_model_display_name(model: str) -> str:
-    """Get display name for embedding model."""
-
-    display_names = {
-        "text-embedding-ada-002": "OpenAI Ada 002",
-        "text-embedding-3-small": "OpenAI 3 Small",
-        "text-embedding-3-large": "OpenAI 3 Large",
-        "sentence-transformers/all-MiniLM-L6-v2": "MiniLM L6 v2",
-        "sentence-transformers/all-mpnet-base-v2": "MPNet Base v2",
-        "embed-english-v3.0": "Cohere English v3",
-        "embed-multilingual-v3.0": "Cohere Multilingual v3",
-    }
-
-    return display_names.get(model, model)
-
-
-def generate_supabase_vector_function(
-    table_name: str,
-    vector_dimension: int,
-    similarity_threshold: float = 0.7,
-    match_count: int = 10,
+def generate_page_path(
+    target_type: str | None,
+    target_id: str | None,
+    slug: str | None = None,
 ) -> str:
-    """Generate Supabase pgvector similarity search function."""
+    """Generate a unique page path."""
+    parts = []
 
-    return f"""
-CREATE OR REPLACE FUNCTION match_{table_name} (
-    query_embedding VECTOR({vector_dimension}),
-    match_threshold FLOAT DEFAULT {similarity_threshold},
-    match_count INT DEFAULT {match_count}
-) RETURNS TABLE (
-    id UUID,
-    content TEXT,
-    similarity FLOAT
-) LANGUAGE SQL STABLE AS $$
-SELECT
-    id,
-    content,
-    1 - (embedding <=> query_embedding) AS similarity
-FROM {table_name}
-WHERE 1 - (embedding <=> query_embedding) > match_threshold
-ORDER BY (embedding <=> query_embedding) ASC
-LIMIT match_count;
-$$;
-"""
+    if target_type:
+        parts.append(target_type)
+    if target_id:
+        parts.append(target_id)
+    if slug:
+        parts.append(slug)
+
+    return "/".join(parts) if parts else f"page-{hashlib.md5(str(parts).encode()).hexdigest()[:8]}"
 
 
-def create_supabase_vector_index(
-    table_name: str,
-    index_type: str = "ivfflat",
-    lists: int = 100,
-) -> str:
-    """Generate Supabase pgvector index creation SQL."""
+def parse_page_meta(meta_str: str | None) -> dict[str, Any]:
+    """Parse page meta JSON string safely."""
+    if not meta_str:
+        return {}
 
-    return f"""
-CREATE INDEX IF NOT EXISTS {table_name}_embedding_idx
-ON {table_name}
-USING {index_type} (embedding vector_cosine_ops)
-WITH (lists = {lists});
-"""
+    try:
+        return json.loads(meta_str)
+    except json.JSONDecodeError:
+        return {}
 
 
-def format_supabase_vector_result(
-    result: dict[str, Any],
-    chunk_id: str | None = None,
-    document_id: str | None = None,
-) -> dict[str, Any]:
-    """Format Supabase vector search result."""
+def serialize_page_meta(meta: dict[str, Any] | None) -> str | None:
+    """Serialize page meta to JSON string."""
+    if not meta:
+        return None
 
-    return {
-        "id": result.get("id"),
-        "content": result.get("content"),
-        "similarity": result.get("similarity"),
-        "chunk_id": chunk_id,
-        "document_id": document_id,
-    }
+    try:
+        return json.dumps(meta)
+    except (TypeError, ValueError):
+        return None

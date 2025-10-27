@@ -114,7 +114,7 @@ export function useUploadFiles() {
     mutationFn: async ({ folderId, files }: { folderId: string; files: File[] }) => {
       const response = await KnowledgeBaseService.upload_file_to_folder({
         path: { folder_id: folderId },
-        body: { file: files as any }, // Backend expects 'file' field
+        body: { file: files as any },
       });
       return response.data;
     },

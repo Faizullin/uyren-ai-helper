@@ -43,11 +43,12 @@ export function ThreadsListPage({ projectId }: ThreadsListPageProps) {
   };
 
   const handleThreadClick = (threadId: string) => {
-    router.push(`/projects/${projectId}/modules/edu_ai/threads/${threadId}`);
+    router.push(`/projects/${projectId}/threads/${threadId}`);
   };
 
   const handleCreateThread = () => {
-    router.push(`/projects/${projectId}/modules/edu_ai/threads/new`);
+    // Navigate to project threads page or dashboard
+    router.push(`/projects/${projectId}/threads`);
   };
 
   if (error) {

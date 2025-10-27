@@ -7,7 +7,6 @@ import { ThreadLayout } from '@/components/thread/ThreadLayout';
 import { useAgents } from '@/hooks/use-agents';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useThreadData } from '@/hooks/use-thread-data';
-import { useAddUserMessageMutation } from '@/hooks/use-threads';
 import { useAgentSelectionStore } from '@/lib/stores/agent-selection-store';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
@@ -68,7 +67,7 @@ export function ThreadComponent({
     threadQuery,
     projectQuery,
     agentRunsQuery,
-    messagesQuery,
+    // messagesQuery,
     isLoading: threadDataLoading,
     error: threadDataError,
     initialLoadCompleted,
@@ -77,7 +76,7 @@ export function ThreadComponent({
   } = useThreadData(threadId, projectId || '');
 
   // Mutations
-  const addUserMessageMutation = useAddUserMessageMutation();
+  // const addUserMessageMutation = useAddUserMessageMutation();
 
   // Initialize agent selection
   useEffect(() => {
@@ -88,33 +87,33 @@ export function ThreadComponent({
   }, [agents, selectedAgentId, setSelectedAgent]);
 
   // Handle sending messages
-  const handleSendMessage = useCallback(async (message: string, options?: {
-    agent_id?: string;
-    model_name?: string;
-  }) => {
-    if (!message.trim() || isSending) return;
+  // const handleSendMessage = useCallback(async (message: string, options?: {
+  //   agent_id?: string;
+  //   model_name?: string;
+  // }) => {
+  //   if (!message.trim() || isSending) return;
 
-    setIsSending(true);
-    try {
-      await addUserMessageMutation.mutateAsync({
-        threadId,
-        content: message,
-      });
-      setNewMessage('');
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
-    } finally {
-      setIsSending(false);
-    }
-  }, [threadId, isSending, addUserMessageMutation]);
+  //     setIsSending(true);
+  //   try {
+  //     await addUserMessageMutation.mutateAsync({
+  //         threadId,
+  //       content: message,
+  //     });
+  //     setNewMessage('');
+  //   } catch (error) {
+  //     console.error('Error sending message:', error);
+  //     toast.error('Failed to send message');
+  //     } finally {
+  //       setIsSending(false);
+  //     }
+  // }, [threadId, isSending, addUserMessageMutation]);
 
   // Handle file viewer
   const handleOpenFileViewer = useCallback((filePath?: string, filePathList?: string[]) => {
-    if (filePath) {
-      setFileToView(filePath);
+      if (filePath) {
+        setFileToView(filePath);
       setFileViewerOpen(true);
-    }
+      }
     if (filePathList) {
       setFilePathList(filePathList);
     }
@@ -159,51 +158,51 @@ export function ThreadComponent({
             <div className="mt-4 text-sm text-muted-foreground">
               <p>Thread ID: {threadId}</p>
               {projectId && <p>Project ID: {projectId}</p>}
+          </div>
             </div>
           </div>
         </div>
-      </div>
     );
   }
 
   // Full layout version for dedicated thread pages
   return (
-    <ThreadLayout
-      threadId={threadId}
-      projectName={projectName}
+      <ThreadLayout
+        threadId={threadId}
+        projectName={projectName}
       projectId={projectId || ''}
-      debugMode={debugMode}
+        debugMode={debugMode}
       compact={false}
-    >
+      >
       <div className="flex flex-col h-full">
         {/* Content */}
         <div className="flex-1 overflow-hidden">
-          <ThreadContent
+        <ThreadContent
             messages={[]} // TODO: Implement messages
             agentStatus="idle"
             handleToolClick={() => { }}
-            handleOpenFileViewer={handleOpenFileViewer}
-            readOnly={false}
+          handleOpenFileViewer={handleOpenFileViewer}
+          readOnly={false}
             sandboxId={undefined}
             project={project as any}
-            debugMode={debugMode}
+          debugMode={debugMode}
             agentName="Assistant"
           />
         </div>
 
         {/* Chat Input */}
-        <div className="border-t p-4">
-          <ChatInput
-            value={newMessage}
-            onChange={setNewMessage}
-            onSubmit={(message, options) => handleSendMessage(message, options)}
-            disabled={isSending}
-            placeholder="Type your message..."
-            selectedAgentId={selectedAgentId || undefined}
-            onAgentSelect={(agentId) => setSelectedAgent(agentId || undefined)}
-          />
+        {/* <div className="border-t p-4">
+            <ChatInput
+              value={newMessage}
+              onChange={setNewMessage}
+              onSubmit={(message, options) => handleSendMessage(message, options)}
+              disabled={isSending}
+              placeholder="Type your message..."
+              selectedAgentId={selectedAgentId || undefined}
+              onAgentSelect={(agentId) => setSelectedAgent(agentId || undefined)}
+            />
+          </div> */}
         </div>
-      </div>
-    </ThreadLayout>
+      </ThreadLayout>
   );
 }

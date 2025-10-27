@@ -20,9 +20,7 @@ from app.models.thread import (
 )
 from app.models.user import User, UserBase, UserPublic, UsersPublic
 from app.modules.edu_ai.models import LMSResource
-
-# Import vector store models
-# from app.modules.vector_store.models import Document, DocumentChunk, VectorStore
+from app.modules.vector_store.models import Page, PageSection, VectorStore
 
 __all__ = [
     "AgentRunStatus",
@@ -48,7 +46,7 @@ __all__ = [
     "CreditAccount",
     "CreditTransaction",
     "LMSResource",
-    # "VectorStore",
-    # "Document",
-    # "DocumentChunk",
+    "VectorStore",
+    "Page",
+    "PageSection",
 ]

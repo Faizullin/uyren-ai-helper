@@ -1083,6 +1083,7 @@ export const streamAgent = (
               return;
             }
           } catch (jsonError) {
+            console.error(`[STREAM] Error parsing JSON:`, jsonError);
             // Not JSON or invalid JSON, continue with normal processing
           }
 

@@ -17,7 +17,6 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { isLocalMode } from '@/lib/config';
 import { ThreadContent } from '@/components/thread/content/ThreadContent';
 import { ThreadSkeleton } from '@/components/thread/content/ThreadSkeleton';
-import { useAddUserMessageMutation } from '@/hooks/react-query/threads/use-messages';
 import {
   useStartAgentMutation,
   useStopAgentMutation,

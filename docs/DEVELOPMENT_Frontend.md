@@ -44,6 +44,7 @@ const response = await AgentsService.create_agent({
 - `AgentsService` - Agent CRUD
 - `AgentRunsService` - Agent execution
 - `KnowledgeBaseService` - Knowledge base management
+- `VectorStoreService` - Vector store, pages, and sections management
 
 ### Regenerate Client:
 ```bash
@@ -380,6 +381,11 @@ export const createClientConfig: CreateClientConfig = (clientConfig) => ({
 /knowledge             - Knowledge base
 /settings              - Settings hub
 /settings/api-keys     - API keys management
+/projects              - Projects list
+/projects/{id}         - Project details
+/projects/{id}/vector-stores              - Vector stores list (project-scoped)
+/projects/{id}/vector-stores/{vsId}       - Vector store details with pages
+/projects/{id}/vector-stores/{vsId}/pages/{pageId} - Page details with sections
 ```
 
 ### Route Components:
@@ -498,6 +504,7 @@ src/hooks/
   use-agents.ts        - Agent CRUD
   use-threads.ts       - Thread CRUD
   use-knowledge-base.ts - KB operations
+  use-vector-stores.ts - Vector store, page, and section CRUD
   use-initiate-agent.ts - Special operations
 ```
 

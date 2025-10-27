@@ -1900,6 +1900,515 @@ export const ModelInfoSchema = {
     description: 'AI model information schema.'
 } as const;
 
+export const PageChunkRequestSchema = {
+    properties: {
+        content: {
+            type: 'string',
+            title: 'Content'
+        },
+        chunk_size: {
+            type: 'integer',
+            title: 'Chunk Size',
+            default: 1000
+        },
+        chunk_overlap: {
+            type: 'integer',
+            title: 'Chunk Overlap',
+            default: 200
+        }
+    },
+    type: 'object',
+    required: ['content'],
+    title: 'PageChunkRequest',
+    description: 'Request to chunk page content into sections.'
+} as const;
+
+export const PageChunkResponseSchema = {
+    properties: {
+        page_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Page Id'
+        },
+        sections_created: {
+            type: 'integer',
+            title: 'Sections Created'
+        },
+        sections: {
+            items: {
+                '$ref': '#/components/schemas/PageSectionPublic'
+            },
+            type: 'array',
+            title: 'Sections'
+        }
+    },
+    type: 'object',
+    required: ['page_id', 'sections_created', 'sections'],
+    title: 'PageChunkResponse',
+    description: 'Response after chunking page content.'
+} as const;
+
+export const PageCreateSchema = {
+    properties: {
+        path: {
+            type: 'string',
+            title: 'Path'
+        },
+        content: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Content'
+        },
+        meta: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Meta'
+        },
+        target_type: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Type'
+        },
+        target_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Id'
+        },
+        source: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Source'
+        },
+        parent_page_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Parent Page Id'
+        }
+    },
+    type: 'object',
+    required: ['path'],
+    title: 'PageCreate',
+    description: 'Page creation schema.'
+} as const;
+
+export const PagePublicSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        owner_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Owner Id'
+        },
+        vector_store_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Vector Store Id'
+        },
+        parent_page_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Parent Page Id'
+        },
+        path: {
+            type: 'string',
+            title: 'Path'
+        },
+        checksum: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Checksum'
+        },
+        meta: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Meta'
+        },
+        target_type: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Type'
+        },
+        target_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Id'
+        },
+        source: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Source'
+        },
+        version: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Version'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated At'
+        },
+        last_refresh: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Last Refresh'
+        }
+    },
+    type: 'object',
+    required: ['id', 'owner_id', 'vector_store_id', 'parent_page_id', 'path', 'checksum', 'meta', 'target_type', 'target_id', 'source', 'version', 'created_at', 'updated_at', 'last_refresh'],
+    title: 'PagePublic',
+    description: 'Public page schema for API responses.'
+} as const;
+
+export const PageSectionCreateSchema = {
+    properties: {
+        content: {
+            type: 'string',
+            title: 'Content'
+        },
+        heading: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Heading'
+        },
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        }
+    },
+    type: 'object',
+    required: ['content'],
+    title: 'PageSectionCreate',
+    description: 'Page section creation schema.'
+} as const;
+
+export const PageSectionPublicSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        page_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Page Id'
+        },
+        content: {
+            type: 'string',
+            title: 'Content'
+        },
+        token_count: {
+            type: 'integer',
+            title: 'Token Count'
+        },
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        },
+        heading: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Heading'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'page_id', 'content', 'token_count', 'slug', 'heading', 'created_at', 'updated_at'],
+    title: 'PageSectionPublic',
+    description: 'Public page section schema for API responses (excludes embedding vector).'
+} as const;
+
+export const PageSectionUpdateSchema = {
+    properties: {
+        content: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Content'
+        },
+        heading: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Heading'
+        },
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        }
+    },
+    type: 'object',
+    title: 'PageSectionUpdate',
+    description: 'Page section update schema.'
+} as const;
+
+export const PageSectionWithSimilaritySchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        page_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Page Id'
+        },
+        content: {
+            type: 'string',
+            title: 'Content'
+        },
+        heading: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Heading'
+        },
+        slug: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Slug'
+        },
+        similarity: {
+            type: 'number',
+            title: 'Similarity'
+        }
+    },
+    type: 'object',
+    required: ['id', 'page_id', 'content', 'heading', 'slug', 'similarity'],
+    title: 'PageSectionWithSimilarity',
+    description: 'Page section with similarity score for search results.'
+} as const;
+
+export const PageUpdateSchema = {
+    properties: {
+        path: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Path'
+        },
+        meta: {
+            anyOf: [
+                {
+                    additionalProperties: true,
+                    type: 'object'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Meta'
+        },
+        target_type: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Type'
+        },
+        target_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Id'
+        },
+        source: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Source'
+        }
+    },
+    type: 'object',
+    title: 'PageUpdate',
+    description: 'Page update schema.'
+} as const;
+
 export const PaginatedResponse_APIKeyPublic_Schema = {
     properties: {
         data: {
@@ -1973,6 +2482,31 @@ export const PaginatedResponse_AgentRunPublic_Schema = {
     type: 'object',
     required: ['data'],
     title: 'PaginatedResponse[AgentRunPublic]'
+} as const;
+
+export const PaginatedResponse_PagePublic_Schema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/PagePublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        pagination: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PaginationMeta'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'PaginatedResponse[PagePublic]'
 } as const;
 
 export const PaginatedResponse_ProjectPublic_Schema = {
@@ -2073,6 +2607,31 @@ export const PaginatedResponse_Thread_Schema = {
     type: 'object',
     required: ['data'],
     title: 'PaginatedResponse[Thread]'
+} as const;
+
+export const PaginatedResponse_VectorStorePublic_Schema = {
+    properties: {
+        data: {
+            items: {
+                '$ref': '#/components/schemas/VectorStorePublic'
+            },
+            type: 'array',
+            title: 'Data'
+        },
+        pagination: {
+            anyOf: [
+                {
+                    '$ref': '#/components/schemas/PaginationMeta'
+                },
+                {
+                    type: 'null'
+                }
+            ]
+        }
+    },
+    type: 'object',
+    required: ['data'],
+    title: 'PaginatedResponse[VectorStorePublic]'
 } as const;
 
 export const PaginationMetaSchema = {
@@ -2282,6 +2841,81 @@ export const RegisterResponseSchema = {
     required: ['id', 'email'],
     title: 'RegisterResponse',
     description: 'Register response schema.'
+} as const;
+
+export const SearchRequestSchema = {
+    properties: {
+        query: {
+            type: 'string',
+            title: 'Query'
+        },
+        top_k: {
+            type: 'integer',
+            title: 'Top K',
+            default: 5
+        },
+        similarity_threshold: {
+            type: 'number',
+            title: 'Similarity Threshold',
+            default: 0.7
+        },
+        target_type: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Type'
+        },
+        target_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Target Id'
+        }
+    },
+    type: 'object',
+    required: ['query'],
+    title: 'SearchRequest',
+    description: 'Search request schema.'
+} as const;
+
+export const SearchResponseSchema = {
+    properties: {
+        query: {
+            type: 'string',
+            title: 'Query'
+        },
+        results: {
+            items: {
+                '$ref': '#/components/schemas/PageSectionWithSimilarity'
+            },
+            type: 'array',
+            title: 'Results'
+        },
+        results_count: {
+            type: 'integer',
+            title: 'Results Count'
+        },
+        vector_store_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Vector Store Id'
+        }
+    },
+    type: 'object',
+    required: ['query', 'results', 'results_count', 'vector_store_id'],
+    title: 'SearchResponse',
+    description: 'Search response schema.'
 } as const;
 
 export const ThreadSchema = {
@@ -2904,4 +3538,153 @@ export const ValidationErrorSchema = {
     type: 'object',
     required: ['loc', 'msg', 'type'],
     title: 'ValidationError'
+} as const;
+
+export const VectorStoreCreateSchema = {
+    properties: {
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        }
+    },
+    type: 'object',
+    required: ['name'],
+    title: 'VectorStoreCreate',
+    description: 'Vector store creation schema.'
+} as const;
+
+export const VectorStorePublicSchema = {
+    properties: {
+        id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Id'
+        },
+        owner_id: {
+            type: 'string',
+            format: 'uuid',
+            title: 'Owner Id'
+        },
+        project_id: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'uuid'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Project Id'
+        },
+        name: {
+            type: 'string',
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        provider: {
+            type: 'string',
+            title: 'Provider'
+        },
+        config: {
+            type: 'string',
+            title: 'Config'
+        },
+        status: {
+            type: 'string',
+            title: 'Status'
+        },
+        is_public: {
+            type: 'boolean',
+            title: 'Is Public'
+        },
+        document_count: {
+            type: 'integer',
+            title: 'Document Count'
+        },
+        chunk_count: {
+            type: 'integer',
+            title: 'Chunk Count'
+        },
+        total_tokens: {
+            type: 'integer',
+            title: 'Total Tokens'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'owner_id', 'project_id', 'name', 'description', 'provider', 'config', 'status', 'is_public', 'document_count', 'chunk_count', 'total_tokens', 'created_at', 'updated_at'],
+    title: 'VectorStorePublic',
+    description: 'Public vector store schema for API responses.'
+} as const;
+
+export const VectorStoreUpdateSchema = {
+    properties: {
+        name: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Name'
+        },
+        description: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Description'
+        },
+        status: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Status'
+        }
+    },
+    type: 'object',
+    title: 'VectorStoreUpdate',
+    description: 'Vector store update schema.'
 } as const;

@@ -53,12 +53,14 @@ class ThreadMessageCreate(SQLModel):
 
     content: str
     role: str = "user"
+    data: dict | None = None
 
 
 class ThreadMessageUpdate(SQLModel):
     """Thread message update schema."""
 
     content: str | None = None
+    data: dict | None = None
 
 
 class ThreadMessagePublic(SQLModel):
@@ -68,5 +70,6 @@ class ThreadMessagePublic(SQLModel):
     thread_id: uuid.UUID
     content: str
     role: str
+    data: dict | None = None
     created_at: datetime
     updated_at: datetime
